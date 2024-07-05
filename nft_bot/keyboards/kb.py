@@ -1,8 +1,6 @@
 import json
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton
 
-
-
 languages = ["en", "ru", "pl", "uk"]
 translations = {}
 
@@ -61,3 +59,39 @@ def create_profile_kb(lang):
     profile = InlineKeyboardMarkup(row_width=2, inline_keyboard=profile_kb)
     return profile
 
+
+def create_wallet_kb(lang):
+    buttons = translations[lang]["buttons"].get('wallet_kb', {})
+    wallet_kb = [
+        [InlineKeyboardButton(text=buttons['top_up'], callback_data='top_up'),
+         InlineKeyboardButton(text=buttons['withdraw'], callback_data='withdraw')],
+        [InlineKeyboardButton(text=buttons['promocode'], callback_data='promocode')],
+        [InlineKeyboardButton(text='⬅️', callback_data='back')]
+    ]
+
+    wallet = InlineKeyboardMarkup(inline_keyboard=wallet_kb)
+    return wallet
+
+
+def create_verification_kb(lang):
+    buttons = translations[lang]["buttons"].get('verification_kb', {})
+    verification_kb = [
+        [InlineKeyboardButton(text=buttons['verify'], callback_data='verify')],
+        [InlineKeyboardButton(text='⬅️', callback_data='back')]
+    ]
+
+    verification = InlineKeyboardMarkup(inline_keyboard=verification_kb)
+    return verification
+
+
+def create_favourites_kb(lang):
+    buttons = translations[lang]["buttons"].get('favourites_kb', {})
+    favourites_kb = [
+        [InlineKeyboardButton(text="⬅️", callback_data='left'),
+         InlineKeyboardButton(text="0/0", callback_data='zero'),
+         InlineKeyboardButton(text='➡️️', callback_data='right')],
+        [InlineKeyboardButton(text='⬅️', callback_data='back')]
+    ]
+
+    favourites = InlineKeyboardMarkup(inline_keyboard=favourites_kb)
+    return favourites

@@ -65,7 +65,6 @@ async def send_profile(user_id):
         await bot.send_message(user_id, text='User not found')
 
 
-
 @dp.message(F.text == '/start')
 async def cmd_start(message: Message):
     user = await requests.get_user_info(message.from_user.id)
