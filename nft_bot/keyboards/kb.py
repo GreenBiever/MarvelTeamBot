@@ -1,6 +1,5 @@
 import json
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton
-from nft_bot.databases import db
 
 
 

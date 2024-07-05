@@ -6,7 +6,7 @@ import random
 from aiogram.filters import StateFilter
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram import Bot, Dispatcher, F, Router
-from databases import db, models
+from databases import requests, models
 import config
 from aiogram.types import Message, FSInputFile
 from aiogram import types
@@ -39,38 +39,41 @@ def get_translation(lang, key, **kwargs):
 async def on_startup():
     bot_info = await bot.get_me()
     print(f'Бот успешно запущен: {bot_info.username}')
-    await db.db_start()
 
 
 async def send_profile(user_id):
     await bot.send_message(user_id, text='⚡️')
-    lang = await db.get_user_language(user_id)
+    lang = await requests.get_user_language(user_id)
     photo = FSInputFile('open_sea.jpg')
-    user = await db.get_user_info(user_id)
-    _, user_id, user_name, _, balance, _, status, verification = user
-    translated_status = get_translation(lang, 'statuses', status=status)
-    # Отображение профиля
-    profile_text = get_translation(
-        lang,
-        'profile',
-        user_id=user_id,
-        status=translated_status,
-        balance=balance,
-        verification=verification,
-        ref="_"  # замените на реферальный код, если необходимо
-    )
-    keyboard = kb.create_profile_kb(lang)
-    await bot.send_photo(user_id, photo=photo, caption=profile_text, reply_markup=keyboard)
+    user_info = await requests.get_user_info(user_id)
+    if user_info:
+        user_data, user_id, user_name, balance, status, verification = user_info
+        translated_status = get_translation(lang, 'statuses', status=status)
+        profile_text = get_translation(
+            lang,
+            'profile',
+            user_id=user_id,
+            status=translated_status,
+            balance=balance,
+            verification=verification,
+            ref="_"  # замените на реферальный код, если необходимо
+        )
+        keyboard = kb.create_profile_kb(lang)
+        await bot.send_photo(user_id, photo=photo, caption=profile_text, reply_markup=keyboard)
+    else:
+        # Handle the case where no user is found
+        await bot.send_message(user_id, text='User not found')
+
 
 
 @dp.message(F.text == '/start')
 async def cmd_start(message: Message):
-    user = await db.cmd_start_db(message.from_user.id, message.from_user.username)
+    user = await requests.get_user_info(message.from_user.id)
     if user:
         ADMIN_ID = config.ADMIN_ID
         ADMIN_ID_LIST = [int(admin_id) for admin_id in ADMIN_ID.split(",")]
-        status = await db.get_user_status(message.from_user.id)
-        lang = await db.get_user_language(message.from_user.id)
+        status = await requests.get_user_status(message.from_user.id)
+        lang = await requests.get_user_language(message.from_user.id)
         if status == "blocked":
             await message.answer(get_translation(lang, 'blocked'))
         else:
@@ -86,7 +89,7 @@ async def choose_language(call: types.CallbackQuery):
     user_id = call.from_user.id
     username = call.from_user.username
     language = call.data
-    await db.add_user(user_id, username, language)
+    await requests.add_user(user_id, username, language)
     await send_profile(user_id)
 
 

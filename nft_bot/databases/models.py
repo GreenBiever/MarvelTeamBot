@@ -45,7 +45,6 @@ class Product(Base):
     category_id: Mapped[int] = mapped_column(ForeignKey('categories.id'))
 
     category = relationship('Category', back_populates='products')
-    orders = relationship('Order', back_populates='product')
 
 
 async def async_main():

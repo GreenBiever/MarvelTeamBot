@@ -1,5 +1,4 @@
 import nft_bot.config
-from nft_bot.databases import db
 from aiogram import Bot, Dispatcher, types, F, Router
 from aiogram.types import Message
 from nft_bot.keyboards import kb
