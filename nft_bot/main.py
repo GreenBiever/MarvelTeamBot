@@ -6,12 +6,13 @@ import random
 from aiogram.filters import StateFilter
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram import Bot, Dispatcher, F, Router
-from databases import db
+from databases import db, models
 import config
 from aiogram.types import Message, FSInputFile
 from aiogram import types
 from keyboards import kb
 from states import application_state
+from main_handlers import profile_handlers
 
 form_router = Router()
 storage = MemoryStorage()
@@ -58,7 +59,8 @@ async def send_profile(user_id):
         verification=verification,
         ref="_"  # замените на реферальный код, если необходимо
     )
-    await bot.send_photo(user_id, photo=photo, caption=profile_text)
+    keyboard = kb.create_profile_kb(lang)
+    await bot.send_photo(user_id, photo=photo, caption=profile_text, reply_markup=keyboard)
 
 
 @dp.message(F.text == '/start')
@@ -87,7 +89,10 @@ async def choose_language(call: types.CallbackQuery):
     await db.add_user(user_id, username, language)
     await send_profile(user_id)
 
+
 async def main():
+    await models.async_main()
+    dp.include_routers(profile_handlers.router)
     await dp.start_polling(bot, on_startup=await on_startup(), skip_updates=True)
 
 

@@ -1,2 +1,4 @@
 TOKEN = '7036485019:AAG14bjorPJVw6KL516oU2iogKuGd-XJB1U'
 ADMIN_ID = '1460183114'
+SQLALCHEMY_URL = 'sqlite+aiosqlite:///nft.db'
+

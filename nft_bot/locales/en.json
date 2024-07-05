@@ -5,6 +5,22 @@
     "profile": "\uD83D\uDEB8  Personal Cabinet\n\n📌 ID: {user_id}\n\uD83D\uDD2E Status: {status} 🎉 \n\n💰 Balance: {balance} UAH\n📑 Verification: {verification}\n\uD83D\uDEB8 {ref}",
     "statuses": {
             "new": "New"
+        },
+    "buttons": {
+            "profile_kb": {
+                "wallet": "💰Wallet",
+                "verification": "📑 Verification",
+                "favorites": "❤️ Favorites",
+                "statistics": "📈 Statistics",
+                "settings": "⚙️ Settings",
+                "my_nft": "🎆 My NFT",
+                "agreement": "Agreement",
+                "how_to_create_nft": "How to create NFT?"
+            },
+            "other": {
+                "example1": "Example 1",
+                "example2": "Example 2"
+            }
         }
 
 }

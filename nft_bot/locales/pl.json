@@ -5,5 +5,21 @@
     "profile": "\uD83D\uDCBC Panel Osobisty\n\n 📌ID: {user_id}\n \uD83D\uDD2EStatus: {status}🎉 \n\n💰 Saldo: {balance} UAH\n📑 Weryfikacja: {verification}\n\uD83D\uDEB8 {ref}",
     "statuses": {
             "new": "Nowy"
+        },
+    "buttons": {
+            "profile_kb": {
+                "wallet": "💰Portfel",
+                "verification": "📑 Weryfikacja",
+                "favorites": "❤️ Ulubione",
+                "statistics": "📈 Statystyka",
+                "settings": "⚙️ Ustawienia",
+                "my_nft": "🎆 Moje NFT",
+                "agreement": "Umowa",
+                "how_to_create_nft": "Jak stworzyć NFT?"
+            },
+            "other": {
+                "example1": "Przykład 1",
+                "example2": "Przykład 2"
+            }
         }
 }
