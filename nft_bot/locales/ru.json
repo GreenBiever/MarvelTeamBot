@@ -1,0 +1,9 @@
+{
+    "welcome": "👋Добро пожаловать, {first_name}, выберите сервис ниже:",
+    "blocked": "Вы заблокированы!",
+    "select_language": "Выберите язык:",
+    "profile": "\uD83D\uDCBC Личный кабинет\n\n📌 ID: {user_id}\n\uD83D\uDD2E Статус: {status} 🎉 \n\n💰 Баланс: {balance} UAH\n📑 Верификация: {verification}\n\uD83D\uDEB8 {ref}",
+    "statuses": {
+            "new": "Новичок"
+        }
+}
