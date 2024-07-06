@@ -15,7 +15,7 @@ ADMIN_ID_LIST = [int(admin_id) for admin_id in ADMIN_ID.split(",")]
 
 @router.callback_query(lambda c: c.data == "wallet")
 async def wallet(call: types.CallbackQuery):
-    if call == 'wallet':
+    if call.data == 'wallet':
         lang = await requests.get_user_language(call.from_user.id)
         user_info = await requests.get_user_info(call.from_user.id)
         if user_info:
@@ -33,7 +33,7 @@ async def wallet(call: types.CallbackQuery):
 
 @router.callback_query(lambda c: c.data == "verification")
 async def verification(call: types.CallbackQuery):
-    if call == 'verification':
+    if call.data == 'verification':
         lang = await requests.get_user_language(call.from_user.id)
         keyboard = kb.create_verification_kb(lang)
         verification_text = get_translation(
@@ -44,11 +44,11 @@ async def verification(call: types.CallbackQuery):
         await bot.send_photo(call.from_user.id, photo=photo, caption=verification_text, reply_markup=keyboard)
 
 
-@router.callback_query(lambda c: c.data == "favourites")
+@router.callback_query(lambda c: c.data == "favorites")
 async def favourites(call: types.CallbackQuery):
-    if call == 'favourites':
+    if call.data == 'favorites':
         lang = await requests.get_user_language(call.from_user.id)
-        keyboard = kb.create_favourites_kb(lang)
+        keyboard = kb.create_favourites_kb()
         favourites_text = get_translation(
             lang,
             'favourites_message'
@@ -59,14 +59,13 @@ async def favourites(call: types.CallbackQuery):
 
 @router.callback_query(lambda c: c.data == "statistics")
 async def statistics(call: types.CallbackQuery):
-    if call == 'statistics':
+    if call.data == 'statistics':
         lang = await requests.get_user_language(call.from_user.id)
-        keyboard = kb.create_favourites_kb(lang)
+        keyboard = kb.create_statistics_kb()
         no_orders = random.randint(30, 150)
         no_online = random.randint(450, 550)
         no_views = random.randint(350, 500)
         big_deal = random.randint(250, 1000)
-
         statistics_text = get_translation(
             lang,
             'statistics_message',

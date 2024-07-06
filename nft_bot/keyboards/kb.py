@@ -84,8 +84,7 @@ def create_verification_kb(lang):
     return verification
 
 
-def create_favourites_kb(lang):
-    buttons = translations[lang]["buttons"].get('favourites_kb', {})
+def create_favourites_kb():
     favourites_kb = [
         [InlineKeyboardButton(text="⬅️", callback_data='left'),
          InlineKeyboardButton(text="0/0", callback_data='zero'),
@@ -95,3 +94,11 @@ def create_favourites_kb(lang):
 
     favourites = InlineKeyboardMarkup(inline_keyboard=favourites_kb)
     return favourites
+
+
+def create_statistics_kb():
+    statistics_kb = [
+        [InlineKeyboardButton(text='⬅️', callback_data='back')]
+    ]
+    statistics = InlineKeyboardMarkup(inline_keyboard=statistics_kb)
+    return statistics

@@ -12,7 +12,7 @@ from aiogram.types import Message, FSInputFile
 from aiogram import types
 from keyboards import kb
 from states import application_state
-from main_handlers import profile_handlers
+from nft_bot.main_handlers import profile_handlers
 
 form_router = Router()
 storage = MemoryStorage()
@@ -59,6 +59,7 @@ async def send_profile(user_id):
             ref="_"  # замените на реферальный код, если необходимо
         )
         keyboard = kb.create_profile_kb(lang)
+        print('keyboard: ', keyboard)
         await bot.send_photo(user_id, photo=photo, caption=profile_text, reply_markup=keyboard)
     else:
         # Handle the case where no user is found
