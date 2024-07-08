@@ -19,12 +19,13 @@ async def wallet(call: types.CallbackQuery):
         lang = await requests.get_user_language(call.from_user.id)
         user_info = await requests.get_user_info(call.from_user.id)
         if user_info:
-            user_data, user_id, user_name, balance, status, _ = user_info
+            user_data, user_id, user_name, balance, currency, status, _ = user_info
             wallet_text = get_translation(
                 lang,
                 'wallet_message',
                 user_id=user_id,
-                balance=balance
+                balance=balance,
+                currency=currency
             )
             keyboard = kb.create_wallet_kb(lang)
             photo = FSInputFile('open_sea.jpg')
@@ -76,3 +77,27 @@ async def statistics(call: types.CallbackQuery):
         )
         photo = FSInputFile('open_sea.jpg')
         await bot.send_photo(call.from_user.id, photo=photo, caption=statistics_text, reply_markup=keyboard)
+
+
+@router.callback_query(lambda c: c.data == "settings")
+async def settings(call: types.CallbackQuery):
+    if call.data == 'settings':
+        lang = await requests.get_user_language(call.from_user.id)
+        keyboard = kb.create_settings_kb(lang)
+        settings_text = get_translation(
+            lang,
+            'settings_message'
+        )
+        photo = FSInputFile('open_sea.jpg')
+        await bot.send_photo(call.from_user.id, photo=photo, caption=settings_text, reply_markup=keyboard)
+
+
+@router.callback_query(lambda c: c.data == "my_nft")
+async def my_nft(call: types.CallbackQuery):
+    if call.data == 'my_nft':
+        lang = await requests.get_user_language(call.from_user.id)
+        my_nft_text = get_translation(
+            lang,
+            'my_nft_message'
+        )
+        await call.message.answer(my_nft_text, show_alert=True)

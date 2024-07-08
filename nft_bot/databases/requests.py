@@ -11,7 +11,7 @@ async def get_user_id(user_id):
 async def add_user(user_id, user_name, language):
     async with async_session() as session:
         await session.execute(
-            insert(User).values(user_id=user_id, user_name=user_name, language=language, balance=0, status='new',
+            insert(User).values(user_id=user_id, user_name=user_name, language=language, balance=0, currency='UAH', message_id=0, status='new',
                                 verification=0))
         await session.commit()
 
@@ -30,11 +30,13 @@ async def get_user_info(user_id):
             user_id = user_data.user_id
             user_name = user_data.user_name
             balance = user_data.balance
+            currency = user_data.currency
             status = user_data.status
             verification = user_data.verification
-            return (user_data, user_id, user_name, balance, status, verification)
+            return (user_data, user_id, user_name, balance, currency, status, verification)
         else:
             return None
+
 
 
 

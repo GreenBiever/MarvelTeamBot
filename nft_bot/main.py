@@ -47,7 +47,7 @@ async def send_profile(user_id):
     photo = FSInputFile('open_sea.jpg')
     user_info = await requests.get_user_info(user_id)
     if user_info:
-        user_data, user_id, user_name, balance, status, verification = user_info
+        user_data, user_id, user_name, balance, currency, status, verification = user_info
         translated_status = get_translation(lang, 'statuses', status=status)
         profile_text = get_translation(
             lang,
@@ -55,6 +55,7 @@ async def send_profile(user_id):
             user_id=user_id,
             status=translated_status,
             balance=balance,
+            currency=currency,
             verification=verification,
             ref="_"  # замените на реферальный код, если необходимо
         )

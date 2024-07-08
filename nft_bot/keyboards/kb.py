@@ -52,7 +52,7 @@ def create_profile_kb(lang):
         [InlineKeyboardButton(text=buttons['statistics'], callback_data='statistics'),
          InlineKeyboardButton(text=buttons['settings'], callback_data='settings')],
         [InlineKeyboardButton(text=buttons['my_nft'], callback_data='my_nft'),
-         InlineKeyboardButton(text=buttons['agreement'], callback_data='agreement')],
+         InlineKeyboardButton(text=buttons['agreement'], url='https://opensea.io/')],
         [InlineKeyboardButton(text=buttons['how_to_create_nft'], callback_data='how_to_create_nft')]
     ]
 
@@ -102,3 +102,15 @@ def create_statistics_kb():
     ]
     statistics = InlineKeyboardMarkup(inline_keyboard=statistics_kb)
     return statistics
+
+
+def create_settings_kb(lang):
+    buttons = translations[lang]["buttons"].get('settings_kb', {})
+    settings_kb = [
+        [InlineKeyboardButton(text=buttons['language'], callback_data='language')],
+        [InlineKeyboardButton(text=buttons['currency'], callback_data='currency')],
+        [InlineKeyboardButton(text='⬅️️', callback_data='back')]
+    ]
+
+    settings = InlineKeyboardMarkup(inline_keyboard=settings_kb)
+    return settings

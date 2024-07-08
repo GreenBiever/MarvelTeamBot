@@ -20,6 +20,7 @@ class User(Base):
     user_name: Mapped[str] = mapped_column()
     language: Mapped[str] = mapped_column()
     balance: Mapped[int] = mapped_column(BigInteger)
+    currency: Mapped[str] = mapped_column()
     message_id: Mapped[int] = mapped_column()
     status: Mapped[str] = mapped_column()
     verification: Mapped[str] = mapped_column()
