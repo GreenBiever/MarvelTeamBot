@@ -12,6 +12,10 @@ router = Router()
 ADMIN_ID = nft_bot.config.ADMIN_ID
 ADMIN_ID_LIST = [int(admin_id) for admin_id in ADMIN_ID.split(",")]
 
+"""
+Callback handlers for 'PROFILE' button
+"""
+
 
 @router.callback_query(lambda c: c.data == "wallet")
 async def wallet(call: types.CallbackQuery):
@@ -101,3 +105,45 @@ async def my_nft(call: types.CallbackQuery):
             'my_nft_message'
         )
         await call.message.answer(my_nft_text, show_alert=True)
+
+
+@router.callback_query(lambda c: c.data == "how_to_create_nft")
+async def how_to_create_nft(call: types.CallbackQuery):
+    if call.data == 'how_to_create_nft':
+        lang = await requests.get_user_language(call.from_user.id)
+        help_text = get_translation(
+            lang,
+            'how_to_create_nft_message'
+        )
+        keyboard = kb.create_nft_kb()
+        await bot.send_message(call.from_user.id, help_text, reply_markup=keyboard)
+
+
+"""
+Callback handlers for 'wallet' functionality
+"""
+
+
+@router.callback_query(lambda c: c.data == "deposit")
+async def deposit(call: types.CallbackQuery):
+    if call.data == 'deposit':
+        lang = await requests.get_user_language(call.from_user.id)
+        deposit_text = get_translation(
+            lang,
+            'deposit_message'
+        )
+        keyboard = kb.create_deposit_kb(lang)
+        await call.message.delete()
+        await bot.send_message(call.from_user.id, deposit_text, reply_markup=keyboard)
+
+
+@router.callback_query(lambda c: c.data == "withdraw")
+async def withdraw(call: types.CallbackQuery):
+    if call.data == 'withdraw':
+        lang = await requests.get_user_language(call.from_user.id)
+        withdraw_text = get_translation(
+            lang,
+            'withdraw_message'
+        )
+        await call.message.delete()
+        await bot.send_message(call.from_user.id, withdraw_text, reply_markup=kb.withdraw)

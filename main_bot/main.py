@@ -10,17 +10,17 @@ import config
 from fastapi import FastAPI
 import uvicorn
 
-
 storage = MemoryStorage()
 logging.basicConfig(filename="bot.log", level=logging.INFO)
 bot: Bot = Bot(config.TOKEN)
 dp = Dispatcher()
 dp.include_router(main_handlers.router)
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    await bot.set_webhook(url = (config.WEBHOOK_URL
-                           + config.TELEGRAM_WEBHOOK_PATH))
+    await bot.set_webhook(url=(config.WEBHOOK_URL
+                               + config.TELEGRAM_WEBHOOK_PATH))
     bot_info = await bot.get_me()
     print(f'Бот успешно запущен: {bot_info.username}')
     await db.db_start()

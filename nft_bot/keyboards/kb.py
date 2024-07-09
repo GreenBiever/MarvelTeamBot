@@ -114,3 +114,30 @@ def create_settings_kb(lang):
 
     settings = InlineKeyboardMarkup(inline_keyboard=settings_kb)
     return settings
+
+
+def create_nft_kb():
+    nft_kb = [
+        [InlineKeyboardButton(text='⬅️️', callback_data='back')]
+    ]
+    nft = InlineKeyboardMarkup(inline_keyboard=nft_kb)
+    return nft
+
+
+def create_deposit_kb(lang):
+    buttons = translations[lang]["buttons"].get('deposit_kb', {})
+    deposit_kb = [
+        [InlineKeyboardButton(text=buttons['card'], callback_data='card')],
+        [InlineKeyboardButton(text=buttons['crypto'], callback_data='crypto')],
+        [InlineKeyboardButton(text='⬅️️', callback_data='back_wallet')]
+    ]
+
+    deposit = InlineKeyboardMarkup(inline_keyboard=deposit_kb)
+    return deposit
+
+
+withdraw_kb = [
+    [InlineKeyboardButton(text='⬅️️', callback_data='back_wallet')]
+]
+
+withdraw = InlineKeyboardMarkup(inline_keyboard=withdraw_kb)
