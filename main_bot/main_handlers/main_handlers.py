@@ -8,9 +8,8 @@ from keyboards import kb
 from services.images import image_generator
 from states import application_state
 
+
 router = Router()
-
-
 
 @router.message(F.text == '/start')
 async def cmd_start(message: Message, bot: Bot):
