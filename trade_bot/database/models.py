@@ -18,3 +18,9 @@ class User(Base):
     is_blocked: Mapped[bool] = mapped_column(default=False)
     is_verified: Mapped[bool] = mapped_column(default=False)
     last_login: Mapped[datetime] = mapped_column(default=datetime.now)
+
+    # On web-site
+    purchase_enabled: Mapped[bool] = mapped_column(default=True) 
+    output_enabled: Mapped[bool] = mapped_column(default=True)
+    min_deposit: Mapped[int] = mapped_column(default=100)
+    min_withdraw: Mapped[int] = mapped_column(default=100)

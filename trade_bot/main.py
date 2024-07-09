@@ -7,7 +7,7 @@ import logging
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from fastapi.staticfiles import StaticFiles
-from site_backend import routers as api_router
+from api import routers as api_router
 import uvicorn
 
 
@@ -21,7 +21,8 @@ dp.include_routers(main_handlers.router,
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await bot.set_webhook(url = (config.WEBHOOK_URL
-                           + config.TELEGRAM_WEBHOOK_PATH))
+                           + config.TELEGRAM_WEBHOOK_PATH),
+                           allowed_updates=['*'])
     bot_info = await bot.get_me()
     logging.getLogger(__name__).info(f'Бот успешно запущен: {bot_info.username}')
     await init_models()
