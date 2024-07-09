@@ -1,5 +1,6 @@
 import json
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton
+from nft_bot import config
 
 languages = ["en", "ru", "pl", "uk"]
 translations = {}
@@ -17,21 +18,18 @@ def get_translation(lang, key, **kwargs):
     return translation.format(**kwargs)
 
 
-main_kb = [
-    [KeyboardButton(text="💎 Профиль")],
-    [KeyboardButton(text="🏙 NFT - бот"),
-     KeyboardButton(text="🌆 NFT - сайт"),
-     KeyboardButton(text="📢 Арбитраж - бот")],
-    [KeyboardButton(text="📣 Арбитраж - сайт"),
-     KeyboardButton(text='🎰 Игровой - бот'),
-     KeyboardButton(text='📉 Трейд - бот')],
-    [KeyboardButton(text="📊 Трейд - сайт"),
-     KeyboardButton(text='🔎 BTC Поиск - бот'),
-     KeyboardButton(text='🌐 Обменник - сайт')],
-    [KeyboardButton(text='🗽 О проекте')]
-]
+def create_main_kb(lang):
+    buttons = translations[lang]["buttons"].get('main_kb', {})
+    main_kb = [
+        [KeyboardButton(text='🎆 NFT')],
+        [KeyboardButton(text=buttons['profile_main'])],
+        [KeyboardButton(text=buttons['information_main']),
+         KeyboardButton(text=buttons['support_main'])]
+    ]
+    main = ReplyKeyboardMarkup(keyboard=main_kb, resize_keyboard=True)
 
-main = ReplyKeyboardMarkup(keyboard=main_kb, resize_keyboard=True, input_field_placeholder='Выберите пункт ниже')
+    return main
+
 
 language_kb = [
     [InlineKeyboardButton(text='🇷🇺 Русский', callback_data='ru'),
@@ -52,7 +50,7 @@ def create_profile_kb(lang):
         [InlineKeyboardButton(text=buttons['statistics'], callback_data='statistics'),
          InlineKeyboardButton(text=buttons['settings'], callback_data='settings')],
         [InlineKeyboardButton(text=buttons['my_nft'], callback_data='my_nft'),
-         InlineKeyboardButton(text=buttons['agreement'], url='https://opensea.io/')],
+         InlineKeyboardButton(text=buttons['agreement'], url=config.AGREEMENT_URL)],
         [InlineKeyboardButton(text=buttons['how_to_create_nft'], callback_data='how_to_create_nft')]
     ]
 
@@ -76,7 +74,7 @@ def create_wallet_kb(lang):
 def create_verification_kb(lang):
     buttons = translations[lang]["buttons"].get('verification_kb', {})
     verification_kb = [
-        [InlineKeyboardButton(text=buttons['verify'], callback_data='verify')],
+        [InlineKeyboardButton(text=buttons['verify'], url=config.SUPPORT_URL)],
         [InlineKeyboardButton(text='⬅️', callback_data='back')]
     ]
 
@@ -127,8 +125,8 @@ def create_nft_kb():
 def create_deposit_kb(lang):
     buttons = translations[lang]["buttons"].get('deposit_kb', {})
     deposit_kb = [
-        [InlineKeyboardButton(text=buttons['card'], callback_data='card')],
-        [InlineKeyboardButton(text=buttons['crypto'], callback_data='crypto')],
+        [InlineKeyboardButton(text=buttons['card'], callback_data='card'),
+         InlineKeyboardButton(text=buttons['crypto'], callback_data='crypto')],
         [InlineKeyboardButton(text='⬅️️', callback_data='back_wallet')]
     ]
 
@@ -141,3 +139,29 @@ withdraw_kb = [
 ]
 
 withdraw = InlineKeyboardMarkup(inline_keyboard=withdraw_kb)
+
+deposit_card_back_kb = [
+    [InlineKeyboardButton(text='⬅️️️️', callback_data='back_wallet2')]
+]
+
+deposit_card_back = InlineKeyboardMarkup(inline_keyboard=deposit_card_back_kb)
+
+deposit_crypto_kb = [
+    [InlineKeyboardButton(text='USDT [TRC-20]', callback_data='usdt')],
+    [InlineKeyboardButton(text='BTC', callback_data='btc')],
+    [InlineKeyboardButton(text='ETH', callback_data='eth')],
+    [InlineKeyboardButton(text='⬅️️️️', callback_data='back_wallet2')]
+]
+
+deposit_crypto = InlineKeyboardMarkup(inline_keyboard=deposit_crypto_kb)
+
+
+def create_card_crypto_kb(lang):
+    buttons = translations[lang]["buttons"].get('deposit_top_up_kb', {})
+    deposit_kb = [
+        [InlineKeyboardButton(text=buttons['check'], callback_data='check_payment')],
+        [InlineKeyboardButton(text=buttons['support'], url=config.SUPPORT_URL)],
+    ]
+
+    deposit = InlineKeyboardMarkup(inline_keyboard=deposit_kb)
+    return deposit

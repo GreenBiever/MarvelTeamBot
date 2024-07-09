@@ -7,12 +7,12 @@ from aiogram.filters import StateFilter
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram import Bot, Dispatcher, F, Router
 from databases import requests, models
-import config
 from aiogram.types import Message, FSInputFile
 from aiogram import types
 from keyboards import kb
 from states import application_state
 from nft_bot.main_handlers import profile_handlers
+from nft_bot import config
 
 form_router = Router()
 storage = MemoryStorage()
@@ -42,9 +42,10 @@ async def on_startup():
 
 
 async def send_profile(user_id):
-    await bot.send_message(user_id, text='⚡️')
     lang = await requests.get_user_language(user_id)
-    photo = FSInputFile('open_sea.jpg')
+    keyboard2 = kb.create_main_kb(lang)
+    await bot.send_message(user_id, text='⚡️', reply_markup=keyboard2)
+    photo = FSInputFile(config.PHOTO_PATH)
     user_info = await requests.get_user_info(user_id)
     if user_info:
         user_data, user_id, user_name, balance, currency, status, verification = user_info
@@ -60,8 +61,10 @@ async def send_profile(user_id):
             ref="_"  # замените на реферальный код, если необходимо
         )
         keyboard = kb.create_profile_kb(lang)
+
         print('keyboard: ', keyboard)
         await bot.send_photo(user_id, photo=photo, caption=profile_text, reply_markup=keyboard)
+
     else:
         # Handle the case where no user is found
         await bot.send_message(user_id, text='User not found')
