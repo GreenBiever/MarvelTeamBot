@@ -11,10 +11,12 @@ from aiogram.types import Message, FSInputFile
 from aiogram import types
 from keyboards import kb
 from states import application_state
-from nft_bot.main_handlers import profile_handlers
+from nft_bot.main_handlers import profile_handlers, admin_handlers
 from nft_bot import config
 
 form_router = Router()
+ADMIN_ID = config.ADMIN_ID
+ADMIN_ID_LIST = [int(admin_id) for admin_id in ADMIN_ID.split(",")]
 storage = MemoryStorage()
 logging.basicConfig(filename="bot.log", level=logging.INFO)
 bot: Bot = Bot(config.TOKEN)
@@ -45,6 +47,9 @@ async def send_profile(user_id):
     lang = await requests.get_user_language(user_id)
     keyboard2 = kb.create_main_kb(lang)
     await bot.send_message(user_id, text='⚡️', reply_markup=keyboard2)
+    if user_id in ADMIN_ID_LIST:
+        keyboard3 = kb.create_admin_main_kb(lang)
+        await bot.send_message(user_id, text='⚡️', reply_markup=keyboard3)
     photo = FSInputFile(config.PHOTO_PATH)
     user_info = await requests.get_user_info(user_id)
     if user_info:
@@ -100,6 +105,7 @@ async def choose_language(call: types.CallbackQuery):
 async def main():
     await models.async_main()
     dp.include_routers(profile_handlers.router)
+    dp.include_routers(admin_handlers.router)
     await dp.start_polling(bot, on_startup=await on_startup(), skip_updates=True)
 
 

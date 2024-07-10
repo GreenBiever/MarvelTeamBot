@@ -1,6 +1,7 @@
 import json
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton
 from nft_bot import config
+from nft_bot.databases import requests
 
 languages = ["en", "ru", "pl", "uk"]
 translations = {}
@@ -29,6 +30,30 @@ def create_main_kb(lang):
     main = ReplyKeyboardMarkup(keyboard=main_kb, resize_keyboard=True)
 
     return main
+
+
+def create_admin_main_kb(lang):
+    buttons = translations[lang]["buttons"].get('main_kb', {})
+    admin_main_kb = [
+        [KeyboardButton(text='🎆 NFT')],
+        [KeyboardButton(text=buttons['profile_main'])],
+        [KeyboardButton(text=buttons['information_main']),
+         KeyboardButton(text=buttons['support_main'])],
+        [KeyboardButton(text='Админ-панель')]
+    ]
+    admin_main = ReplyKeyboardMarkup(keyboard=admin_main_kb, resize_keyboard=True)
+
+    return admin_main
+
+
+admin_panel_kb = [
+    [InlineKeyboardButton(text='Добавить категорию', callback_data='add_category'),
+     InlineKeyboardButton(text='Добавить товар', callback_data='add_item')],
+    [InlineKeyboardButton(text='Удалить категорию', callback_data='delete_category'),
+     InlineKeyboardButton(text='Удалить товар', callback_data='delete_item')],
+]
+
+admin_panel = InlineKeyboardMarkup(inline_keyboard=admin_panel_kb)
 
 
 language_kb = [
@@ -165,3 +190,36 @@ def create_card_crypto_kb(lang):
 
     deposit = InlineKeyboardMarkup(inline_keyboard=deposit_kb)
     return deposit
+
+
+settings_language_kb = [
+    [InlineKeyboardButton(text='🇷🇺 Русский', callback_data='set_ru'),
+     InlineKeyboardButton(text='🇬🇧 English', callback_data='set_en')],
+    [InlineKeyboardButton(text='🇵🇱 Polski', callback_data='set_pl'),
+     InlineKeyboardButton(text='🇺🇦 Український', callback_data='set_uk')],
+    [InlineKeyboardButton(text='⬅️️', callback_data='back')]
+]
+
+settings_language = InlineKeyboardMarkup(inline_keyboard=settings_language_kb)
+
+
+settings_currency_kb = [
+    [InlineKeyboardButton(text='🇺🇦 UAH', callback_data='usd'),
+     InlineKeyboardButton(text='🇪🇺 EUR', callback_data='eur')],
+    [InlineKeyboardButton(text='🇵🇱 PLN', callback_data='pln'),
+     InlineKeyboardButton(text='🇷🇺 RUB', callback_data='rub')],
+    [InlineKeyboardButton(text='🇧🇾 BYN', callback_data='byn')],
+    [InlineKeyboardButton(text='⬅️️', callback_data='back')]
+]
+
+settings_currency = InlineKeyboardMarkup(inline_keyboard=settings_currency_kb)
+
+
+async def get_categories_kb():
+    categories = await requests.get_categories()
+    categories_kb = [
+        [InlineKeyboardButton(text=category.name, callback_data=f'category_{category.id}')] for category in categories
+    ]
+
+    categories = InlineKeyboardMarkup(inline_keyboard=categories_kb)
+    return categories

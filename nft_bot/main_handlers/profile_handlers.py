@@ -3,7 +3,7 @@ from aiogram import Bot, Dispatcher, types, F, Router
 from aiogram.filters import StateFilter
 from aiogram.types import Message, FSInputFile
 from nft_bot.keyboards import kb
-from nft_bot.main import translations, get_translation
+from nft_bot.main import translations, get_translation, send_profile
 from nft_bot.databases import requests
 from nft_bot.states import deposit_state, withdraw_state
 from nft_bot import config
@@ -172,7 +172,7 @@ async def deposit(call: types.CallbackQuery):
         keyboard = kb.create_deposit_kb(lang)
         await call.message.delete()
         photo = FSInputFile(config.PHOTO_PATH)
-        await bot.send_photo(call.from_user.id,photo=photo, caption=deposit_text, reply_markup=keyboard)
+        await bot.send_photo(call.from_user.id, photo=photo, caption=deposit_text, reply_markup=keyboard)
 
 
 @router.callback_query(lambda c: c.data == "card")
@@ -294,3 +294,77 @@ async def withdraw_amount(message: Message, state: withdraw_state.Withdraw.amoun
                                        amount=amount)  # предполагаем, что есть перевод для этого сообщения
         await message.answer(success_text, show_alert=False)
         await state.clear()
+
+
+@router.callback_query(lambda c: c.data == "promocode")
+async def promocode(call: types.CallbackQuery, state: deposit_state.Promocode.promo):
+    if call.data == 'promocode':
+        lang = await requests.get_user_language(call.from_user.id)
+        promocode_text = get_translation(
+            lang,
+            'promocode_message'
+        )
+        await call.message.delete()
+        photo = FSInputFile(config.PHOTO_PATH)
+        await bot.send_photo(call.from_user.id, photo=photo, caption=promocode_text, reply_markup=kb.withdraw)
+        await state.set_state(deposit_state.Promocode.promo)
+
+
+@router.message(StateFilter(deposit_state.Promocode.promo))
+async def promocode_message(message: Message, state: deposit_state.Promocode.promo):
+    promo = message.text
+    lang = await requests.get_user_language(message.from_user.id)
+    success_text = get_translation(lang,
+                                   'promocode_success_message',
+                                   promo=promo)  # предполагаем, что есть перевод для этого сообщения
+    await bot.send_message(message.from_user.id, text=success_text)
+    await state.clear()
+
+
+"""
+Callback handlers for 'settings' functionality
+"""
+
+
+@router.callback_query(lambda c: c.data == "language")
+async def language(call: types.CallbackQuery):
+    if call.data == 'language':
+        lang = await requests.get_user_language(call.from_user.id)
+        language_text = get_translation(
+            lang,
+            'language_message'
+        )
+        await call.message.delete()
+        photo = FSInputFile(config.PHOTO_PATH)
+        await bot.send_photo(call.from_user.id, photo=photo, caption=language_text, reply_markup=kb.settings_language)
+
+
+@router.callback_query(lambda c: c.data in ['set_ru', 'set_en', 'set_pl', 'set_uk'])
+async def set_language(call: types.CallbackQuery):
+    if call.data in ['set_ru', 'set_en', 'set_pl', 'set_uk']:
+        lang = call.data[-2:]
+        await requests.update_user_language(call.from_user.id, lang)
+        await send_profile(call.from_user.id)
+
+
+@router.callback_query(lambda c: c.data == "currency")
+async def currency(call: types.CallbackQuery):
+    if call.data == 'currency':
+        lang = await requests.get_user_language(call.from_user.id)
+        currency_text = get_translation(
+            lang,
+            'currency_message'
+        )
+        await call.message.delete()
+        photo = FSInputFile(config.PHOTO_PATH)
+        await bot.send_photo(call.from_user.id, photo=photo, caption=currency_text, reply_markup=kb.settings_currency)
+
+
+@router.callback_query(lambda c: c.data in ["usd", "eur", "pln", "uah", "rub", "byn"])
+async def set_currency(call: types.CallbackQuery):
+    if call.data in ["usd", "eur", "pln", "uah", "rub", "byn"]:
+        currency = call.data.upper()
+        await requests.update_user_currency(call.from_user.id, currency)
+        await send_profile(call.from_user.id)
+
+

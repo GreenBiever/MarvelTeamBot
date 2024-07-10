@@ -1,0 +1,120 @@
+import json
+import random
+from aiogram import Bot, Dispatcher, types, F, Router
+from aiogram.filters import StateFilter
+from aiogram.types import Message, FSInputFile
+from nft_bot.keyboards import kb
+from nft_bot.databases import requests
+from nft_bot.states import deposit_state, withdraw_state, admin_items_state
+from nft_bot import config
+
+bot: Bot = Bot(config.TOKEN)
+router = Router()
+ADMIN_ID = config.ADMIN_ID
+ADMIN_ID_LIST = [int(admin_id) for admin_id in ADMIN_ID.split(",")]
+languages = ["en", "ru", "pl", "uk"]
+translations = {}
+
+for lang in languages:
+    with open(f"locales/{lang}.json", "r", encoding="utf-8") as file:
+        translations[lang] = json.load(file)
+
+
+# Функция для получения перевода
+def get_translation(lang, key, **kwargs):
+    translation = translations[lang].get(key, key)
+    if isinstance(translation, dict):
+        translation = translation.get(kwargs['status'], kwargs['status'])
+    return translation.format(**kwargs)
+
+
+
+
+
+"""
+Callback handlers for Admin functionality
+"""
+
+
+@router.message(F.text == 'Админ-панель')
+async def admin_panel(message: types.Message):
+    if message.from_user.id in ADMIN_ID_LIST:
+        await bot.send_message(message.from_user.id, text='Вы вошли в админ-панель!', parse_mode="HTML", reply_markup=kb.admin_panel)
+
+
+@router.callback_query(lambda c: c.data == 'add_category')
+async def add_category(call: types.CallbackQuery, state: admin_items_state.AdminCategoriesItems.category):
+    await call.message.answer(text='Введите название категории (коллекции NFT):', parse_mode="HTML")
+    await state.set_state(admin_items_state.AdminCategoriesItems.category)
+
+
+@router.message(StateFilter(admin_items_state.AdminCategoriesItems.category))
+async def add_category_name(message: types.Message, state: admin_items_state.AdminCategoriesItems.category):
+    category_name = message.text
+    await requests.add_category(category_name)
+    await message.answer(text='Категория добавлена!', parse_mode="HTML")
+
+
+@router.callback_query(lambda c: c.data == 'add_item')
+async def add_item(call: types.CallbackQuery, state: admin_items_state.AdminCategoriesItems.item):
+    categories_keyboard = await kb.get_categories_kb()
+    await call.message.answer(text='Выберите категорию:', parse_mode="HTML", reply_markup=categories_keyboard)
+    await state.set_state(admin_items_state.AdminCategoriesItems.item)
+
+
+@router.callback_query(lambda c: c.data.startswith('category_'))
+async def add_item_to_category(call: types.CallbackQuery, state: admin_items_state.AdminCategoriesItems.item):
+    category_id = call.data.split('_')[1]
+    await state.update_data(category_id=category_id)
+    await call.message.answer(text='Введите название NFT:', parse_mode="HTML")
+    await state.set_state(admin_items_state.AdminItems.item_name)
+
+
+@router.message(StateFilter(admin_items_state.AdminItems.item_name))
+async def add_item_name(message: types.Message, state: admin_items_state.AdminItems.item_name):
+    item_name = message.text
+    await state.update_data(item_name=item_name)
+    await message.answer(text='Введите описание NFT (Если описания нет, введите "0")', parse_mode="HTML")
+    await state.set_state(admin_items_state.AdminItems.item_description)
+
+
+@router.message(StateFilter(admin_items_state.AdminItems.item_description))
+async def add_item_description(message: types.Message, state: admin_items_state.AdminItems.item_description):
+    item_description = message.text
+    if item_description == '0':
+        item_description = 'Описание отсутствует'
+    await state.update_data(item_description=item_description)
+    await message.answer(text='Введите цену NFT в долларах $:', parse_mode="HTML")
+    await state.set_state(admin_items_state.AdminItems.item_price)
+
+
+@router.message(StateFilter(admin_items_state.AdminItems.item_price))
+async def add_item_price(message: types.Message, state: admin_items_state.AdminItems.item_price):
+    item_price = message.text
+    await state.update_data(item_price=item_price)
+    await message.answer(text='Введите автора NFT:', parse_mode="HTML")
+    await state.set_state(admin_items_state.AdminItems.item_author)
+
+
+@router.message(StateFilter(admin_items_state.AdminItems.item_author))
+async def add_item_author(message: types.Message, state: admin_items_state.AdminItems.item_author):
+    item_author = message.text
+    await state.update_data(item_author=item_author)
+    await message.answer(text='Отправьте фото NFT:', parse_mode="HTML")
+    await state.set_state(admin_items_state.AdminItems.item_photo)
+
+
+@router.message(StateFilter(admin_items_state.AdminItems.item_photo))
+async def add_item_photo(message: types.Message, state: admin_items_state.AdminItems.item_photo):
+    item_photo = message.text
+    data = await state.get_data()
+    category_id = data.get('category_id')
+    print(category_id)
+    item_name = data.get('item_name')
+    item_description = data.get('item_description')
+    item_price = data.get('item_price')
+    item_author = data.get('item_author')
+    await requests.add_item(item_name, item_description, item_price, item_author,item_photo, category_id)
+    await message.answer(text='NFT добавлен!', parse_mode="HTML")
+
+

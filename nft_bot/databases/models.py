@@ -29,7 +29,7 @@ class User(Base):
 class Category(Base):
     __tablename__ = 'categories'
 
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column()
 
     products = relationship('Product', back_populates='category')
@@ -38,10 +38,11 @@ class Category(Base):
 class Product(Base):
     __tablename__ = 'products'
 
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column()
     description: Mapped[str] = mapped_column()
     price: Mapped[str] = mapped_column()
+    author: Mapped[str] = mapped_column()
     photo: Mapped[str] = mapped_column()
     category_id: Mapped[int] = mapped_column(ForeignKey('categories.id'))
 
