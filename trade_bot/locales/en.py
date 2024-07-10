@@ -1,0 +1,126 @@
+data = {
+    'buttons': {
+        'main_kb': {
+            'trade': 'Marketplace',
+            'wallet': 'Wallet',
+            'change_lang': 'Change Language',
+            'change_currency': 'Change Currency',
+            'support': 'Support',
+        },
+        'wallet_kb': {
+            'top_up': 'Top Up',
+            'withdraw': 'Withdraw',
+            'promocode': 'Promo Code',
+            'back': 'Back',
+        },
+        'top_up_kb': {
+            'card': 'Card',
+            'crypto': 'Cryptocurrency',
+            'back': 'Back',
+        },
+        'select_crypto_currency_kb': {
+            'crypto_currency_btc': 'BTC',
+            'crypto_currency_eth': 'ETH',
+            'crypto_currency_usdt': 'USDT[TRC-20]',
+        },
+        'support_kb': {
+            'check_payment': 'Check Payment',
+            'support': 'Support',
+        },
+        'back_kb': {
+            'back': 'Back',
+        },
+        'select_lang_kb': {
+            'set_lang_ru': 'Russian',
+            'set_lang_en': 'English',
+            'set_lang_pl': 'Polish',
+            'set_lang_ua': 'Ukrainian',
+            'back': 'Back',
+        },
+        'select_currency_kb': {
+            'set_currency_usd': 'USD',
+            'set_currency_eur': 'EUR',
+            'set_currency_rub': 'RUB',
+            'set_currency_uah': 'UAH',
+            'back': 'Back',    
+        },
+        'trade_kb': {
+            'crypto': "Cryptocurrencies",
+            'back': "Back",
+        },
+        'support_page_kb': {
+            'support': "Support",
+            'back': "Back",
+        }
+    },
+
+    'text': {
+        'greeting': '''
+📂 Portfolio:
+
+💵 Balance: {} {}
+🗣 Name: {}
+
+📝Verification: {}
+
+🍀 Referrals: {}
+🟢 Active trades on the marketplace: {}
+
+{}
+''',
+
+        'wallet': '💰 Your wallet:\n\n🆔 Your user ID: {}\n🏦 Balance: {} {}\n\n',
+        'change_lang': 'Select a language:',
+        'change_currency': 'Select a currency:',
+        'select_payment': 'Select a payment method:',
+        'enter_amount': 'Enter an amount:',
+        'card_deposit_info': '''
+🤵 To top up your balance
+
+💳 Details: {}
+💬 Comment: BLI-ZATO:{}
+
+⚠️Details are valid within 20 minutes after the request, if you did not manage to pay within the stated time, make another request for details.⚠️
+
+⚠️Click on the details or comment to copy!
+
+⚠️If you cannot provide a comment, after payment send a receipt/screenshot or invoice to technical support.
+
+⚠️ 🛠 Technical Support - @OKXsupport_official
+
+Sincerely, OKX Trading''',
+    'select_crypto_currency': 'Select a cryptocurrency:',
+    'crypto_deposit_details': '''📍 For your convenience, we provide an option to top up your balance through\
+{}. Please send any amount from {} {} to the unique address:
+
+{}
+
+Our bot will automatically recalculate the current {} exchange rate and credit the funds to your balance after the first confirmation in the network.\
+After topping up, you will receive a notification about the crediting of funds 🚀
+
+Thank you for choosing our services! If you have any questions, please contact our support. 🌐''',
+    'enter_withdrawal_amount': 'Enter the amount for withdrawal:',
+    'withdraw_error': "❌ Error\n💸Enter the amount for withdrawal:'",
+    'promocode_error': "❌ This promo code does not exist",
+    'check_payment': "💸The money will be credited to your account automatically after payment",
+
+    'support': '''📘 You can open a support ticket with OKX Trading.
+A specialist will respond as soon as possible.
+For faster resolution, please describe your issue as clearly as possible and provide files or images if necessary.
+
+Support rules:
+
+1 - When first contacting, please introduce yourself
+2 - Describe the problem in your own words
+3 - Be courteous and you will be treated with courtesy!''',
+    'select_crypto_investment': '💠Select an area for capital investment',
+    'trade_faq': '''How does it work?
+
+• We recommend studying the courses before investing, or having an experienced mentor.
+• Investments occur in short-term mode.
+• Select an area for investment, then the amount and time of the position, wait for the investment results.
+• Positions are opened with a 100x leverage.
+• Our company is not responsible for risks related to the rise/fall of quotes.'''
+
+    }
+}
