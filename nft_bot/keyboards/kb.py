@@ -277,3 +277,16 @@ async def create_items_keyboard(category_id):
 
     items_markup = InlineKeyboardMarkup(inline_keyboard=items_kb)
     return items_markup
+
+
+async def create_buy_keyboard(lang, item_id):
+    buttons = translations[lang]["buttons"].get('catalog_kb', {})
+
+    buy_kb = [
+        [InlineKeyboardButton(text=buttons['buy'], callback_data=f'buy_{item_id}')],
+        [InlineKeyboardButton(text='🤍️', callback_data='add_to_favourites')],
+        [InlineKeyboardButton(text='⬅️', callback_data='back_to_catalog')]
+    ]
+
+    buy = InlineKeyboardMarkup(inline_keyboard=buy_kb)
+    return buy

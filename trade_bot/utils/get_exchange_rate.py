@@ -3,11 +3,12 @@ from datetime import datetime
 from database.enums import CurrencyEnum
 import logging
 
-
 logger = logging.getLogger(__name__)
 
+
 class CurrencyExchange:
-    TIME_BETWEEN_UPDATE_COURSE = 1 # in hours
+    TIME_BETWEEN_UPDATE_COURSE = 1  # in hours
+
     def __init__(self):
         self.exchange_rates: dict[CurrencyEnum, float] = {}
 
@@ -29,15 +30,14 @@ class CurrencyExchange:
 
     async def get_exchange_rate(self, to_currency: CurrencyEnum, amount: int) -> float:
         '''Return amount in to_currency from USD'''
-        if to_currency == CurrencyEnum.usd: 
+        if to_currency == CurrencyEnum.usd:
             return amount
-        
+
         if not self.exchange_rates or (
-            datetime.now().hour - self.last_reload_time.hour 
-            >= self.TIME_BETWEEN_UPDATE_COURSE):
+                datetime.now().hour - self.last_reload_time.hour
+                >= self.TIME_BETWEEN_UPDATE_COURSE):
             await self.reload_currencies_rates()
         return self.exchange_rates[to_currency] * amount
-
 
     async def close(self):
         await self.session.close()

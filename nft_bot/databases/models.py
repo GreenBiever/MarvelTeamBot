@@ -59,6 +59,17 @@ class Product(Base):
         return await currency_exchange.get_exchange_rate(User.currency, self.price)
 
 
+class Favourites(Base):
+    __tablename__ = 'favourites'
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
+    product_id: Mapped[int] = mapped_column(ForeignKey('products.id'))
+
+    user = relationship('User', back_populates='favourites')
+    product = relationship('Product', back_populates='favourites')
+
+
 async def async_main():
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)

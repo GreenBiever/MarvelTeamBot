@@ -105,4 +105,76 @@ async def choose_item(call: types.CallbackQuery):
         item_currency_price=product_currency_price,
         user_currency=user_currency.value
     )
-    await bot.send_photo(call.from_user.id, caption=token_text, photo=item_photo, parse_mode="HTML")
+    keyboard = await kb.create_buy_keyboard(lang,  item_id)
+    await bot.send_photo(call.from_user.id, caption=token_text, photo=item_photo, parse_mode="HTML", reply_markup=keyboard)
+
+
+@router.callback_query(lambda c: c.data.startswith('buy_'))
+async def buy_item(call: types.CallbackQuery):
+    item_id = call.data.split('_')[1]
+    lang = await requests.get_user_language(call.from_user.id)
+    item = await requests.get_item_info(item_id)
+
+    if not item:
+        await call.answer("Item not found")
+        return
+
+    item_id, item_name, item_description, item_price, item_author, item_photo, category_name = item
+    user_info = await requests.get_user_info(call.from_user.id)
+    user_data, user_id, user_name, balance, currency, status, verification = user_info
+    user_balance = balance
+    if user_balance < int(item_price):
+        token_text = get_translation(
+            lang,
+            'buy_no_balance',
+            token_name=item_name,
+            item_description=item_description,
+            category_name=category_name,
+            item_author=item_author,
+            item_price=item.price
+        )
+    else:
+        token_text = get_translation(
+            lang,
+            'buy_success',
+            token_name=item_name,
+            item_description=item_description,
+            category_name=category_name,
+            item_author=item_author,
+            item_price=item.price
+        )
+    keyboard = await kb.create_buy_keyboard(lang, item_id)
+    await call.answer(text=token_text, show_alert=False)
+
+
+@router.callback_query(lambda c: c.data.startswith('add_to_favourites'))
+async def add_to_favourites(call: types.CallbackQuery):
+    item_id = call.data.split('_')[1]
+    await requests.add_to_favourites(call.from_user.id, item_id)
+    await call.answer("Item added to favourites")
+
+
+@router.callback_query(lambda c: c.data.startswith('back_to_catalog'))
+async def back_to_catalog(call: types.CallbackQuery):
+    user = await requests.get_user_info(call.from_user.id)
+    if user:
+        status = await requests.get_user_status(call.from_user.id)
+        lang = await requests.get_user_language(call.from_user.id)
+        if status == "blocked":
+            await call.answer(get_translation(lang, 'blocked'))
+        else:
+            collections_number = await requests.get_category_count()
+            nft_text = get_translation(
+                lang,
+                'catalog_message',
+                collections_number=collections_number
+            )
+            keyboard = await kb.create_collections_keyboard()
+            photo = FSInputFile(config.PHOTO_PATH)
+            await bot.send_photo(call.from_user.id, caption=nft_text, photo=photo, parse_mode="HTML",
+                                 reply_markup=keyboard)
+    else:
+        await bot.send_message(call.from_user.id,
+                               text=f'Выберите язык:\nSelect a language:',
+                               parse_mode="HTML", reply_markup=kb.language)
+

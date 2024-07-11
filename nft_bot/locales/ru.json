@@ -41,6 +41,9 @@
             "deposit_top_up_kb": {
                 "check": "✅ Проверить оплату",
                 "support": "\uD83D\uDEE0 Тех.Поддержка"
+            },
+            "catalog_kb": {
+                "buy": "Купить"
             }
 
         },
@@ -63,5 +66,7 @@
     "promocode_success_message": "❌ Данного промокода не существует",
     "catalog_message": "\uD83D\uDCA0 Всего на маркетплейсе {collections_number} коллекций",
     "collection_message": "\uD83D\uDCA0 Коллекция {collection_name}\n\nТокенов в коллекции: {number_of_tokens}",
-    "token_message": "\uD83D\uDCA0 Токен {token_name}\n\n<i>{item_description}</i>\n\n\uD83D\uDDC2 Коллекция: {category_name}\n\uD83D\uDC69\u200D\uD83D\uDCBB Автор: {item_author}\n\uD83D\uDD39 Блокчейн: ETH\n\n\uD83D\uDCB8 Цена: {item_price} USD (~ {item_currency_price} {user_currency})"
+    "token_message": "\uD83D\uDCA0 Токен {token_name}\n\n<i>{item_description}</i>\n\n\uD83D\uDDC2 Коллекция: {category_name}\n\uD83D\uDC69\u200D\uD83D\uDCBB Автор: {item_author}\n\uD83D\uDD39 Блокчейн: ETH\n\n\uD83D\uDCB8 Цена: {item_price} USD (~ {item_currency_price} {user_currency})",
+    "buy_no_balance": "\uD83D\uDCB2 На вашем балансе недостаточно средств",
+    "buy_success": "\uD83D\uDCB2 Спасибо за покупку!"
 }

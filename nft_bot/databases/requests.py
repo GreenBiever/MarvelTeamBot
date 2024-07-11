@@ -1,4 +1,4 @@
-from nft_bot.databases.models import User, Product, Category, async_session
+from nft_bot.databases.models import User, Product, Category, async_session, Favourites
 from sqlalchemy import select, insert, update, delete, func
 from .enums import CurrencyEnum
 
@@ -168,3 +168,9 @@ async def get_item_info(item_id):
         product_info = result.one_or_none()
         return product_info
 
+
+async def add_to_favourites(user_id, item_id):
+    async with async_session() as session:
+        await session.execute(
+            insert(Favourites).values(user_id=user_id, item_id=item_id))
+        await session.commit()

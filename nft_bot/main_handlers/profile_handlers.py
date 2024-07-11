@@ -237,8 +237,9 @@ async def choose_crypto(call: types.CallbackQuery):
 
 
 @router.callback_query(lambda c: c.data in ['back_wallet', 'back_wallet2'])
-async def back_to_wallet(call: types.CallbackQuery):
+async def back_to_wallet(call: types.CallbackQuery, state: deposit_state.Deposit.amount):
     if call.data == 'back_wallet':
+        await state.clear()
         await call.message.delete()
         lang = await requests.get_user_language(call.from_user.id)
         user_info = await requests.get_user_info(call.from_user.id)
@@ -255,6 +256,7 @@ async def back_to_wallet(call: types.CallbackQuery):
             photo = FSInputFile(config.PHOTO_PATH)
             await bot.send_photo(call.from_user.id, photo=photo, caption=wallet_text, reply_markup=keyboard)
     elif call.data == 'back_wallet2':
+        await state.clear()
         lang = await requests.get_user_language(call.from_user.id)
         deposit_text = get_translation(
             lang,
