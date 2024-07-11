@@ -223,3 +223,57 @@ async def get_categories_kb():
 
     categories = InlineKeyboardMarkup(inline_keyboard=categories_kb)
     return categories
+
+
+async def get_categories_kb2():
+    categories = await requests.get_categories()
+    categories_kb = [
+        [InlineKeyboardButton(text=category.name, callback_data=f'delete_category_{category.id}')] for category in categories
+    ]
+
+    categories = InlineKeyboardMarkup(inline_keyboard=categories_kb)
+    return categories
+
+
+async def get_delete_items_kb():
+    items = await requests.get_items()
+    items_kb = [
+        [InlineKeyboardButton(text=item.name, callback_data=f'delete_item_{item.id}')] for item in items
+    ]
+
+    items = InlineKeyboardMarkup(inline_keyboard=items_kb)
+    return items
+
+
+async def create_collections_keyboard():
+    categories_with_count = await requests.get_categories_with_item_count()
+    categories_kb = [
+        [InlineKeyboardButton(text=f"{category.name} ({category.item_count})",
+                              callback_data=f'collection_{category.id}')]
+        for category in categories_with_count
+    ]
+    navigation_buttons = [
+        InlineKeyboardButton(text="⬅️", callback_data='left'),
+        InlineKeyboardButton(text="1/1", callback_data='zero'),
+        InlineKeyboardButton(text='➡️️', callback_data='right')
+    ]
+    categories_kb.append(navigation_buttons)
+
+    categories_markup = InlineKeyboardMarkup(inline_keyboard=categories_kb)
+    return categories_markup
+
+
+async def create_items_keyboard(category_id):
+    items = await requests.get_items_by_category_id(category_id)
+    items_kb = [
+        [InlineKeyboardButton(text=item.name, callback_data=f'token_{item.id}')] for item in items
+    ]
+    navigation_buttons = [
+        InlineKeyboardButton(text="⬅️", callback_data='left'),
+        InlineKeyboardButton(text="1/1", callback_data='zero'),
+        InlineKeyboardButton(text='➡️️', callback_data='right')
+    ]
+    items_kb.append(navigation_buttons)
+
+    items_markup = InlineKeyboardMarkup(inline_keyboard=items_kb)
+    return items_markup

@@ -116,5 +116,31 @@ async def add_item_photo(message: types.Message, state: admin_items_state.AdminI
     item_author = data.get('item_author')
     await requests.add_item(item_name, item_description, item_price, item_author,item_photo, category_id)
     await message.answer(text='NFT добавлен!', parse_mode="HTML")
+    await state.clear()
 
+
+@router.callback_query(lambda c: c.data == 'delete_category')
+async def delete_category(call: types.CallbackQuery, state: admin_items_state.AdminCategoriesItems.category):
+    categories_keyboard = await kb.get_categories_kb2()
+    await call.message.answer(text='Выберите категорию для удаления:', parse_mode="HTML", reply_markup=categories_keyboard)
+
+
+@router.callback_query(lambda c: c.data.startswith('delete_category_'))
+async def delete_category_callback(call: types.CallbackQuery):
+    category_id = call.data.split('_')[2]
+    await requests.delete_category(category_id)
+    await call.message.answer(text='Категория удалена!', parse_mode="HTML")
+
+
+@router.callback_query(lambda c: c.data == 'delete_item')
+async def delete_item(call: types.CallbackQuery, state: admin_items_state.AdminCategoriesItems.item):
+    items_keyboard = await kb.get_delete_items_kb()
+    await call.message.answer(text='Выберите NFT для удаления:', parse_mode="HTML", reply_markup=items_keyboard)
+
+
+@router.callback_query(lambda c: c.data.startswith('delete_item_'))
+async def delete_item_callback(call: types.CallbackQuery):
+    item_id = call.data.split('_')[2]
+    await requests.delete_item(item_id)
+    await call.message.answer(text='NFT удален!', parse_mode="HTML")
 

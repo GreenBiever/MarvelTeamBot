@@ -11,8 +11,9 @@ from aiogram.types import Message, FSInputFile
 from aiogram import types
 from keyboards import kb
 from states import application_state
-from nft_bot.main_handlers import profile_handlers, admin_handlers
+from nft_bot.main_handlers import profile_handlers, admin_handlers, catalog_handlers
 from nft_bot import config
+from utils.get_exchange_rate import currency_exchange
 
 form_router = Router()
 ADMIN_ID = config.ADMIN_ID
@@ -39,6 +40,8 @@ def get_translation(lang, key, **kwargs):
 
 
 async def on_startup():
+    await models.async_main()
+    await currency_exchange.async_init()
     bot_info = await bot.get_me()
     print(f'Бот успешно запущен: {bot_info.username}')
 
@@ -61,7 +64,7 @@ async def send_profile(user_id):
             user_id=user_id,
             status=translated_status,
             balance=balance,
-            currency=currency,
+            currency=currency.value,
             verification=verification,
             ref="_"  # замените на реферальный код, если необходимо
         )
@@ -103,9 +106,9 @@ async def choose_language(call: types.CallbackQuery):
 
 
 async def main():
-    await models.async_main()
     dp.include_routers(profile_handlers.router)
     dp.include_routers(admin_handlers.router)
+    dp.include_routers(catalog_handlers.router)
     await dp.start_polling(bot, on_startup=await on_startup(), skip_updates=True)
 
 

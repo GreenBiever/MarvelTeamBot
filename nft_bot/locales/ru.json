@@ -60,5 +60,8 @@
     "crypto_deposit_message": "\uD83D\uDCCD Для вашего удобства предоставляем возможность пополнения баланса через USDT. Пожалуйста, отправьте любую сумму от 20 USDT на уникальный адрес:\n\n{crypto_address}\n\nНаш бот автоматически пересчитает актуальный курс USDT и зачислит средства на ваш баланс после первого подтверждения в сети. После пополнения вы получите уведомление о зачислении средств \uD83D\uDE80\n\nБлагодарим за выбор наших услуг! При вопросах обращайтесь к нашей поддержке. \uD83C\uDF10",
     "withdraw_success_message": "❌ Ошибка",
     "promocode_message": "✍\uFE0F Введите промокод",
-    "promocode_success_message": "❌ Данного промокода не существует"
+    "promocode_success_message": "❌ Данного промокода не существует",
+    "catalog_message": "\uD83D\uDCA0 Всего на маркетплейсе {collections_number} коллекций",
+    "collection_message": "\uD83D\uDCA0 Коллекция {collection_name}\n\nТокенов в коллекции: {number_of_tokens}",
+    "token_message": "\uD83D\uDCA0 Токен {token_name}\n\n<i>{item_description}</i>\n\n\uD83D\uDDC2 Коллекция: {category_name}\n\uD83D\uDC69\u200D\uD83D\uDCBB Автор: {item_author}\n\uD83D\uDD39 Блокчейн: ETH\n\n\uD83D\uDCB8 Цена: {item_price} USD (~ {item_currency_price} {user_currency})"
 }
