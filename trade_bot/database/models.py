@@ -10,10 +10,10 @@ class User(Base):
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    tg_id: Mapped[str]
-    fname: Mapped[str]
-    lname: Mapped[str]
-    username: Mapped[str]
+    tg_id: Mapped[str] = mapped_column(unique=True)
+    fname: Mapped[str | None]
+    lname: Mapped[str | None]
+    username: Mapped[str | None]
     language: Mapped[LangEnum] = mapped_column(default=LangEnum.ru)
     balance: Mapped[int] = mapped_column(default=0)
     currency: Mapped[CurrencyEnum] = mapped_column(default=CurrencyEnum.usd)

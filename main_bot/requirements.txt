@@ -43,3 +43,6 @@ uvloop==0.19.0
 watchfiles==0.22.0
 websockets==12.0
 yarl==1.9.4
+sqlalchemy
+aiosqlite
+

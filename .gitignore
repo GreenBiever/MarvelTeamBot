@@ -5,7 +5,7 @@ __pycache__/
 .vscode/
 # C extensions
 *.so
-
+database.db
 # Distribution / packaging
 .Python
 __pycache__

@@ -1,5 +1,5 @@
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton
-from databases import db
+from database import db
 
 main_kb = [
     [KeyboardButton(text="💎 Профиль")],
@@ -46,9 +46,11 @@ application_send_kb = [
 
 application_send = InlineKeyboardMarkup(inline_keyboard=application_send_kb)
 
-admin_accept_kb = [
-    [InlineKeyboardButton(text='✅ Принять', callback_data='accept'),
-     InlineKeyboardButton(text='❌ Отклонить', callback_data='ccc')]
-]
+def get_admin_accept_kb(user_id: int):
+    admin_accept_kb = [
+        [InlineKeyboardButton(text='✅ Принять', callback_data=f'request_accept_{user_id}'),
+        InlineKeyboardButton(text='❌ Отклонить', callback_data=f'request_decline_{user_id}')]
+    ]
 
-admin_accept = InlineKeyboardMarkup(inline_keyboard=admin_accept_kb)
+    admin_accept = InlineKeyboardMarkup(inline_keyboard=admin_accept_kb)
+    return admin_accept

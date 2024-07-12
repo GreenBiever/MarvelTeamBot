@@ -1,9 +1,7 @@
 from aiogram.fsm.state import StatesGroup, State
 
 
-class Application(StatesGroup):
-    user_name = State()
-    user_id = State()
+class SendApplication(StatesGroup):
     first_question = State()
     second_question = State()
     third_question = State()
