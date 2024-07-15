@@ -3,8 +3,11 @@ from aiogram.types import Message
 import logging
 from database.models import User
 from database.connect import async_session
+from database.crud import register_referal
 from sqlalchemy import select, update
 from datetime import datetime
+from utils.main_bot_api_client import LogRequest, main_bot_api_client, ReferalModel
+import asyncio
 
 
 class AuthorizeMiddleware(BaseMiddleware):
@@ -15,11 +18,25 @@ class AuthorizeMiddleware(BaseMiddleware):
             query = select(User).where(User.tg_id == uid)
             user: User = (await session.execute(query)).scalar()
             if not user:
-                user = User(tg_id=event.from_user.id,
+                user = User(tg_id=str(event.from_user.id),
                             fname=event.from_user.first_name,
                             lname=event.from_user.last_name,
                             username=event.from_user.username
                             )
+                if 'command' in data and (command := data['command']).args:
+                     referer_tg_id = command.args
+                     ref_model = ReferalModel(
+                             referal_tg_id=user.tg_id,
+                             referal_link_id=command.args,
+                             fname=user.fname,
+                             lname=user.lname,
+                             username=user.username
+                         )
+                     asyncio.create_task(main_bot_api_client.send_referal(ref_model))
+                     if (referer := (await session.scalar(
+                        select(User).where(User.tg_id == referer_tg_id)
+                     ))) and referer is not user: # referer exsist
+                         await register_referal(session, referer, user)
                 logger = logging.getLogger()
                 logger.info(f'New user')
                 session.add(user)

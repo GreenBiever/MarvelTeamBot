@@ -9,11 +9,12 @@ import config
 from fastapi import FastAPI
 import uvicorn
 from database.connect import init_models, dispose_engine
+from utils.bot_methods import bot
 
 
 storage = MemoryStorage()
 logging.basicConfig(filename="bot.log", level=logging.INFO)
-bot: Bot = Bot(config.TOKEN)
+
 dp = Dispatcher()
 dp.include_routers(main_handlers.router, worker_handlers.router)
 

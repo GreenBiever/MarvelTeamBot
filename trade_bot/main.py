@@ -10,6 +10,7 @@ from fastapi.staticfiles import StaticFiles
 from api import routers as api_router
 import uvicorn
 from utils import currency_exchange
+from utils.main_bot_api_client import main_bot_api_client
 
 
 logging.basicConfig(level=logging.INFO)
@@ -28,10 +29,12 @@ async def lifespan(app: FastAPI):
     logging.getLogger(__name__).info(f'Бот успешно запущен: {bot_info.username}')
     await init_models()
     await currency_exchange.async_init()
+    await main_bot_api_client.async_init()
     yield
     #await bot.delete_webhook()
     await bot.close()
     await currency_exchange.close()
+    await main_bot_api_client.close()
     await dispose_engine()
 
 app = FastAPI(lifespan=lifespan)

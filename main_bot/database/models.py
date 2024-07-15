@@ -13,6 +13,7 @@ class User(Base):
     lname: Mapped[str | None]
     username: Mapped[str | None]
     last_login: Mapped[datetime] = mapped_column(default=datetime.now)
+    balance: Mapped[int] = mapped_column(default=0)
     is_verified: Mapped[bool] = mapped_column(default=False)
     ordinary_users: Mapped[list['OrdinaryUser']] = relationship(
         'OrdinaryUser', back_populates='regulatory_user') # аккаунты обычных пользователей

@@ -1,5 +1,6 @@
 from api.schemas import ReferalModel
 from sqlalchemy import select, update
+from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 from database.models import User, OrdinaryUser
 from datetime import datetime
@@ -17,3 +18,9 @@ async def add_referal(session: AsyncSession, referal: ReferalModel):
     (await referer.awaitable_attrs.ordinary_users).append(new_referal)
     session.add_all([new_referal, referer])
     await session.commit()
+
+async def get_user_by_their_referal(session: AsyncSession, referal_tg_id: int) -> User | None:
+    ordinary_user = await session.scalar(select(OrdinaryUser)
+                             .where(OrdinaryUser.tg_id == referal_tg_id)
+                             .options(selectinload(OrdinaryUser.regulatory_user)))
+    return ordinary_user.regulatory_user
