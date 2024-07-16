@@ -4,12 +4,15 @@ import logging
 import os
 import random
 from aiogram.filters import StateFilter
+from aiogram.utils.markdown import hlink
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram import Bot, Dispatcher, F, Router
 from databases import requests, models
 from aiogram.types import Message, FSInputFile
 from aiogram import types
 from keyboards import kb
+from nft_bot.databases.connect import init_models
+from nft_bot.databases.models import User
 from states import application_state
 from nft_bot.main_handlers import profile_handlers, admin_handlers, catalog_handlers
 from nft_bot import config
@@ -40,7 +43,7 @@ def get_translation(lang, key, **kwargs):
 
 
 async def on_startup():
-    await models.async_main()
+    await init_models()
     await currency_exchange.async_init()
     bot_info = await bot.get_me()
     print(f'Бот успешно запущен: {bot_info.username}')

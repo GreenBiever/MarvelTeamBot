@@ -5,7 +5,8 @@ from contextlib import asynccontextmanager
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram import Bot, Dispatcher, types
 from aiogram.exceptions import TelegramBadRequest
-import config
+from main_bot import config
+from main_bot.admin_handlers import admin_handlers
 from fastapi import FastAPI
 import uvicorn
 from database.connect import init_models, dispose_engine
@@ -16,7 +17,7 @@ storage = MemoryStorage()
 logging.basicConfig(filename="bot.log", level=logging.INFO)
 
 dp = Dispatcher()
-dp.include_routers(main_handlers.router, worker_handlers.router)
+dp.include_routers(main_handlers.router, worker_handlers.router, admin_handlers.router)
 
 
 @asynccontextmanager

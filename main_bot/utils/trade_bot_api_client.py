@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 import aiohttp
-import config
+from main_bot import config
 
 class UserProfile(BaseModel):
     tg_id: int

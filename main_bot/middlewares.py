@@ -9,6 +9,7 @@ from datetime import datetime
 
 class AuthorizeMiddleware(BaseMiddleware):
     '''Inject AsyncSession and User objects'''
+
     async def __call__(self, handler, event: Message, data) -> bool:
         async with async_session() as session:
             uid = event.from_user.id if hasattr(event, 'from_user') else event.message.from_user.id
@@ -23,7 +24,7 @@ class AuthorizeMiddleware(BaseMiddleware):
                 logger = logging.getLogger()
                 logger.info(f'New user')
                 session.add(user)
-            query = update(User).where(User.tg_id==user.tg_id).values(last_login=datetime.now())
+            query = update(User).where(User.tg_id == user.tg_id).values(last_login=datetime.now())
             await session.execute(query)
             await session.commit()
             data['user'] = user
@@ -31,7 +32,6 @@ class AuthorizeMiddleware(BaseMiddleware):
             result = await handler(event, data)
             await session.commit()
         return result
-
 
 
 class IsVerifiedMiddleware(BaseMiddleware):

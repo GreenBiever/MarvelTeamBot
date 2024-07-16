@@ -1,8 +1,8 @@
-from api.schemas import ReferalModel
+from main_bot.api.schemas import ReferalModel
 from sqlalchemy import select, update
 from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
-from database.models import User, OrdinaryUser
+from main_bot.database.models import User, OrdinaryUser
 from datetime import datetime
 
 

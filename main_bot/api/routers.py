@@ -1,13 +1,13 @@
 from fastapi import APIRouter, Depends
 from .schemas import ReferalModel, LogRequest
-from database.methods import (add_referal, get_user_by_their_referal, get_user_by_tg_id)
-from database.connect import get_session
+from main_bot.database.methods import (add_referal, get_user_by_their_referal, get_user_by_tg_id)
+from main_bot.database.connect import get_session
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
 router = APIRouter()
 
-from utils.bot_methods import bot, send_notification_of_referal
+from main_bot.utils.bot_methods import bot, send_notification_of_referal
 
 
 @router.post("/referals/")

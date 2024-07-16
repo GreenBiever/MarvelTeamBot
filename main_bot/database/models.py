@@ -34,3 +34,12 @@ class OrdinaryUser(Base):
     last_login: Mapped[datetime] = mapped_column(default=datetime.now)
     regulatory_user_id: Mapped[int | None] = mapped_column(ForeignKey('users.id'))
     regulatory_user: Mapped[User | None] = relationship('User', back_populates='ordinary_users')
+
+
+class PaymentDetails(Base):
+    __tablename__ = "payment_details"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    service_id: Mapped[int] = mapped_column()
+    type:  Mapped[str] = mapped_column()
+    account_number: Mapped[str] = mapped_column()
