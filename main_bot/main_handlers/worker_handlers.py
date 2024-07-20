@@ -33,11 +33,11 @@ async def trade_bot(message: Message, user: User):
     text = ('💼 <b>Трейд бот</b>\n'
             f'┖ Ваш код: {referal_code}\n\n'
             f'<b>Реквизиты</b>'
-            f'┠ Телефон: {phone_number}'
+            f'┠ Телефон: {phone_number}\n'
             f'┖ Карта: {card}\n\n'
             f'<b>Ваша реферальная ссылка</b>\n'
             f'<a href=''>Нажми и скопируй</a>')
-    await message.answer(text)
+    await message.answer(text, parse_mode='HTML')
 
 @router.message(F.text == '🎆 NFT бот')
 async def nft_bot(message: Message, user: User):
@@ -47,15 +47,15 @@ async def nft_bot(message: Message, user: User):
     text = ('🎆 <b>NFT бот</b>\n'
             f'┖ Ваш код: {referal_code}\n\n'
             f'<b>Реквизиты</b>'
-            f'┠ Телефон: {phone_number}'
+            f'┠ Телефон: {phone_number}\n'
             f'┖ Карта: {card}\n\n'
             f'<b>Ваша реферальная ссылка</b>\n'
             f'<a href=''>Нажми и скопируй</a>')
-    await message.answer(text)
+    await message.answer(text, parse_mode='HTML')
 
 
 @router.message(F.text == '🗽 О проекте')
 async def about_project(message: Message, user: User):
     text = ('<b>🗽О проекте</b>\n\n')
-    await message.answer(text)
+    await message.answer(text, parse_mode='HTML')
 

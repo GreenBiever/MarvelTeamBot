@@ -40,6 +40,6 @@ class PaymentDetails(Base):
     __tablename__ = "payment_details"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    service_id: Mapped[int] = mapped_column()
+    service: Mapped[str] = mapped_column()
     type:  Mapped[str] = mapped_column()
     account_number: Mapped[str] = mapped_column()

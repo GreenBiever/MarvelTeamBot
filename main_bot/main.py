@@ -42,7 +42,7 @@ async def bot_webhook(update: dict):
     try:
         await dp.feed_update(bot=bot, update=telegram_update)
     except TelegramBadRequest as e:
-        logging.getLoger(__name__).error(e, stack_info=True)
+        logging.getLogger(__name__).error(e, stack_info=True)
 
 
 if __name__ == '__main__':

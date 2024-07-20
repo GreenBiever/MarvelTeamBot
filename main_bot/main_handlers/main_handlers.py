@@ -6,7 +6,7 @@ from aiogram import types, Bot
 from main_bot.keyboards import kb
 from main_bot.database.models import User
 from main_bot.middlewares import AuthorizeMiddleware
-from .states import SendApplication
+from main_bot.main_handlers.states import SendApplication
 from aiogram.fsm.context import FSMContext
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import update
