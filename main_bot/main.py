@@ -11,6 +11,7 @@ from fastapi import FastAPI
 import uvicorn
 from database.connect import init_models, dispose_engine
 from utils.bot_methods import bot
+from utils.trade_bot_api_client import trade_bot_api_client
 
 
 storage = MemoryStorage()
@@ -27,7 +28,9 @@ async def lifespan(app: FastAPI):
     bot_info = await bot.get_me()
     print(f'Бот успешно запущен: {bot_info.username}')
     await init_models()
+    await trade_bot_api_client.async_init()
     yield
+    await trade_bot_api_client.close()
     await dispose_engine()
     await bot.session.close()
 

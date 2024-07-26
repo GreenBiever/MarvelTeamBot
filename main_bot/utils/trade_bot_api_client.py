@@ -17,6 +17,9 @@ class UserNotFoundError(Exception):
 
 class TradeBotApiClient:
     def __init__(self):
+        self.session = None
+
+    async def async_init(self):
         self.session = aiohttp.ClientSession()
 
     async def get_user_profile(self, user_tg_id: int) -> UserProfile:
@@ -33,4 +36,7 @@ class TradeBotApiClient:
             return await response.json()
         
     async def close(self):
-        await self.session.close()
+        if self.session:
+            await self.session.close()
+
+trade_bot_api_client = TradeBotApiClient()
