@@ -4,11 +4,11 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
 from sqlalchemy import select, update, delete
 from sqlalchemy.ext.asyncio import AsyncSession
-from main_bot import config
-from main_bot.database.models import User, PaymentDetails
-from main_bot.keyboards import kb
-from main_bot.middlewares import IsVerifiedMiddleware, AuthorizeMiddleware
-from main_bot.admin_handlers.states import ControlUsers, AddPaymentDetails, DeletePayment, Mailing
+import config
+from database.models import User, PaymentDetails
+from keyboards import kb
+from middlewares import IsVerifiedMiddleware, AuthorizeMiddleware
+from admin_handlers.states import ControlUsers, AddPaymentDetails, DeletePayment, Mailing
 
 router = Router()
 router.message.middleware(AuthorizeMiddleware())

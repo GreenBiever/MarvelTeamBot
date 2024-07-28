@@ -5,8 +5,8 @@ from contextlib import asynccontextmanager
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram import Bot, Dispatcher, types
 from aiogram.exceptions import TelegramBadRequest
-from main_bot import config
-from main_bot.admin_handlers import admin_handlers
+import config
+from admin_handlers import admin_handlers
 from fastapi import FastAPI
 import uvicorn
 from database.connect import init_models, dispose_engine

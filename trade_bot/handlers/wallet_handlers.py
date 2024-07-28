@@ -5,6 +5,8 @@ from middlewares import AuthorizeMiddleware
 from database.models import User
 from .states import TopUpBalanceWithCard, WithdrawBalance, EnterPromocode
 from aiogram.fsm.context import FSMContext
+from sqlalchemy.ext.asyncio import AsyncSession
+from utils.main_bot_api_client import main_bot_api_client
 
 
 router = Router()
@@ -78,9 +80,23 @@ async def cmd_promocode(cb: CallbackQuery, state: FSMContext, user: User):
     await state.set_state(EnterPromocode.wait_promocode)
 
 @router.message(F.text, EnterPromocode.wait_promocode)
-async def set_promocode(message: Message, state: FSMContext, user: User):
+async def set_promocode(message: Message, state: FSMContext, user: User,
+                        session: AsyncSession):
     await state.clear()
-    await message.answer(user.lang_data['text']['promocode_error'])
+    promocode_response = await main_bot_api_client.activate_promocode(
+        code=message.text, tg_id=user.tg_id
+    )
+
+    if not promocode_response.available:
+        await message.answer(user.lang_data['text']['promocode_error'],
+                             reply_markup=kb.get_back_kb(user.lang_data))
+    else:
+        promocode = promocode_response.promocode
+        await user.top_up_balance(session, promocode.amount)
+        await message.answer(
+            user.lang_data['text']['promocode_success'].format(promocode.amount),
+            reply_markup=kb.get_back_kb(user.lang_data)
+        )
 
 
 @router.callback_query(F.data == 'check_payment')

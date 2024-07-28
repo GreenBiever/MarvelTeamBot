@@ -1,8 +1,8 @@
 from aiogram import Router, Bot, F
 from aiogram.types import Message, FSInputFile
-from main_bot.middlewares import IsVerifiedMiddleware, AuthorizeMiddleware
-from main_bot.services.images import image_generator
-from main_bot.database.models import User
+from middlewares import IsVerifiedMiddleware, AuthorizeMiddleware
+from services.images import image_generator
+from database.models import User
 
 router = Router()
 router.message.middleware(AuthorizeMiddleware())

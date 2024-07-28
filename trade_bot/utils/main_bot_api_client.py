@@ -13,6 +13,23 @@ class ReferalModel(BaseModel):
     lname: str | None = None
     username: str | None = None
 
+class Promocode(BaseModel):
+    creator_tg_id: int
+    code: str
+    amount: int
+    number_of_activations: int = 1
+
+    class Config:
+        from_attributes = True
+
+class PromocodeActivate(BaseModel):
+    code: str
+    tg_id: int
+
+class PromocodeOut(BaseModel):
+    available: bool
+    promocode: Promocode | None = None
+
 
 class MainBotApiClient:
     async def async_init(self, session: aiohttp.ClientSession = None):
@@ -29,6 +46,14 @@ class MainBotApiClient:
         async with self.session.post(url, json=referal_model.model_dump()) as response:
             if response.status != 200:
                 raise Exception('Main bot api not found')
+            
+    async def activate_promocode(self, code: str, tg_id: int) -> PromocodeOut:
+        activate_request = PromocodeActivate(code=code, tg_id=tg_id)
+        url = f"{config.WEBSITE_URL}/promocodes/activate/"
+        async with self.session.post(url, json=activate_request.model_dump()) as response:
+            if response.status != 200:
+                raise Exception('Main bot api not found')
+            return PromocodeOut(**(await response.json()))
 
     async def close(self):
         await self.session.close()

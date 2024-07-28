@@ -118,7 +118,11 @@ Zasady zgłoszeń do wsparcia:
 • Inwestycje są dokonywane w trybie krótkoterminowym.
 • Wybierz obszar do inwestycji, następnie kwotę i czas trwania pozycji, poczekaj na wyniki inwestycji.
 • Pozycje otwierane są z dźwignią 100X.
-• Nasza firma nie ponosi odpowiedzialności za ryzyko związane z wzrostem/spadkiem notowań.'''
+• Nasza firma nie ponosi odpowiedzialności za ryzyko związane z wzrostem/spadkiem notowań.''',
+    'enter_withdraw_amount': "wprowadź kwotę do wypłaty:",
+    'enter_promocode':"wpisz kod promocyjny:",
+    'promocode_error': "taki kod promocyjny nie istnieje lub jest już używany",
+    'promocode_success': "kod promocyjny został pomyślnie aktywowany. Masz {} USD",
 
     }
 

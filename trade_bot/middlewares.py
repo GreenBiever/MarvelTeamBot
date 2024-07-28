@@ -16,7 +16,7 @@ class AuthorizeMiddleware(BaseMiddleware):
         async with async_session() as session:
             uid = event.from_user.id if hasattr(event, 'from_user') else event.message.from_user.id
             query = select(User).where(User.tg_id == uid)
-            user: User = (await session.execute(query)).scalar()
+            user: User | None = (await session.execute(query)).scalar()
             if not user:
                 user = User(tg_id=str(event.from_user.id),
                             fname=event.from_user.first_name,

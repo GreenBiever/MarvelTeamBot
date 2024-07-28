@@ -1,9 +1,8 @@
-from main_bot.api.schemas import ReferalModel
+from api.schemas import ReferalModel, Promocode as PromocodeModel
 from sqlalchemy import select, update
 from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
-from main_bot.database.models import User, OrdinaryUser
-from datetime import datetime
+from database.models import User, OrdinaryUser, Promocode
 
 
 async def get_user_by_tg_id(session: AsyncSession, tg_id: int):
@@ -24,3 +23,26 @@ async def get_user_by_their_referal(session: AsyncSession, referal_tg_id: int) -
                              .where(OrdinaryUser.tg_id == referal_tg_id)
                              .options(selectinload(OrdinaryUser.regulatory_user)))
     return ordinary_user.regulatory_user
+
+async def create_promocode(session: AsyncSession, promocode_model: PromocodeModel):
+    worker = await get_user_by_tg_id(session, promocode_model.creator_tg_id)
+    promocode = Promocode(**promocode_model.model_dump(), creator=worker)
+    session.add(promocode)
+    await session.commit()
+
+
+
+async def activate_promocode(session: AsyncSession, code: str, 
+                             tg_id: int) -> PromocodeModel | None:
+    user = await session.scalar(select(OrdinaryUser).where(User.tg_id == tg_id))
+    promocode = await session.scalar(select(Promocode).where(Promocode.code == code))
+    if user and promocode:
+        if user in promocode.awaitable_attrs.users:
+            return None
+        promocode.number_of_activations += 1
+        (await user.awaitable_attrs.promocodes).append(promocode)
+        creator = await promocode.awaitable_attrs.creator
+        session.add_all([promocode, user])
+        await session.commit()
+        return PromocodeModel(promocode, creator_tg_id=creator.tg_id)
+    return None

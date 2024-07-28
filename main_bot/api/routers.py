@@ -1,13 +1,16 @@
 from fastapi import APIRouter, Depends
-from .schemas import ReferalModel, LogRequest
-from main_bot.database.methods import (add_referal, get_user_by_their_referal, get_user_by_tg_id)
-from main_bot.database.connect import get_session
+from .schemas import (ReferalModel, LogRequest, NftBotPaymentProps,
+                       TradeBotPaymentProps, PromocodeActivate, PromocodeOut)
+from database.methods import (
+    add_referal, get_user_by_their_referal, get_user_by_tg_id,
+    activate_promocode)
+from database.connect import get_session
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
 router = APIRouter()
 
-from main_bot.utils.bot_methods import bot, send_notification_of_referal
+from utils.bot_methods import bot, send_notification_of_referal
 
 
 @router.post("/referals/")
@@ -33,3 +36,24 @@ async def create_log(log_request: LogRequest, session: AsyncSession = Depends(ge
     user = await get_user_by_their_referal(session, log_request.user_tg_id)
     await bot.send_message(user.tg_id, f'Пользователь {log_request.user_tg_id} \
 совершил дейтсвие:\n {log_request.log_text}')
+
+
+
+@router.post("/promocodes/activate/", response_model=PromocodeOut)
+async def handle_activate_promocode(promocode: PromocodeActivate,
+                             session: AsyncSession = Depends(get_session)):
+    '''Activate promocode(set is as expired) with code {code} for user with id {user_id}
+    If it was activated before - return False'''
+
+    promocode = await activate_promocode(session, promocode.code, promocode.tg_id)
+    return PromocodeOut(available=promocode is not None, promocode=promocode)
+
+
+
+@router.get("/trade_bot/payment_props/")
+async def get_trade_bot_payment_props() -> TradeBotPaymentProps:
+    ...
+
+@router.get("/nft_bot/payment_props/")
+async def get_nft_bot_payment_props() -> NftBotPaymentProps:
+    ... 

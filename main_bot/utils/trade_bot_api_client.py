@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 import aiohttp
-from main_bot import config
+import config
+
 
 class UserProfile(BaseModel):
     tg_id: int
@@ -11,6 +12,7 @@ class UserProfile(BaseModel):
     purchase_enabled: bool
     output_enabled: bool
     is_blocked: bool
+
 
 class UserNotFoundError(Exception):
     pass

@@ -120,7 +120,11 @@ Support rules:
 • Investments occur in short-term mode.
 • Select an area for investment, then the amount and time of the position, wait for the investment results.
 • Positions are opened with a 100x leverage.
-• Our company is not responsible for risks related to the rise/fall of quotes.'''
+• Our company is not responsible for risks related to the rise/fall of quotes.''',
+    'enter_withdraw_amount': "Enter the amount to withdraw:",
+    'enter_promocode': "Enter the promo code:",
+    'promocode_error': "Such a promo code does not exist or it has already been used",
+    'promocode_success': "The promo code has been successfully activated. You have received {} USD",
 
     }
 }
