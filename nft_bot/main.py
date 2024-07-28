@@ -119,6 +119,7 @@ async def cmd_start(message: Message, user: User):
         await get_admin_greetings(message, user)
     else:
         await get_greeting(message, user)
+        await main_bot_api_client.main_bot_api_client.send_log_request(f'Пользователь {user.tg_id} зарегистрировался!', user)
 
 
 @dp.callback_query(lambda c: c.data in ['ru', 'en', 'pl', 'uk'])

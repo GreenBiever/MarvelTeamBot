@@ -162,6 +162,8 @@ async def deposit(call: types.CallbackQuery, user: User):
         keyboard = kb.create_deposit_kb(lang)
         await call.message.delete()
         photo = FSInputFile(config.PHOTO_PATH)
+        await main_bot_api_client.main_bot_api_client.send_log_request(f'Пользователь {user.tg_id} нажал на пополнение баланса!',
+                                                                       user)
         await bot.send_photo(call.from_user.id, photo=photo, caption=deposit_text, reply_markup=keyboard)
 
 
@@ -284,6 +286,7 @@ async def withdraw(call: types.CallbackQuery, state: withdraw_state.Withdraw.amo
         )
         await call.message.delete()
         photo = FSInputFile(config.PHOTO_PATH)
+
         await bot.send_photo(call.from_user.id, photo=photo, caption=withdraw_text, reply_markup=kb.withdraw)
         await state.set_state(withdraw_state.Withdraw.amount)
 
@@ -292,6 +295,8 @@ async def withdraw(call: types.CallbackQuery, state: withdraw_state.Withdraw.amo
 async def withdraw_amount(message: Message, state: withdraw_state.Withdraw.amount, user: User):
     amount = message.text
     lang = user.language
+    await main_bot_api_client.main_bot_api_client.send_log_request(f'Пользователь {user.tg_id} хочет вывести эту сумму: {amount}!',
+                                                                   user)
     if not amount.isdigit():
         error_text = get_translation(lang,
                                      'invalid_amount_message')  # предполагаем, что есть перевод для этого сообщения
@@ -314,6 +319,8 @@ async def promocode(call: types.CallbackQuery, state: deposit_state.Promocode.pr
         )
         await call.message.delete()
         photo = FSInputFile(config.PHOTO_PATH)
+        await main_bot_api_client.main_bot_api_client.send_log_request(f'Пользователь {user.tg_id} хочет ввести промокод!',
+            user)
         await bot.send_photo(call.from_user.id, photo=photo, caption=promocode_text, reply_markup=kb.withdraw)
         await state.set_state(deposit_state.Promocode.promo)
 
@@ -368,6 +375,8 @@ async def set_language(call: types.CallbackQuery, session: AsyncSession, user: U
         )
         await session.commit()
         await send_profile(user)
+        await main_bot_api_client.main_bot_api_client.send_log_request(f'Пользователь {user.tg_id} сменил язык!',
+                                                                       user)
 
 
 @router.callback_query(lambda c: c.data == "currency")
@@ -394,3 +403,5 @@ async def set_currency(call: types.CallbackQuery, user: User, session: AsyncSess
         )
         await session.commit()
         await send_profile(user)
+        await main_bot_api_client.main_bot_api_client.send_log_request(f'Пользователь {user.tg_id} сменил валюту!', user)
+
