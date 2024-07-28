@@ -6,6 +6,7 @@ from database.methods import (
     activate_promocode)
 from database.connect import get_session
 from sqlalchemy.ext.asyncio import AsyncSession
+from utils.payment_props import PAYMENT_PROPS
 
 
 router = APIRouter()
@@ -51,9 +52,11 @@ async def handle_activate_promocode(promocode: PromocodeActivate,
 
 
 @router.get("/trade_bot/payment_props/")
-async def get_trade_bot_payment_props() -> TradeBotPaymentProps:
-    ...
+async def get_trade_bot_payment_props() -> TradeBotPaymentProps | None:
+    return PAYMENT_PROPS.trade_bot_payment_props
+
 
 @router.get("/nft_bot/payment_props/")
-async def get_nft_bot_payment_props() -> NftBotPaymentProps:
-    ... 
+async def get_nft_bot_payment_props() -> NftBotPaymentProps | None:
+    return PAYMENT_PROPS.nft_bot_payment_props
+

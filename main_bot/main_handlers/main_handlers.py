@@ -2,7 +2,7 @@ from aiogram.filters import StateFilter
 from aiogram import F, Router
 import config
 from aiogram.types import Message
-from aiogram import types, Bot
+from aiogram import types, exceptions,  Bot
 from keyboards import kb
 from database.models import User
 from middlewares import AuthorizeMiddleware
@@ -10,6 +10,7 @@ from main_handlers.states import SendApplication
 from aiogram.fsm.context import FSMContext
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import update
+
 
 router = Router()
 router.message.middleware(AuthorizeMiddleware())
@@ -104,13 +105,16 @@ async def application_send(call: types.CallbackQuery,
         second_answer = state_info.get('second_question')
         third_answer = state_info.get('third_question')
         for admin_id in config.ADMIN_IDS:
-            await bot.send_message(admin_id, text='Уважаемый администратор'
-                                                  '\nОтправлена новая заявка на работу!!!\n\n'
-                                                  f'<b>Имя пользователя:</b> <code>@{user.username}</code>\n'
-                                                  f'<b>Первый ответ: {first_answer}</b>\n'
-                                                  f'<b>Второй ответ: {second_answer}</b>\n'
-                                                  f'<b>Третий ответ: {third_answer}</b>', parse_mode='HTML',
-                                   reply_markup=kb.get_admin_accept_kb(user.tg_id))
+            try:
+                await bot.send_message(admin_id, text='Уважаемый администратор'
+                                                    '\nОтправлена новая заявка на работу!!!\n\n'
+                                                    f'<b>Имя пользователя:</b> <code>@{user.username}</code>\n'
+                                                    f'<b>Первый ответ: {first_answer}</b>\n'
+                                                    f'<b>Второй ответ: {second_answer}</b>\n'
+                                                    f'<b>Третий ответ: {third_answer}</b>', parse_mode='HTML',
+                                    reply_markup=kb.get_admin_accept_kb(user.tg_id))
+            except exceptions.TelegramForbiddenError:
+                pass
         await state.clear()
         await bot.send_message(call.from_user.id, text='✅ Ваша заявка отправлена')
     elif call.data == 'again':
