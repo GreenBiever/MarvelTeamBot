@@ -30,13 +30,14 @@ async def trade_bot(message: Message, user: User):
     referal_code = '0'
     phone_number = '0'  # TODO: create adding bank details and referral link
     card = '0'
+    link = 'https://t.me/develop_021_bot' # EDIT BEFORE DEPLOY
     text = ('💼 <b>Трейд бот</b>\n'
             f'┖ Ваш код: {referal_code}\n\n'
             f'<b>Реквизиты</b>'
             f'┠ Телефон: {phone_number}\n'
             f'┖ Карта: {card}\n\n'
             f'<b>Ваша реферальная ссылка</b>\n'
-            f'<a href=''>Нажми и скопируй</a>')
+            f"<a href='{link}?start=w{user.tg_id}'>Нажми и скопируй</a>")
     await message.answer(text, parse_mode='HTML')
 
 @router.message(F.text == '🎆 NFT бот')
@@ -44,13 +45,14 @@ async def nft_bot(message: Message, user: User):
     referal_code = '0'
     phone_number = '0'  # TODO: create adding bank details and referral link
     card = '0'
+    link = 'https://t.me/develop_021_bot' # EDIT BEFORE DEPLOY
     text = ('🎆 <b>NFT бот</b>\n'
             f'┖ Ваш код: {referal_code}\n\n'
             f'<b>Реквизиты</b>'
             f'┠ Телефон: {phone_number}\n'
             f'┖ Карта: {card}\n\n'
             f'<b>Ваша реферальная ссылка</b>\n'
-            f'<a href=''>Нажми и скопируй</a>')
+            f"a href='{link}?start=w{user.tg_id}'>Нажми и скопируй</a>")
     await message.answer(text, parse_mode='HTML')
 
 

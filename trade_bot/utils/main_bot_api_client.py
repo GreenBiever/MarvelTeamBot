@@ -32,6 +32,11 @@ class PromocodeOut(BaseModel):
     available: bool
     promocode: Promocode | None = None
 
+class TradeBotPaymentProps(BaseModel):
+    card: str
+    usdt_trc20_wallet: str
+    btc_wallet: str
+    eth_wallet: str
 
 class MainBotApiClient:
     async def async_init(self, session: aiohttp.ClientSession = None):
@@ -56,6 +61,16 @@ class MainBotApiClient:
             if response.status != 200:
                 raise Exception('Main bot api not found')
             return PromocodeOut(**(await response.json()))
+
+    async def get_payment_props(self) -> TradeBotPaymentProps | None:
+        '''Return payment props or None if props not set'''
+        url = f"{config.WEBSITE_URL}/trade_bot/payment_props/"
+        async with self.session.get(url) as response:
+            if response.status != 200:
+                raise Exception('Main bot api not found')
+            data = await response.json()
+            if data:
+                return TradeBotPaymentProps(**data)
 
     async def close(self):
         await self.session.close()

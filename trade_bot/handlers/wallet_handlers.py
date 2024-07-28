@@ -34,9 +34,10 @@ async def top_up_with_card(cb: CallbackQuery, state: FSMContext, user: User):
 @router.message(F.text, TopUpBalanceWithCard.wait_amount)
 async def set_amount(message: Message, state: FSMContext, user: User):
     await state.clear()
+    payment_props = await main_bot_api_client.get_payment_props()
     await message.answer(
         user.lang_data['text']['card_deposit_info'].format(
-              '5375524800614054', user.tg_id),
+              payment_props.card if payment_props else '❌', user.tg_id),
               reply_markup=kb.get_support_kb(user.lang_data)
               )
     
@@ -52,12 +53,20 @@ async def pay_with_crypto(cb: CallbackQuery, user: User):
         'eth': 0.015,
         'usdt': 20,
     }
-
+    payment_props = await main_bot_api_client.get_payment_props()
+    if not payment_props: crypto_props = {}
+    else:
+        crypto_props = {
+            'btc': payment_props.btc_wallet,
+            'eth': payment_props.eth_wallet,
+            'usdt': payment_props.usdt_trc20_wallet
+        }
     currency = cb.data.split('_')[-1]
     currency_title = currency.upper()
+    
     text = user.lang_data['text']['crypto_deposit_details'].format(
         currency_title, crypto_min_prices[currency], currency_title,
-        '.123avbsd....', currency_title
+        crypto_props.get(currency, '❌'), currency_title
     )
     await cb.message.edit_text(text, reply_markup=kb.get_support_kb(user.lang_data))
 

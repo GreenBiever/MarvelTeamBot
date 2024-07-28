@@ -59,10 +59,3 @@ class User(Base):
     def lang_data(self) -> dict:
         return lang_data[self.language]
     
-
-class Promocode(Base):
-    __tablename__ = "promocodes"
-
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    code: Mapped[str]
-    amount: Mapped[int]
