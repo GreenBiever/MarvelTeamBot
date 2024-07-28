@@ -9,9 +9,12 @@ from nft_bot.states import deposit_state, withdraw_state
 from nft_bot import config
 from nft_bot.databases.models import User
 from nft_bot.middlewares import AuthorizeMiddleware
+from nft_bot.utils.main_bot_api_client import main_bot_api_client
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import update
 from nft_bot.databases.enums import CurrencyEnum
+
+from flask import session
 
 bot: Bot = Bot(config.TOKEN)
 router = Router()
@@ -26,7 +29,7 @@ Callback handlers for 'PROFILE' button
 """
 
 
-@router.message(F.text == "💼 Личный кабинет")
+@router.message(F.text in ["💼 Личный кабинет", "💼 Profile", "💼 Profil", "💼 Профіль"])
 async def profile(message: Message, user: User):
     await send_profile(user)
 
@@ -300,12 +303,21 @@ async def promocode(call: types.CallbackQuery, state: deposit_state.Promocode.pr
 @router.message(StateFilter(deposit_state.Promocode.promo))
 async def promocode_message(message: Message, state: deposit_state.Promocode.promo, user: User):
     promo = message.text
+    await state.clear()
     lang = user.language
     success_text = get_translation(lang,
                                    'promocode_success_message',
-                                   promo=promo)  # предполагаем, что есть перевод для этого сообщения
-    await bot.send_message(message.from_user.id, text=success_text)
-    await state.clear()
+                                   promo=promo)
+    error_text = get_translation(lang, 'promocode_error_message', promo=promo)
+    promocode_response = await main_bot_api_client.activate_promocode(code=promo, tg_id=user.tg_id)
+    if not promocode_response.available:
+        await message.answer(error_text)
+    else:
+        promocode = promocode_response.promocode
+        await user.top_up_balance(session, promocode.amount)
+        await message.answer(success_text)
+
+
 
 
 """

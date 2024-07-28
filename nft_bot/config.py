@@ -8,3 +8,4 @@ AGREEMENT_URL = 'https://support.opensea.io' # for messages and keyboard url
 SUPPORT_URL = 'https://support.opensea.io/en/' #for keyboard for support team tg
 
 PHOTO_PATH = 'open_sea.jpg' #
+REFERAL_BONUS_PERCENT = 0.1

@@ -24,7 +24,6 @@ class CurrencyExchange:
                 logger.info(f'Error: {response.status}, {await response.text()}')
                 return
             data = (await response.json())['usd']
-            print(data)
             self.exchange_rates[CurrencyEnum.usd] = 1.0
             self.exchange_rates[CurrencyEnum.rub] = data['rub']
             self.exchange_rates[CurrencyEnum.uah] = data['uah']

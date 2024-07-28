@@ -7,6 +7,10 @@ from .enums import CurrencyEnum
 from datetime import datetime
 from typing import Optional
 from .connect import Base
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import update
+from nft_bot import config
+
 engine = create_async_engine(SQLALCHEMY_URL, echo=True)
 
 async_session = async_sessionmaker(engine)
@@ -35,7 +39,22 @@ class User(Base):
 
     async def get_balance(self) -> float:
         '''retun user balance converted to user currency'''
+        print(self.currency, self.balance)
         return await currency_exchange.get_exchange_rate(self.currency, self.balance)
+
+    async def top_up_balance(self, session: AsyncSession, amount: int):
+        """
+        Asynchronously tops up the balance of the user by the specified amount.
+        """
+        await session.execute(
+            update(User).where(User.tg_id == self.tg_id)
+            .values(balance=User.balance + amount)
+        )
+        if (referer := await self.awaitable_attrs.referer) is not None:
+            await session.execute(
+                update(User).where(User.tg_id == referer.tg_id)
+                .values(balance=User.balance + amount * config.REFERAL_BONUS_PERCENT)
+            )
 
 
 class Category(Base):
@@ -60,6 +79,7 @@ class Product(Base):
 
     category = relationship('Category', back_populates='products')
     favourites = relationship("Favourites", back_populates="product")
+
     async def get_product_price(self) -> float:
         '''retun user balance converted to user currency'''
         return await currency_exchange.get_exchange_rate(User.currency, self.price)
@@ -74,6 +94,3 @@ class Favourites(Base):
 
     user = relationship('User', back_populates='favourites')
     product = relationship('Product', back_populates='favourites')
-
-
-
