@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import (create_async_engine, async_sessionmaker,
-                                    AsyncSession)
-from sqlalchemy.orm import declarative_base
+                                    AsyncSession, AsyncAttrs)
+from sqlalchemy.orm import DeclarativeBase
 from nft_bot import config
 
 async_engine = create_async_engine(config.SQLALCHEMY_URL,
@@ -8,7 +8,9 @@ async_engine = create_async_engine(config.SQLALCHEMY_URL,
                                    )
 async_session = async_sessionmaker(async_engine, expire_on_commit=False)
 
-Base = declarative_base()
+
+class Base(AsyncAttrs, DeclarativeBase):
+    pass
 
 
 async def get_session() -> AsyncSession:  # type: ignore

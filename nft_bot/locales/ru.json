@@ -4,8 +4,13 @@
     "select_language": "Выберите язык:",
     "profile": "\uD83D\uDCBC Личный кабинет\n\n📌 ID: {user_id}\n\uD83D\uDD2E Статус: {status} 🎉 \n\n💰 Баланс: {balance} {currency}\n📑 Верификация: {verification}\n\uD83D\uDEB8 {ref}",
     "statuses": {
-            "new": "Новичок"
+            "stat_blocked": "Заблокирован",
+            "stat_unblocked": "Активный"
         },
+    "verifications": {
+            "verify_yes": "Верифицирован",
+            "verify_no": "Не верифицирован"
+    },
     "buttons": {
             "main_kb": {
               "profile_main": "\uD83D\uDCBC Личный кабинет",

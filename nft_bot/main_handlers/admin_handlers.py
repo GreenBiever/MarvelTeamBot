@@ -7,6 +7,7 @@ from nft_bot.keyboards import kb
 from nft_bot.databases import requests
 from nft_bot.states import deposit_state, withdraw_state, admin_items_state
 from nft_bot import config
+from sqlalchemy.ext.asyncio import AsyncSession
 
 bot: Bot = Bot(config.TOKEN)
 router = Router()
@@ -49,15 +50,15 @@ async def add_category(call: types.CallbackQuery, state: admin_items_state.Admin
 
 
 @router.message(StateFilter(admin_items_state.AdminCategoriesItems.category))
-async def add_category_name(message: types.Message, state: admin_items_state.AdminCategoriesItems.category):
+async def add_category_name(message: types.Message, state: admin_items_state.AdminCategoriesItems.category, session: AsyncSession):
     category_name = message.text
-    await requests.add_category(category_name)
+    await requests.add_category(session, category_name)
     await message.answer(text='Категория добавлена!', parse_mode="HTML")
 
 
 @router.callback_query(lambda c: c.data == 'add_item')
-async def add_item(call: types.CallbackQuery, state: admin_items_state.AdminCategoriesItems.item):
-    categories_keyboard = await kb.get_categories_kb()
+async def add_item(call: types.CallbackQuery, state: admin_items_state.AdminCategoriesItems.item, session: AsyncSession):
+    categories_keyboard = await kb.get_categories_kb(session)
     await call.message.answer(text='Выберите категорию:', parse_mode="HTML", reply_markup=categories_keyboard)
     await state.set_state(admin_items_state.AdminCategoriesItems.item)
 
@@ -105,7 +106,7 @@ async def add_item_author(message: types.Message, state: admin_items_state.Admin
 
 
 @router.message(StateFilter(admin_items_state.AdminItems.item_photo))
-async def add_item_photo(message: types.Message, state: admin_items_state.AdminItems.item_photo):
+async def add_item_photo(message: types.Message, state: admin_items_state.AdminItems.item_photo, session: AsyncSession):
     item_photo = message.text
     data = await state.get_data()
     category_id = data.get('category_id')
@@ -114,33 +115,33 @@ async def add_item_photo(message: types.Message, state: admin_items_state.AdminI
     item_description = data.get('item_description')
     item_price = data.get('item_price')
     item_author = data.get('item_author')
-    await requests.add_item(item_name, item_description, item_price, item_author,item_photo, category_id)
+    await requests.add_item(session, item_name, item_description, item_price, item_author,item_photo, category_id)
     await message.answer(text='NFT добавлен!', parse_mode="HTML")
     await state.clear()
 
 
 @router.callback_query(lambda c: c.data == 'delete_category')
-async def delete_category(call: types.CallbackQuery, state: admin_items_state.AdminCategoriesItems.category):
-    categories_keyboard = await kb.get_categories_kb2()
+async def delete_category(call: types.CallbackQuery, state: admin_items_state.AdminCategoriesItems.category,  session: AsyncSession):
+    categories_keyboard = await kb.get_categories_kb2(session)
     await call.message.answer(text='Выберите категорию для удаления:', parse_mode="HTML", reply_markup=categories_keyboard)
 
 
 @router.callback_query(lambda c: c.data.startswith('delete_category_'))
-async def delete_category_callback(call: types.CallbackQuery):
+async def delete_category_callback(call: types.CallbackQuery, session: AsyncSession):
     category_id = call.data.split('_')[2]
-    await requests.delete_category(category_id)
+    await requests.delete_category(session, int(category_id))
     await call.message.answer(text='Категория удалена!', parse_mode="HTML")
 
 
 @router.callback_query(lambda c: c.data == 'delete_item')
-async def delete_item(call: types.CallbackQuery, state: admin_items_state.AdminCategoriesItems.item):
-    items_keyboard = await kb.get_delete_items_kb()
+async def delete_item(call: types.CallbackQuery, state: admin_items_state.AdminCategoriesItems.item, session: AsyncSession):
+    items_keyboard = await kb.get_delete_items_kb(session)
     await call.message.answer(text='Выберите NFT для удаления:', parse_mode="HTML", reply_markup=items_keyboard)
 
 
 @router.callback_query(lambda c: c.data.startswith('delete_item_'))
-async def delete_item_callback(call: types.CallbackQuery):
+async def delete_item_callback(call: types.CallbackQuery, session: AsyncSession):
     item_id = call.data.split('_')[2]
-    await requests.delete_item(item_id)
+    await requests.delete_item(session, int(item_id))
     await call.message.answer(text='NFT удален!', parse_mode="HTML")
 

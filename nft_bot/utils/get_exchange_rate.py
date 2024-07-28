@@ -24,11 +24,14 @@ class CurrencyExchange:
                 logger.info(f'Error: {response.status}, {await response.text()}')
                 return
             data = (await response.json())['usd']
+            print(data)
+            self.exchange_rates[CurrencyEnum.usd] = 1.0
             self.exchange_rates[CurrencyEnum.rub] = data['rub']
             self.exchange_rates[CurrencyEnum.uah] = data['uah']
             self.exchange_rates[CurrencyEnum.eur] = data['eur']
             self.exchange_rates[CurrencyEnum.pln] = data['pln']
             self.exchange_rates[CurrencyEnum.byn] = data['byn']
+            logger.info(f"Exchange rates updated: {self.exchange_rates}")
         self.last_reload_time = datetime.now()
 
     async def get_exchange_rate(self, to_currency: CurrencyEnum, amount: int) -> float:

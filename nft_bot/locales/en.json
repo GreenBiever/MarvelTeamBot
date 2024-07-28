@@ -1,26 +1,76 @@
 {
     "welcome": "👋Welcome, {first_name}, choose a service below:",
     "blocked": "You are blocked!",
-    "select_language": "Select a language:",
-    "profile": "\uD83D\uDEB8  Personal Cabinet\n\n📌 ID: {user_id}\n\uD83D\uDD2E Status: {status} 🎉 \n\n💰 Balance: {balance} UAH\n📑 Verification: {verification}\n\uD83D\uDEB8 {ref}",
+    "select_language": "Choose language:",
+    "profile": "📌 ID: {user_id}\n🔮 Status: {status} 🎉 \n\n💰 Balance: {balance} {currency}\n📑 Verification: {verification}\n🛡️ {ref}",
     "statuses": {
-            "new": "New"
-        },
+        "stat_blocked": "Blocked",
+        "stat_unblocked": "Active"
+    },
+    "verifications": {
+        "verify_yes": "Verified",
+        "verify_no": "Not verified"
+    },
     "buttons": {
-            "profile_kb": {
-                "wallet": "💰Wallet",
-                "verification": "📑 Verification",
-                "favorites": "❤️ Favorites",
-                "statistics": "📈 Statistics",
-                "settings": "⚙️ Settings",
-                "my_nft": "🎆 My NFT",
-                "agreement": "Agreement",
-                "how_to_create_nft": "How to create NFT?"
-            },
-            "other": {
-                "example1": "Example 1",
-                "example2": "Example 2"
-            }
+        "main_kb": {
+            "profile_main": "💼 Profile",
+            "information_main": "ℹ️ Information",
+            "support_main": "🛠️ Support"
+        },
+        "profile_kb": {
+            "wallet": "💰 Wallet",
+            "verification": "📑 Verification",
+            "favorites": "❤️ Favorites",
+            "statistics": "📈 Statistics",
+            "settings": "⚙️ Settings",
+            "my_nft": "🎆 My NFTs",
+            "agreement": "Agreement",
+            "how_to_create_nft": "How to create NFT?"
+        },
+        "wallet_kb": {
+            "top_up": "💸 Top up",
+            "withdraw": "💵 Withdraw",
+            "promocode": "📝 Promocode"
+        },
+        "verification_kb": {
+            "verify": "📑 Verify"
+        },
+        "settings_kb": {
+            "language": "🌍 Change language",
+            "currency": "💵 Change currency"
+        },
+        "deposit_kb": {
+            "card": "💳 Card",
+            "crypto": "💰 Cryptocurrency"
+        },
+        "deposit_top_up_kb": {
+            "check": "✅ Check payment",
+            "support": "🛠️ Support"
+        },
+        "catalog_kb": {
+            "buy": "Buy"
         }
-
+    },
+    "wallet_message": "💰 Your wallet:\n🔢 Your user ID: {user_id}\n🏦 Balance: {balance} {currency}",
+    "verification_message": "🔹 Your account is not verified.\n\nTo get 'Verified' status, send the phrase 'Verification' to the general support chat.\n\nTo go to the general support chat, go to the 'Support' section or use the button below.",
+    "favourites_message": "💠 You have 0 tokens in favorites.",
+    "statistics_message": "Deals in the last 24 hours: {no_orders}\nOnline: {no_online}\nViewing NFTs: {no_views}\nLargest deal in 24 hours: ${big_deal}",
+    "settings_message": "⚙️ Settings",
+    "my_nft_message": "You have no tokens",
+    "how_to_create_nft_message": "To display your own NFT artwork 🎆:\n- You need to contact support (https://t.me/Supp_OpenSea) and make a deposit.\n- Support (https://t.me/Supp_OpenSea) has the right to reject your request to display artwork at their discretion.\n- Your artwork should not offend anyone's interests. In such cases, support has the right to reject your request, and in repeated cases, they have the right to freeze your account for a period or impose a fine.\n\n Regards, OpenSea administration!",
+    "deposit_message": "ℹ️ Choose a payment method:",
+    "withdraw_message": "💵 Enter withdrawal amount:",
+    "card_message": "💵 Enter top-up amount:",
+    "invalid_amount_message": "Enter a valid amount",
+    "card_deposit_message": "👨‍💼 To top up balance\n\n💳 Details: {card_number}\n💬 Comment: {comment}\n\n⚠️ Details are valid for 20 minutes after the request. If you do not pay within this time, make another request for details.⚠️\n\n⚠️ Click on the details or comment to copy!\n\n⚠️ If you cannot specify a comment, send a receipt/screenshot to support after payment.\n\n⚠️ 🛠️ Support - @Supp_OpenSea\n\nRegards, OpenSea",
+    "crypto_message": "💠 Choose a cryptocurrency for payment:",
+    "crypto_deposit_message": "📍 For your convenience, we provide the option to top up balance via USDT. Please send any amount from 20 USDT to the unique address:\n\n{crypto_address}\n\nOur bot will automatically recalculate the current USDT rate and credit the funds to your balance after the first network confirmation. You will receive a notification of credited funds 🚀\n\nThank you for choosing our services! For questions, contact our support. 🌐",
+    "withdraw_success_message": "❌ Error",
+    "promocode_message": "✍️ Enter promocode",
+    "promocode_success_message": "❌ This promocode does not exist",
+    "catalog_message": "💠 Total collections on the marketplace: {collections_number}",
+    "collection_message": "💠 Collection {collection_name}\n\nTokens in collection: {number_of_tokens}",
+    "token_message": "💠 Token {token_name}\n\n<i>{item_description}</i>\n\n📂 Collection: {category_name}\n👩‍💼 Author: {item_author}\n🔹 Blockchain: ETH\n\n💵 Price: {item_price} USD (~ {item_currency_price} {user_currency})",
+    "buy_no_balance": "💲 Insufficient funds in your balance",
+    "buy_success": "💲 Thank you for your purchase!"
 }

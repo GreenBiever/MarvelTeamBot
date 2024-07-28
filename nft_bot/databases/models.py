@@ -6,14 +6,10 @@ from nft_bot.utils.get_exchange_rate import currency_exchange
 from .enums import CurrencyEnum
 from datetime import datetime
 from typing import Optional
-
+from .connect import Base
 engine = create_async_engine(SQLALCHEMY_URL, echo=True)
 
 async_session = async_sessionmaker(engine)
-
-
-class Base(AsyncAttrs, DeclarativeBase):
-    pass
 
 
 class User(Base):
@@ -35,6 +31,7 @@ class User(Base):
     referals: Mapped[list['User']] = relationship('User', back_populates='referer')
     referer: Mapped[Optional['User']] = relationship('User', back_populates='referals',
                                                      remote_side=[id])
+    favourites: Mapped[list['Favourites']] = relationship('Favourites', back_populates='user')
 
     async def get_balance(self) -> float:
         '''retun user balance converted to user currency'''
@@ -62,7 +59,7 @@ class Product(Base):
     category_id: Mapped[int] = mapped_column(ForeignKey('categories.id'))
 
     category = relationship('Category', back_populates='products')
-
+    favourites = relationship("Favourites", back_populates="product")
     async def get_product_price(self) -> float:
         '''retun user balance converted to user currency'''
         return await currency_exchange.get_exchange_rate(User.currency, self.price)

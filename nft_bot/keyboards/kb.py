@@ -2,6 +2,7 @@ import json
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton
 from nft_bot import config
 from nft_bot.databases import requests
+from sqlalchemy.ext.asyncio import AsyncSession
 
 languages = ["en", "ru", "pl", "uk"]
 translations = {}
@@ -215,8 +216,8 @@ settings_currency_kb = [
 settings_currency = InlineKeyboardMarkup(inline_keyboard=settings_currency_kb)
 
 
-async def get_categories_kb():
-    categories = await requests.get_categories()
+async def get_categories_kb(session: AsyncSession):
+    categories = await requests.get_categories(session)
     categories_kb = [
         [InlineKeyboardButton(text=category.name, callback_data=f'category_{category.id}')] for category in categories
     ]
@@ -225,8 +226,8 @@ async def get_categories_kb():
     return categories
 
 
-async def get_categories_kb2():
-    categories = await requests.get_categories()
+async def get_categories_kb2(session: AsyncSession):
+    categories = await requests.get_categories(session)
     categories_kb = [
         [InlineKeyboardButton(text=category.name, callback_data=f'delete_category_{category.id}')] for category in categories
     ]
@@ -235,8 +236,8 @@ async def get_categories_kb2():
     return categories
 
 
-async def get_delete_items_kb():
-    items = await requests.get_items()
+async def get_delete_items_kb(session: AsyncSession):
+    items = await requests.get_items(session)
     items_kb = [
         [InlineKeyboardButton(text=item.name, callback_data=f'delete_item_{item.id}')] for item in items
     ]
@@ -245,8 +246,8 @@ async def get_delete_items_kb():
     return items
 
 
-async def create_collections_keyboard():
-    categories_with_count = await requests.get_categories_with_item_count()
+async def create_collections_keyboard(session: AsyncSession):
+    categories_with_count = await requests.get_categories_with_item_count(session)
     categories_kb = [
         [InlineKeyboardButton(text=f"{category.name} ({category.item_count})",
                               callback_data=f'collection_{category.id}')]
@@ -263,8 +264,8 @@ async def create_collections_keyboard():
     return categories_markup
 
 
-async def create_items_keyboard(category_id):
-    items = await requests.get_items_by_category_id(category_id)
+async def create_items_keyboard(category_id, session: AsyncSession):
+    items = await requests.get_items_by_category_id(session, category_id)
     items_kb = [
         [InlineKeyboardButton(text=item.name, callback_data=f'token_{item.id}')] for item in items
     ]

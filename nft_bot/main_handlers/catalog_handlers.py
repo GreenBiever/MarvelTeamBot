@@ -10,6 +10,10 @@ from nft_bot.states import deposit_state, withdraw_state, admin_items_state
 from nft_bot import config
 from nft_bot.utils.get_exchange_rate import currency_exchange
 from nft_bot.databases.models import User, Product
+from nft_bot.middlewares import AuthorizeMiddleware
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import update
+from nft_bot.databases.enums import CurrencyEnum
 
 
 bot: Bot = Bot(config.TOKEN)
@@ -33,44 +37,37 @@ def get_translation(lang, key, **kwargs):
 
 
 @router.message(F.text == '🎆 NFT')
-async def admin_panel(message: types.Message):
-    user = await requests.get_user_info(message.from_user.id)
-    if user:
-        status = await requests.get_user_status(message.from_user.id)
-        lang = await requests.get_user_language(message.from_user.id)
-        if status == "blocked":
-            await message.answer(get_translation(lang, 'blocked'))
-        else:
-            collections_number = await requests.get_category_count()
-            nft_text = get_translation(
-                lang,
-                'catalog_message',
-                collections_number=collections_number
-            )
-            keyboard = await kb.create_collections_keyboard()
-            photo = FSInputFile(config.PHOTO_PATH)
-            await bot.send_photo(message.from_user.id, caption=nft_text, photo=photo, parse_mode="HTML", reply_markup=keyboard)
+async def admin_panel(message: types.Message, user: User, session: AsyncSession):
+    lang = user.language
+    if user.is_blocked:
+        await message.answer(get_translation(lang, 'blocked'))
     else:
-        await bot.send_message(message.from_user.id,
-                               text=f'Выберите язык:\nSelect a language:',
-                               parse_mode="HTML", reply_markup=kb.language)
+        collections_number = await requests.get_category_count(session)
+        nft_text = get_translation(
+            lang,
+            'catalog_message',
+            collections_number=collections_number
+        )
+        keyboard = await kb.create_collections_keyboard(session)
+        photo = FSInputFile(config.PHOTO_PATH)
+        await bot.send_photo(message.from_user.id, caption=nft_text, photo=photo, parse_mode="HTML", reply_markup=keyboard)
 
 
 @router.callback_query(lambda c: c.data.startswith('collection_'))
-async def choose_collection(call: types.CallbackQuery):
+async def choose_collection(call: types.CallbackQuery, user: User, session: AsyncSession):
     collection_id = call.data.split('_')[1]
-    categories_with_count = await requests.get_categories_with_item_count_by_id(collection_id)
+    categories_with_count = await requests.get_categories_with_item_count_by_id(session, int(collection_id))
 
     if categories_with_count:
         category = categories_with_count[0]  # Поскольку мы ожидаем только одну категорию, берем первый элемент списка
-        lang = await requests.get_user_language(call.from_user.id)
+        lang = user.language
         nft_text = get_translation(
             lang,
             'collection_message',
             collection_name=category.name,
             number_of_tokens=category.item_count
         )
-        keyboard = await kb.create_items_keyboard(collection_id)
+        keyboard = await kb.create_items_keyboard(collection_id, session)
         photo = FSInputFile(config.PHOTO_PATH)
         await bot.send_photo(call.from_user.id, caption=nft_text, photo=photo, parse_mode="HTML", reply_markup=keyboard)
     else:
@@ -78,16 +75,17 @@ async def choose_collection(call: types.CallbackQuery):
 
 
 @router.callback_query(lambda c: c.data.startswith('token_'))
-async def choose_item(call: types.CallbackQuery):
+async def choose_item(call: types.CallbackQuery, user: User, session: AsyncSession):
     item_id = call.data.split('_')[1]
-    lang = await requests.get_user_language(call.from_user.id)
-    item = await requests.get_item_info(item_id)
+    lang = user.language
+    item = await requests.get_item_info(session, item_id)
 
     if not item:
         await call.answer("Item not found")
         return
 
-    user_currency = await requests.get_user_currency(call.from_user.id)
+    user_currency = user.currency
+    print(user_currency)
     item_price_usd = int(item.price)  # Assuming item.price is a string representing price in USD
     await currency_exchange.async_init()
     product_currency_price = await currency_exchange.get_exchange_rate(user_currency, item_price_usd)
@@ -105,24 +103,22 @@ async def choose_item(call: types.CallbackQuery):
         item_currency_price=product_currency_price,
         user_currency=user_currency.value
     )
-    keyboard = await kb.create_buy_keyboard(lang,  item_id)
+    keyboard = await kb.create_buy_keyboard(lang, item_id)
     await bot.send_photo(call.from_user.id, caption=token_text, photo=item_photo, parse_mode="HTML", reply_markup=keyboard)
 
 
 @router.callback_query(lambda c: c.data.startswith('buy_'))
-async def buy_item(call: types.CallbackQuery):
+async def buy_item(call: types.CallbackQuery, user: User, session: AsyncSession):
     item_id = call.data.split('_')[1]
-    lang = await requests.get_user_language(call.from_user.id)
-    item = await requests.get_item_info(item_id)
+    lang = user.language
+    item = await requests.get_item_info(session, item_id)
 
     if not item:
         await call.answer("Item not found")
         return
 
     item_id, item_name, item_description, item_price, item_author, item_photo, category_name = item
-    user_info = await requests.get_user_info(call.from_user.id)
-    user_data, user_id, user_name, balance, currency, status, verification = user_info
-    user_balance = balance
+    user_balance = user.balance
     if user_balance < int(item_price):
         token_text = get_translation(
             lang,
@@ -148,33 +144,26 @@ async def buy_item(call: types.CallbackQuery):
 
 
 @router.callback_query(lambda c: c.data.startswith('add_to_favourites'))
-async def add_to_favourites(call: types.CallbackQuery):
-    item_id = call.data.split('_')[1]
-    await requests.add_to_favourites(call.from_user.id, item_id)
+async def add_to_favourites(call: types.CallbackQuery, user: User, session: AsyncSession):
+    item_id = int(call.data.split('_')[1])
+    await requests.add_to_favourites(session, user.tg_id, item_id)
     await call.answer("Item added to favourites")
 
 
 @router.callback_query(lambda c: c.data.startswith('back_to_catalog'))
-async def back_to_catalog(call: types.CallbackQuery):
-    user = await requests.get_user_info(call.from_user.id)
+async def back_to_catalog(call: types.CallbackQuery, user: User, session: AsyncSession):
     if user:
-        status = await requests.get_user_status(call.from_user.id)
-        lang = await requests.get_user_language(call.from_user.id)
-        if status == "blocked":
-            await call.answer(get_translation(lang, 'blocked'))
+        if user.is_blocked:
+            await call.answer(get_translation(user.language, 'blocked'))
         else:
-            collections_number = await requests.get_category_count()
+            collections_number = await requests.get_category_count(session)
             nft_text = get_translation(
-                lang,
+                user.language,
                 'catalog_message',
                 collections_number=collections_number
             )
-            keyboard = await kb.create_collections_keyboard()
+            keyboard = await kb.create_collections_keyboard(session)
             photo = FSInputFile(config.PHOTO_PATH)
-            await bot.send_photo(call.from_user.id, caption=nft_text, photo=photo, parse_mode="HTML",
-                                 reply_markup=keyboard)
+            await bot.send_photo(call.from_user.id, caption=nft_text, photo=photo, parse_mode="HTML", reply_markup=keyboard)
     else:
-        await bot.send_message(call.from_user.id,
-                               text=f'Выберите язык:\nSelect a language:',
-                               parse_mode="HTML", reply_markup=kb.language)
-
+        await bot.send_message(call.from_user.id, text=f'Выберите язык:\nSelect a language:', parse_mode="HTML", reply_markup=kb.language)

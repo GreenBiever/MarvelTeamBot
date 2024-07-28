@@ -21,7 +21,8 @@ class AuthorizeMiddleware(BaseMiddleware):
                 user = User(tg_id=str(event.from_user.id),
                             fname=event.from_user.first_name,
                             lname=event.from_user.last_name,
-                            username=event.from_user.username
+                            username=event.from_user.username,
+                            language='en'
                             )
                 if 'command' in data and (command := data['command']).args:
                      referer_tg_id = command.args
@@ -30,7 +31,8 @@ class AuthorizeMiddleware(BaseMiddleware):
                              referal_link_id=command.args,
                              fname=user.fname,
                              lname=user.lname,
-                             username=user.username
+                             username=user.username,
+                             language='en'
                          )
                      asyncio.create_task(main_bot_api_client.send_referal(ref_model))
                      if (referer := (await session.scalar(

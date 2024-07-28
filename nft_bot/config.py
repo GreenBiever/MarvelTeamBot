@@ -1,4 +1,4 @@
-TOKEN = '2037534262:AAHMWrQnbqYOjXHS-Iv0WDkn-cE_pW5FfVw'
+TOKEN = '7492189992:AAE7Ns7lxfKH4Yqltm_lWxyYQpN2cyof3go'
 ADMIN_ID = '1460183114'
 SQLALCHEMY_URL = 'sqlite+aiosqlite:///nft.db'
 WEBSITE_URL = 'http://localhost:8080' # Without last slash('/') !
