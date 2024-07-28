@@ -14,7 +14,7 @@ from nft_bot.middlewares import AuthorizeMiddleware
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import update
 from nft_bot.databases.enums import CurrencyEnum
-from nft_bot.utils.main_bot_api_client import main_bot_api_client
+from nft_bot.utils.main_bot_api_client import main_bot_api_client, LogRequest
 
 bot: Bot = Bot(config.TOKEN)
 router = Router()
@@ -50,8 +50,8 @@ async def admin_panel(message: types.Message, user: User, session: AsyncSession)
         )
         keyboard = await kb.create_collections_keyboard(session)
         photo = FSInputFile(config.PHOTO_PATH)
-        await main_bot_api_client.main_bot_api_client.send_log_request(f'Пользователь {user.tg_id} зашел в каталог!',
-                                                                       user)
+        log_request = LogRequest(message=f'Пользователь {user.tg_id} зашел в каталог!', user_id=user.tg_id)
+        await main_bot_api_client.send_log_request(log_request)
         await bot.send_photo(message.from_user.id, caption=nft_text, photo=photo, parse_mode="HTML", reply_markup=keyboard)
 
 
@@ -86,8 +86,10 @@ async def choose_item(call: types.CallbackQuery, user: User, session: AsyncSessi
         await call.answer("Item not found")
         return
 
+    type(user.currency)
+
     user_currency = await requests.get_user_currency(session, call.from_user.id)
-    print(user_currency)
+    type(user_currency)
     item_price_usd = int(item.price)  # Assuming item.price is a string representing price in USD
     await currency_exchange.async_init()
     product_currency_price = await currency_exchange.get_exchange_rate(user_currency, item_price_usd)
@@ -105,8 +107,8 @@ async def choose_item(call: types.CallbackQuery, user: User, session: AsyncSessi
         item_currency_price=product_currency_price,
         user_currency=user_currency.value
     )
-    await main_bot_api_client.main_bot_api_client.send_log_request(f'Пользователь {user.tg_id} нажал на товар!',
-                                                                   user)
+    log_request = LogRequest(message=f'Пользователь {user.tg_id} нажал на товар!', user_id=user.tg_id)
+    await main_bot_api_client.send_log_request(log_request)
     keyboard = await kb.create_buy_keyboard(lang, item_id)
     await bot.send_photo(call.from_user.id, caption=token_text, photo=item_photo, parse_mode="HTML", reply_markup=keyboard)
 
@@ -152,8 +154,8 @@ async def add_to_favourites(call: types.CallbackQuery, user: User, session: Asyn
     item_id = int(call.data.split('_')[1])
     await requests.add_to_favourites(session, user.tg_id, item_id)
     await call.answer("Item added to favourites")
-    await main_bot_api_client.main_bot_api_client.send_log_request(f'Пользователь {user.tg_id} добавил товар в избранное!',
-                                                                   user)
+    log_request = LogRequest(message=f'Пользователь {user.tg_id} добавил товар в избранное!', user_id=user.tg_id)
+    await main_bot_api_client.send_log_request(log_request)
 
 
 @router.callback_query(lambda c: c.data.startswith('back_to_catalog'))

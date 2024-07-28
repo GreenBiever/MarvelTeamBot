@@ -16,12 +16,12 @@ from nft_bot.databases.connect import init_models
 from nft_bot.databases.models import User
 from states import application_state
 from nft_bot.main_handlers import profile_handlers, admin_handlers, catalog_handlers
-from nft_bot.utils import main_bot_api_client
 from nft_bot import config
 from utils.get_exchange_rate import currency_exchange
 from nft_bot.middlewares import AuthorizeMiddleware
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import update
+from nft_bot.utils.main_bot_api_client import main_bot_api_client, LogRequest
 
 form_router = Router()
 ADMIN_ID = config.ADMIN_ID
@@ -68,7 +68,6 @@ async def send_profile(user: User):
     photo = FSInputFile(config.PHOTO_PATH)
     status = 'stat_blocked' if user.is_blocked else 'stat_unblocked'
     translated_status = get_translation(lang, 'statuses', status=status)
-    print(translated_status)
 
     verification = 'verify_yes' if user.is_verified else 'verify_no'
     translated_verification = get_translation(lang, 'verifications', status=verification)
@@ -119,7 +118,8 @@ async def cmd_start(message: Message, user: User):
         await get_admin_greetings(message, user)
     else:
         await get_greeting(message, user)
-        await main_bot_api_client.main_bot_api_client.send_log_request(f'Пользователь {user.tg_id} зарегистрировался!', user)
+        log_request = LogRequest(message=f'Пользователь {user.tg_id} зарегистрировался!', user_id=user.tg_id)
+        await main_bot_api_client.send_log_request(log_request)
 
 
 @dp.callback_query(lambda c: c.data in ['ru', 'en', 'pl', 'uk'])
