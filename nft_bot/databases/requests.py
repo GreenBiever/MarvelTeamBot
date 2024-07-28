@@ -37,8 +37,8 @@ async def get_user_info(session: AsyncSession, user: User, user_id: int):
         return None
 
 
-async def get_user_currency(session: AsyncSession, user: User, user_id: int):
-    result = await session.execute(select(user.currency).where(user.tg_id == user_id))
+async def get_user_currency(session: AsyncSession, user_id: int):
+    result = await session.execute(select(User.currency).where(User.tg_id == user_id))
     return result.scalars().first()
 
 

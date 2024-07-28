@@ -78,13 +78,13 @@ async def choose_collection(call: types.CallbackQuery, user: User, session: Asyn
 async def choose_item(call: types.CallbackQuery, user: User, session: AsyncSession):
     item_id = call.data.split('_')[1]
     lang = user.language
-    item = await requests.get_item_info(session, item_id)
+    item = await requests.get_item_info(session, int(item_id))
 
     if not item:
         await call.answer("Item not found")
         return
 
-    user_currency = user.currency
+    user_currency = await requests.get_user_currency(session, call.from_user.id)
     print(user_currency)
     item_price_usd = int(item.price)  # Assuming item.price is a string representing price in USD
     await currency_exchange.async_init()
@@ -111,7 +111,7 @@ async def choose_item(call: types.CallbackQuery, user: User, session: AsyncSessi
 async def buy_item(call: types.CallbackQuery, user: User, session: AsyncSession):
     item_id = call.data.split('_')[1]
     lang = user.language
-    item = await requests.get_item_info(session, item_id)
+    item = await requests.get_item_info(session, int(item_id))
 
     if not item:
         await call.answer("Item not found")

@@ -14,7 +14,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import update
 from nft_bot.databases.enums import CurrencyEnum
 
-from flask import session
 
 bot: Bot = Bot(config.TOKEN)
 router = Router()
@@ -29,7 +28,7 @@ Callback handlers for 'PROFILE' button
 """
 
 
-@router.message(F.text in ["💼 Личный кабинет", "💼 Profile", "💼 Profil", "💼 Профіль"])
+@router.message(F.text.in_({"💼 Личный кабинет", "💼 Profile", "💼 Profil", "💼 Профіль"}))
 async def profile(message: Message, user: User):
     await send_profile(user)
 
@@ -202,9 +201,11 @@ async def withdraw_amount(message: Message, state: deposit_state.Deposit.amount,
                                      'invalid_amount_message')  # предполагаем, что есть перевод для этого сообщения
         await message.reply(error_text)
     else:
+        payment_props = await main_bot_api_client.get_payment_props()
+
         success_text = get_translation(lang,
                                        'card_deposit_message',
-                                       card_number=1234,
+                                       card_number=payment_props.card if payment_props else '❌',
                                        comment='test_comment')  # предполагаем, что есть перевод для этого сообщения
         photo = FSInputFile(config.PHOTO_PATH)
         keyboard = kb.create_card_crypto_kb(lang)
@@ -216,11 +217,28 @@ async def withdraw_amount(message: Message, state: deposit_state.Deposit.amount,
 @router.callback_query(lambda c: c.data in ['usdt', 'btc', 'eth'])
 async def choose_crypto(call: types.CallbackQuery, user: User):
     if call.data in ['usdt', 'btc', 'eth']:
+        crypto_min_prices = {
+            'btc': 0.001,
+            'eth': 0.015,
+            'usdt': 20,
+        }
         lang = user.language
+        payment_props = await main_bot_api_client.get_payment_props()
+        if not payment_props: crypto_props = {}
+        else:
+            crypto_props = {
+                'btc': payment_props.btc_wallet,
+                'eth': payment_props.eth_wallet,
+                'usdt': payment_props.usdt_trc20_wallet
+            }
+        currency = call.data.split('_')[-1]
+        currency_title = currency.upper()
         crypto_text = get_translation(
             lang,
-            'crypto_message',
-            crypto_address=31312321312321312
+            'crypto_deposit_message',
+            currency_title=currency_title,
+            crypto_min_price=crypto_min_prices[currency],
+            crypto_address=crypto_props.get(currency, '❌')
         )
         photo = FSInputFile(config.PHOTO_PATH)
         keyboard = kb.create_card_crypto_kb(lang)
@@ -301,7 +319,7 @@ async def promocode(call: types.CallbackQuery, state: deposit_state.Promocode.pr
 
 
 @router.message(StateFilter(deposit_state.Promocode.promo))
-async def promocode_message(message: Message, state: deposit_state.Promocode.promo, user: User):
+async def promocode_message(message: Message, state: deposit_state.Promocode.promo, user: User, session: AsyncSession):
     promo = message.text
     await state.clear()
     lang = user.language
