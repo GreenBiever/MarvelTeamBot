@@ -52,6 +52,7 @@ async def add_category(call: types.CallbackQuery, state: admin_items_state.Admin
 @router.message(StateFilter(admin_items_state.AdminCategoriesItems.category))
 async def add_category_name(message: types.Message, state: admin_items_state.AdminCategoriesItems.category, session: AsyncSession):
     category_name = message.text
+    await state.clear()
     await requests.add_category(session, category_name)
     await message.answer(text='Категория добавлена!', parse_mode="HTML")
 
