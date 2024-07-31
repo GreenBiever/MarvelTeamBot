@@ -1,8 +1,12 @@
 import json
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton
+from sqlalchemy import select
+
 from nft_bot import config
 from nft_bot.databases import requests
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from nft_bot.databases.models import User
 
 languages = ["en", "ru", "pl", "uk"]
 translations = {}
@@ -48,6 +52,7 @@ def create_admin_main_kb(lang):
 
 
 admin_panel_kb = [
+    [InlineKeyboardButton(text='Ворк-панель', callback_data='work_panel')],
     [InlineKeyboardButton(text='Добавить категорию', callback_data='add_category'),
      InlineKeyboardButton(text='Добавить товар', callback_data='add_item')],
     [InlineKeyboardButton(text='Удалить категорию', callback_data='delete_category'),
@@ -56,6 +61,17 @@ admin_panel_kb = [
 
 admin_panel = InlineKeyboardMarkup(inline_keyboard=admin_panel_kb)
 
+
+work_panel_kb = [
+    [InlineKeyboardButton(text='Привязать по ID', callback_data='connect_mamont')],
+    [InlineKeyboardButton(text='Управление 🦣', callback_data='control_mamonts')],
+    [InlineKeyboardButton(text='⬅️', callback_data='back_to_admin')]
+]
+
+work_panel = InlineKeyboardMarkup(inline_keyboard=work_panel_kb)
+
+back_to_admin_button = InlineKeyboardButton(text='⬅️', callback_data='back_to_admin2')
+back_to_admin = InlineKeyboardMarkup(inline_keyboard=[[back_to_admin_button]])
 
 language_kb = [
     [InlineKeyboardButton(text='🇷🇺 Русский', callback_data='ru'),
@@ -291,3 +307,40 @@ async def create_buy_keyboard(lang, item_id):
 
     buy = InlineKeyboardMarkup(inline_keyboard=buy_kb)
     return buy
+
+
+async def create_mamont_control_kb(mamont_id, session):
+    result = await session.execute(select(User).where(User.tg_id == int(mamont_id)))
+    user = result.scalars().first()
+
+    if user.is_buying:
+        user_is_buying = 'Покупка включена'
+    else:
+        user_is_buying = 'Покупка выключена'
+
+    if user.is_withdraw:
+        user_is_withdraw = 'Вывод включен'
+    else:
+        user_is_withdraw = 'Вывод выключен'
+
+    if user.is_verified:
+        user_is_verified = 'Не вериф'
+        call_is_verified = 'unverify'
+    else:
+        user_is_verified = 'Вериф'
+        call_is_verified = 'unverify'
+
+    keyboard = [
+        [InlineKeyboardButton(text='💵 Изм. баланса', callback_data='mamont|change_balance')],
+        [InlineKeyboardButton(text='📥 Мин. депозит', callback_data='mamont|min_deposit'),
+         InlineKeyboardButton(text='📤 Мин. вывод', callback_data='mamont|min_withdraw')],
+        [InlineKeyboardButton(text=f'🔺 {user_is_verified}', callback_data=f'mamont|{call_is_verified}'),
+         InlineKeyboardButton(text='🔰 Вывод', callback_data='mamont|withdraw'),
+         InlineKeyboardButton(text='🔰 Покупка', callback_data='mamont|buying')],
+        [InlineKeyboardButton(text='🔒 Заблокировать', callback_data='mamont|block')],
+        [InlineKeyboardButton(text='🗑 Удалить лохматого', callback_data='mamont|delete')]
+    ]
+
+    keyboard_markup = InlineKeyboardMarkup(inline_keyboard=keyboard)
+
+    return keyboard_markup

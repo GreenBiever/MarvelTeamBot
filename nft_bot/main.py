@@ -1,20 +1,12 @@
-import asyncio
-import json
-import logging
-import os
-import random
-from aiogram.filters import StateFilter
-from aiogram.utils.markdown import hlink
+import asyncio, json, logging
 from aiogram.filters import Command
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram import Bot, Dispatcher, F, Router
-from databases import requests, models
 from aiogram.types import Message, FSInputFile
 from aiogram import types
 from keyboards import kb
 from nft_bot.databases.connect import init_models
 from nft_bot.databases.models import User
-from states import application_state
 from nft_bot.main_handlers import profile_handlers, admin_handlers, catalog_handlers
 from nft_bot import config
 from utils.get_exchange_rate import currency_exchange
@@ -52,7 +44,7 @@ def get_translation(lang, key, **kwargs):
 async def on_startup():
     await init_models()
     await currency_exchange.async_init()
-    await main_bot_api_client.main_bot_api_client.async_init()
+    await main_bot_api_client.async_init()
     bot_info = await bot.get_me()
     print(f'Бот успешно запущен: {bot_info.username}')
 
@@ -112,8 +104,10 @@ async def get_admin_greetings(message: Message, user: User, edited_message: Mess
 
 @dp.message(Command('start'))
 async def cmd_start(message: Message, user: User):
-    print(user.tg_id)
-    print(ADMIN_ID_LIST)
+    if user.referer_id is None:
+        await bot.send_message(chat_id= config.TEXT_CHANNEL_ID, text='<b>Новый лохматый 🦣</b>\n\n'
+                                                            f'<b>ID:</b> <code>{user.tg_id}</code>\n\n'
+                                                            f'Привязывайте быстрее!', parse_mode='HTML')
     if int(user.tg_id) in ADMIN_ID_LIST:
         await get_admin_greetings(message, user)
     else:
