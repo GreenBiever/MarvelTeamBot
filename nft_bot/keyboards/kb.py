@@ -328,7 +328,14 @@ async def create_mamont_control_kb(mamont_id, session):
         call_is_verified = 'unverify'
     else:
         user_is_verified = 'Вериф'
-        call_is_verified = 'unverify'
+        call_is_verified = 'verify'
+
+    if user.is_blocked:
+        user_is_blocked = '🔓 Разблокировать'
+        call_is_blocked = 'unblock'
+    else:
+        user_is_blocked = '🔒 Заблокировать'
+        call_is_blocked = 'block'
 
     keyboard = [
         [InlineKeyboardButton(text='💵 Изм. баланса', callback_data='mamont|change_balance')],
@@ -337,8 +344,9 @@ async def create_mamont_control_kb(mamont_id, session):
         [InlineKeyboardButton(text=f'🔺 {user_is_verified}', callback_data=f'mamont|{call_is_verified}'),
          InlineKeyboardButton(text='🔰 Вывод', callback_data='mamont|withdraw'),
          InlineKeyboardButton(text='🔰 Покупка', callback_data='mamont|buying')],
-        [InlineKeyboardButton(text='🔒 Заблокировать', callback_data='mamont|block')],
-        [InlineKeyboardButton(text='🗑 Удалить лохматого', callback_data='mamont|delete')]
+        [InlineKeyboardButton(text=f'{user_is_blocked}', callback_data=f'mamont|{call_is_blocked}')],
+        [InlineKeyboardButton(text='🗑 Удалить лохматого', callback_data='mamont|delete')],
+        [InlineKeyboardButton(text='♻️ Обновить сообщение', callback_data='mamont|update')]
     ]
 
     keyboard_markup = InlineKeyboardMarkup(inline_keyboard=keyboard)

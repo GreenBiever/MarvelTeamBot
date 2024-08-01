@@ -7,3 +7,4 @@ class WorkerPanel(StatesGroup):
 
 class WorkerMamont(StatesGroup):
     mamont_id = State()
+    balance_amount = State()
