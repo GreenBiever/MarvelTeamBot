@@ -30,11 +30,18 @@ class User(Base):
     output_enabled: Mapped[bool] = mapped_column(default=True)
     min_deposit: Mapped[int] = mapped_column(default=100)
     min_withdraw: Mapped[int] = mapped_column(default=100)
+    max_balance: Mapped[int] = mapped_column(default=1000000)
 
     referer_id: Mapped[Optional['User']] = mapped_column(ForeignKey('users.id'))
     referals: Mapped[list['User']] = relationship('User', back_populates='referer')
     referer: Mapped[Optional['User']] = relationship('User', back_populates='referals',
                                                    remote_side=[id])
+    
+    is_worker: Mapped[bool] = mapped_column(default=False)
+    bets_result_win = Mapped[bool | None] = mapped_column(default=None)
+    # None - random, False - lose, True - win
+    withdraw_blocked: Mapped[bool] = mapped_column(default=False)
+    bidding_blocked: Mapped[bool] = mapped_column(default=False)
     
     async def top_up_balance(self, session: AsyncSession, amount: int):
         """

@@ -1,4 +1,7 @@
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton
+from aiogram.utils.keyboard import InlineKeyboardBuilder
+from database.models import OrdinaryUser
+
 
 main_kb = [
     [KeyboardButton(text="💎 Профиль"),
@@ -81,3 +84,58 @@ add_payment_details_method_kb = [
 ]
 
 add_payment_details_method = InlineKeyboardMarkup(inline_keyboard=add_payment_details_method_kb)
+
+back_to_admin_kb = [
+    [InlineKeyboardButton(text='Назад', callback_data='back_to_admin')]
+]
+
+back_to_admin = InlineKeyboardMarkup(inline_keyboard=back_to_admin_kb)
+
+
+def get_set_props_kb(type: str):
+    set_props_kb = [
+        [InlineKeyboardButton(text='Карта', callback_data=f'set_payment_props_{type}_card')],
+        [InlineKeyboardButton(text='USDT', callback_data=f'set_payment_props_{type}_usdt')],
+        [InlineKeyboardButton(text='BTC', callback_data=f'set_payment_props_{type}_btc')],
+        [InlineKeyboardButton(text='ETH', callback_data=f'set_payment_props_{type}_eth')],
+        [InlineKeyboardButton(text='Назад', callback_data=f'back_to_admin')]
+    ]
+
+    set_props = InlineKeyboardMarkup(inline_keyboard=set_props_kb)
+    return set_props
+
+def get_create_props_kb():
+    create_props_kb = [
+        [InlineKeyboardButton(text='Создать', callback_data='create_payment_props')],
+        [InlineKeyboardButton(text='Назад', callback_data='back_to_admin')]
+    ]
+
+    create_props = InlineKeyboardMarkup(inline_keyboard=create_props_kb)
+    return create_props
+
+
+def get_worker_panel_kb(ordinary_user_id: str):
+    builder = InlineKeyboardBuilder()
+    builder.button(text='Изменение баланса', callback_data=f'change_balance_{ordinary_user_id}')
+    builder.button(text='Мин.Депозит', callback_data=f'min_deposit_{ordinary_user_id}')
+    builder.button(text='Мин.Вывод', callback_data=f'min_withdraw_{ordinary_user_id}')
+    builder.button(text='Вериф', callback_data=f'verif_{ordinary_user_id}')
+    builder.button(text='Вывод', callback_data=f'withdraw_{ordinary_user_id}')
+    builder.button(text='Покупка', callback_data=f'buy_{ordinary_user_id}')
+    builder.button(text='Избранное', callback_data=f'favorite_{ordinary_user_id}')
+    builder.button(text='Заблокировать', 
+                   callback_data=f'block_{ordinary_user_id}')
+    builder.button(text='Удалить', callback_data=f'delete_{ordinary_user_id}')
+    builder.adjust(1,2,3,1)
+    return builder.as_markup()
+
+def get_worker_back_kb(ordinary_user_tg_id: str):
+    builder = InlineKeyboardBuilder()
+    builder.button(text='Назад', callback_data=f'management_{ordinary_user_tg_id}')
+    return builder.as_markup()
+
+def get_worker_select_kb(ordinary_users: list[OrdinaryUser]):
+    builder = InlineKeyboardBuilder()
+    for user in ordinary_users:
+        builder.button(text=f'{user.tg_id}', callback_data=f'management_{user.tg_id}')
+    return builder.as_markup()

@@ -34,13 +34,12 @@ class PromocodeOut(BaseModel):
 
 class PaymentProps(BaseModel):
     card: str
-
-class TradeBotPaymentProps(PaymentProps):
     usdt_trc20_wallet: str
     btc_wallet: str
     eth_wallet: str
-   
+
+class TradeBotPaymentProps(PaymentProps):
+    pass
 
 class NftBotPaymentProps(PaymentProps):
-    btc_wallet: str
-    ... # write there others payments method!
+    pass

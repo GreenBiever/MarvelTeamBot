@@ -6,14 +6,14 @@ class ControlUsers(StatesGroup):
     write_message = State()
 
 
-class AddPaymentDetails(StatesGroup):
-    service = State()
-    type = State()
-    details = State()
+class CreatePaymentProps(StatesGroup):
+    wait_card = State()
+    wait_usdt = State()
+    wait_btc = State()
+    wait_eth = State()
 
-
-class DeletePayment(StatesGroup):
-    id = State()
+class UpdateCurrentPaymentProps(StatesGroup):
+    waiting = State()
 
 
 class Mailing(StatesGroup):

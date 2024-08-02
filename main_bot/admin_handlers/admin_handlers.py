@@ -5,10 +5,13 @@ from aiogram.types import Message, CallbackQuery, InlineKeyboardButton, InlineKe
 from sqlalchemy import select, update, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 import config
-from database.models import User, PaymentDetails
+from database.models import User
 from keyboards import kb
 from middlewares import IsVerifiedMiddleware, AuthorizeMiddleware
-from admin_handlers.states import ControlUsers, AddPaymentDetails, DeletePayment, Mailing
+from admin_handlers.states import (ControlUsers, CreatePaymentProps, Mailing,
+                                   UpdateCurrentPaymentProps)
+from utils.payment_props import PAYMENT_PROPS, NftBotPaymentProps, TradeBotPaymentProps
+
 
 router = Router()
 router.message.middleware(AuthorizeMiddleware())
@@ -120,93 +123,98 @@ async def details(message: Message, user: User):
 
 
 @router.callback_query(F.data.startswith('details_service|'))
-async def choose_service(call: CallbackQuery, user: User, session: AsyncSession, state: AddPaymentDetails.service):
+async def choose_service(call: CallbackQuery,  state: FSMContext):
     await call.message.delete()
     global service_name
     service_id = call.data.split('|')[1]
     if service_id == '1':
         service_name = '💼 Трейд бот'
         service_id = 'trade'
-        await state.update_data(service='trade')
     elif service_id == '2':
         service_name = '🎆 NFT бот'
         service_id = 'nft'
-        await state.update_data(service='nft')
 
-    # Получение деталей оплаты для выбранной услуги
-    result = await session.execute(select(PaymentDetails).where(PaymentDetails.service == service_id))
-    payment_details = result.scalars().all()
+    payment_details = (PAYMENT_PROPS.nft_bot_payment_props if service_id == 'nft'
+        else PAYMENT_PROPS.trade_bot_payment_props)
 
-    # Форматирование данных в текст
     if payment_details:
-        text = f"Детали оплаты для {service_name}:\n\n"
-        for detail in payment_details:
-            text += f"ID: {detail.id} Тип: {detail.type}\nНомер счета: {detail.account_number}\n\n"
+        text = f'''Детали оплаты для {service_name}:
+Карта: {payment_details.card}
+USDT[TRC-20]: {payment_details.usdt_trc20_wallet}
+BTC: {payment_details.btc_wallet}
+ETH: {payment_details.eth_wallet}'''
+        await call.message.answer(text=text, 
+                                  reply_markup=kb.get_set_props_kb(service_id))
     else:
-        text = f"Детали оплаты для {service_name} не найдены."
+        text = f"Детали оплаты для {service_name} ещё не установлены."
+        await call.message.answer(text=text, reply_markup=kb.get_create_props_kb())
 
     # Отправка сообщения пользователю
-    await call.message.answer(text=text, reply_markup=kb.add_payment_details)
+    await state.update_data(service_id=service_id)
+    
 
+@router.callback_query(F.data == 'create_payment_props')
+async def create_payment_props(call: CallbackQuery, state: FSMContext):
+    await state.set_state(CreatePaymentProps.wait_card)
+    await call.message.edit_text("Введите реквизиты для оплаты[Карта]:")
 
-@router.callback_query(F.data == 'add_payment_details')
-async def add_payment_details(call: CallbackQuery, state: FSMContext):
-    await call.message.delete()
-    await call.message.answer('Выберите метод оплаты для пополнения: ', reply_markup=kb.add_payment_details_method)
+@router.message(StateFilter(CreatePaymentProps.wait_card))
+async def set_card(message: Message, state: FSMContext):
+    await state.update_data(card=message.text)
+    await state.set_state(CreatePaymentProps.wait_usdt)
+    await message.answer(text="Введите реквизиты для оплаты[USDT(TRC-20)]:")
 
+@router.message(StateFilter(CreatePaymentProps.wait_usdt))
+async def set_usdt_trc20(message: Message, state: FSMContext):
+    await state.update_data(usdt_trc20_wallet=message.text)
+    await state.set_state(CreatePaymentProps.wait_btc)
+    await message.answer(text="Введите реквизиты для оплаты[BTC]:")
 
-@router.callback_query(F.data.startswith('add_payment_details_method|'))
-async def add_payment_details_method(call: CallbackQuery, state: AddPaymentDetails.type):
-    await call.message.delete()
-    method = call.data.split('|')[1]
-    await state.update_data(type=method)
-    await call.message.answer('Введите номер счета: ')
-    await state.set_state(AddPaymentDetails.details)
+@router.message(StateFilter(CreatePaymentProps.wait_btc))
+async def set_btc(message: Message, state: FSMContext):
+    await state.update_data(btc_wallet=message.text)
+    await state.set_state(CreatePaymentProps.wait_eth)
+    await message.answer(text="Введите реквизиты для оплаты[ETH]:")
 
-
-@router.message(StateFilter(AddPaymentDetails.details))
-async def add_payment_details_details(message: Message, state: FSMContext, session: AsyncSession):
-    await message.delete()
-    account_number = message.text
+@router.message(StateFilter(CreatePaymentProps.wait_eth))
+async def set_eth(message: Message, state: FSMContext):
     data = await state.get_data()
-    service = data['service']
-    type = data['type']
-    try:
-        new_payment_details = PaymentDetails(
-            service=service,
-            type=type,
-            account_number=account_number
-        )
-        session.add(new_payment_details)
-        await session.commit()
-        await message.answer('Реквизиты успешно добавлены.')
-    except Exception as e:
-        await session.rollback()  # откат в случае ошибки
-        print(f'Error with adding to db: {e}')
-        await message.answer('Произошла ошибка при добавлении реквизитов.')
     await state.clear()
+    service_id = data['service_id']
+    PaymentsProps = (NftBotPaymentProps if service_id == 'nft'
+        else TradeBotPaymentProps)
+    props = PaymentsProps(card=data['card'], btc_wallet=data['btc_wallet'],
+                            usdt_trc20_wallet=data['usdt_trc20_wallet'],
+                            eth_wallet=message.text)
+    if PaymentsProps == NftBotPaymentProps:
+        PAYMENT_PROPS.nft_bot_payment_props = props
+    else:
+        PAYMENT_PROPS.trade_bot_payment_props = props
+    PAYMENT_PROPS.save_on_disk()
+
+    await message.answer(text="Реквизиты для оплаты обновлены")
 
 
-@router.callback_query(F.data == 'delete_payment_details')
-async def delete_payment_details(call: CallbackQuery, session: AsyncSession, state: FSMContext):
-    await call.message.delete()
-    await call.message.answer('Напишите ID реквизита для удаления: ')
-    await state.set_state(DeletePayment.id)
+@router.callback_query(F.data.startswith('set_payment_props_'))
+async def cmd_set_props(call: CallbackQuery, state: FSMContext):
+    service, props_type = call.data.split('_')[-2], call.data.split('_')[-1]
+    await state.update_data(service=service, props_type=props_type)
+    await state.set_state(UpdateCurrentPaymentProps.waiting)
+    await call.message.edit_text("Выберите новые реквизиты для оплаты: ")
 
-
-@router.message(StateFilter(DeletePayment.id))
-async def delete_payment_details_id(message: Message, session: AsyncSession, state: FSMContext):
-    await message.delete()
-    payment_id = message.text
-    try:
-        await session.execute(delete(PaymentDetails).where(PaymentDetails.id == int(payment_id)))
-        await session.commit()
-        await message.answer('Реквизиты успешно удалены.')
-    except Exception as e:
-        await session.rollback()
-        print(f'Error with deleting from db: {e}')
-        await message.answer('Произошла ошибка при удалении реквизитов.')
+@router.message(F.text, UpdateCurrentPaymentProps.waiting)
+async def update_current_props(message: Message, state: FSMContext):
+    data = await state.get_data()
     await state.clear()
+    payments_props = (PAYMENT_PROPS.nft_bot_payment_props if data['service'] == 'nft'
+        else PAYMENT_PROPS.trade_bot_payment_props)
+    attrs_names = {'card': 'card', 
+                   'usdt': 'usdt_trc20_wallet', 'btc': 'btc_wallet', 
+                   'eth': 'eth_wallet'}
+    setattr(payments_props, attrs_names[data['props_type']], message.text)
+    PAYMENT_PROPS.save_on_disk()
+    await message.answer("Реквизиты для оплаты обновлены",
+                         reply_markup=kb.back_to_admin)
 
 
 @router.callback_query(F.data == 'back_to_admin')
@@ -235,7 +243,8 @@ async def send_message(message: Message, session: AsyncSession, state: FSMContex
     users = users.scalars().all()
     for user in users:
         try:
-            await message.bot.send_message(user.tg_id, text=text)
+            await message.copy_to(user.tg_id)
+            #await message.bot.send_message(user.tg_id, text=text)
         except Exception as e:
             print(f'Error with sending message to {user.tg_id}: {e}')
 
@@ -243,5 +252,5 @@ async def send_message(message: Message, session: AsyncSession, state: FSMContex
 @router.message(F.text == 'Назад')
 async def back(message: Message, user: User):
     if user.tg_id in config.ADMIN_IDS:
-        await message.answer(text=f'<b>👋 Добро пожаловать администратор, {user.fname}!\n выберите сервис ниже:</b>',
+        await message.answer(text=f'<b>👋 Добро пожаловать, администратор {user.fname}!\n выберите сервис ниже:</b>',
                              parse_mode="HTML", reply_markup=kb.main_admin)
