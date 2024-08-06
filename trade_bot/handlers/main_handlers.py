@@ -1,13 +1,13 @@
 from aiogram import types, F, Router
 from aiogram.types import Message, CallbackQuery
 from aiogram.filters import Command
-import keyboards as kb
-from middlewares import AuthorizeMiddleware
-from database.models import User
+from trade_bot import keyboards as kb
+from trade_bot.middlewares import AuthorizeMiddleware
+from trade_bot.database.models import User
 from aiogram.fsm.context import FSMContext
 from aiogram.utils.markdown import hlink
 import random
-from database.enums import LangEnum, CurrencyEnum
+from trade_bot.database.enums import LangEnum, CurrencyEnum
 from sqlalchemy.ext.asyncio import AsyncSession
 
 

@@ -1,12 +1,12 @@
 from aiogram import BaseMiddleware
 from aiogram.types import Message
 import logging
-from database.models import User
-from database.connect import async_session
-from database.crud import register_referal
+from trade_bot.database.models import User
+from trade_bot.database.connect import async_session
+from trade_bot.database.crud import register_referal
 from sqlalchemy import select, update
 from datetime import datetime
-from utils.main_bot_api_client import LogRequest, main_bot_api_client, ReferalModel
+from trade_bot.utils.main_bot_api_client import LogRequest, main_bot_api_client, ReferalModel
 import asyncio
 
 
