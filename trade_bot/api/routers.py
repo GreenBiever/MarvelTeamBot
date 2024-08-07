@@ -18,6 +18,8 @@ async def get_main_page(request: Request, trade: str = Query(), id: str = Query(
     )
 
 
+
+
 @router.get("/user/{user_tg_id}/", response_model=UserProfile)
 async def get_user_profile(user_tg_id: int = Path(),
                            session: AsyncSession = Depends(get_session)):
