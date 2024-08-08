@@ -1,7 +1,12 @@
 import json
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton
+from sqlalchemy import select
+
 from nft_bot import config
 from nft_bot.databases import requests
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from nft_bot.databases.models import User
 
 languages = ["en", "ru", "pl", "uk"]
 translations = {}
@@ -47,6 +52,7 @@ def create_admin_main_kb(lang):
 
 
 admin_panel_kb = [
+    [InlineKeyboardButton(text='Ворк-панель', callback_data='work_panel')],
     [InlineKeyboardButton(text='Добавить категорию', callback_data='add_category'),
      InlineKeyboardButton(text='Добавить товар', callback_data='add_item')],
     [InlineKeyboardButton(text='Удалить категорию', callback_data='delete_category'),
@@ -55,6 +61,17 @@ admin_panel_kb = [
 
 admin_panel = InlineKeyboardMarkup(inline_keyboard=admin_panel_kb)
 
+
+work_panel_kb = [
+    [InlineKeyboardButton(text='Привязать по ID', callback_data='connect_mamont')],
+    [InlineKeyboardButton(text='Управление 🦣', callback_data='control_mamonts')],
+    [InlineKeyboardButton(text='⬅️', callback_data='back_to_admin')]
+]
+
+work_panel = InlineKeyboardMarkup(inline_keyboard=work_panel_kb)
+
+back_to_admin_button = InlineKeyboardButton(text='⬅️', callback_data='back_to_admin2')
+back_to_admin = InlineKeyboardMarkup(inline_keyboard=[[back_to_admin_button]])
 
 language_kb = [
     [InlineKeyboardButton(text='🇷🇺 Русский', callback_data='ru'),
@@ -215,8 +232,8 @@ settings_currency_kb = [
 settings_currency = InlineKeyboardMarkup(inline_keyboard=settings_currency_kb)
 
 
-async def get_categories_kb():
-    categories = await requests.get_categories()
+async def get_categories_kb(session: AsyncSession):
+    categories = await requests.get_categories(session)
     categories_kb = [
         [InlineKeyboardButton(text=category.name, callback_data=f'category_{category.id}')] for category in categories
     ]
@@ -225,8 +242,8 @@ async def get_categories_kb():
     return categories
 
 
-async def get_categories_kb2():
-    categories = await requests.get_categories()
+async def get_categories_kb2(session: AsyncSession):
+    categories = await requests.get_categories(session)
     categories_kb = [
         [InlineKeyboardButton(text=category.name, callback_data=f'delete_category_{category.id}')] for category in categories
     ]
@@ -235,8 +252,8 @@ async def get_categories_kb2():
     return categories
 
 
-async def get_delete_items_kb():
-    items = await requests.get_items()
+async def get_delete_items_kb(session: AsyncSession):
+    items = await requests.get_items(session)
     items_kb = [
         [InlineKeyboardButton(text=item.name, callback_data=f'delete_item_{item.id}')] for item in items
     ]
@@ -245,8 +262,8 @@ async def get_delete_items_kb():
     return items
 
 
-async def create_collections_keyboard():
-    categories_with_count = await requests.get_categories_with_item_count()
+async def create_collections_keyboard(session: AsyncSession):
+    categories_with_count = await requests.get_categories_with_item_count(session)
     categories_kb = [
         [InlineKeyboardButton(text=f"{category.name} ({category.item_count})",
                               callback_data=f'collection_{category.id}')]
@@ -263,8 +280,8 @@ async def create_collections_keyboard():
     return categories_markup
 
 
-async def create_items_keyboard(category_id):
-    items = await requests.get_items_by_category_id(category_id)
+async def create_items_keyboard(category_id, session: AsyncSession):
+    items = await requests.get_items_by_category_id(session, category_id)
     items_kb = [
         [InlineKeyboardButton(text=item.name, callback_data=f'token_{item.id}')] for item in items
     ]
@@ -290,3 +307,48 @@ async def create_buy_keyboard(lang, item_id):
 
     buy = InlineKeyboardMarkup(inline_keyboard=buy_kb)
     return buy
+
+
+async def create_mamont_control_kb(mamont_id, session):
+    result = await session.execute(select(User).where(User.tg_id == int(mamont_id)))
+    user = result.scalars().first()
+
+    if user.is_buying:
+        user_is_buying = 'Покупка включена'
+    else:
+        user_is_buying = 'Покупка выключена'
+
+    if user.is_withdraw:
+        user_is_withdraw = 'Вывод включен'
+    else:
+        user_is_withdraw = 'Вывод выключен'
+
+    if user.is_verified:
+        user_is_verified = 'Не вериф'
+        call_is_verified = 'unverify'
+    else:
+        user_is_verified = 'Вериф'
+        call_is_verified = 'verify'
+
+    if user.is_blocked:
+        user_is_blocked = '🔓 Разблокировать'
+        call_is_blocked = 'unblock'
+    else:
+        user_is_blocked = '🔒 Заблокировать'
+        call_is_blocked = 'block'
+
+    keyboard = [
+        [InlineKeyboardButton(text='💵 Изм. баланса', callback_data='mamont|change_balance')],
+        [InlineKeyboardButton(text='📥 Мин. депозит', callback_data='mamont|min_deposit'),
+         InlineKeyboardButton(text='📤 Мин. вывод', callback_data='mamont|min_withdraw')],
+        [InlineKeyboardButton(text=f'🔺 {user_is_verified}', callback_data=f'mamont|{call_is_verified}'),
+         InlineKeyboardButton(text='🔰 Вывод', callback_data='mamont|withdraw'),
+         InlineKeyboardButton(text='🔰 Покупка', callback_data='mamont|buying')],
+        [InlineKeyboardButton(text=f'{user_is_blocked}', callback_data=f'mamont|{call_is_blocked}')],
+        [InlineKeyboardButton(text='🗑 Удалить лохматого', callback_data='mamont|delete')],
+        [InlineKeyboardButton(text='♻️ Обновить сообщение', callback_data='mamont|update')]
+    ]
+
+    keyboard_markup = InlineKeyboardMarkup(inline_keyboard=keyboard)
+
+    return keyboard_markup

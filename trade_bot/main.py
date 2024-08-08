@@ -13,7 +13,7 @@ from utils import currency_exchange
 from utils.main_bot_api_client import main_bot_api_client
 
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(filename="trade_bot.log", level=logging.INFO)
 bot = Bot(token=config.TOKEN)
 dp = Dispatcher()
 dp.include_routers(main_handlers.router, 

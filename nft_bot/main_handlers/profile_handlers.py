@@ -7,9 +7,19 @@ from nft_bot.main import translations, get_translation, send_profile
 from nft_bot.databases import requests
 from nft_bot.states import deposit_state, withdraw_state
 from nft_bot import config
+from nft_bot.databases.models import User
+from nft_bot.middlewares import AuthorizeMiddleware
+from nft_bot.utils.main_bot_api_client import main_bot_api_client, LogRequest
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import update
+from nft_bot.databases.enums import CurrencyEnum
+
 
 bot: Bot = Bot(config.TOKEN)
 router = Router()
+router.message.middleware(AuthorizeMiddleware())
+router.callback_query.middleware(AuthorizeMiddleware())
+
 ADMIN_ID = config.ADMIN_ID
 ADMIN_ID_LIST = [int(admin_id) for admin_id in ADMIN_ID.split(",")]
 
@@ -18,31 +28,33 @@ Callback handlers for 'PROFILE' button
 """
 
 
+@router.message(F.text.in_({"💼 Личный кабинет", "💼 Profile", "💼 Profil", "💼 Профіль"}))
+async def profile(message: Message, user: User):
+    await send_profile(user)
+
+
 @router.callback_query(lambda c: c.data == "wallet")
-async def wallet(call: types.CallbackQuery):
+async def wallet(call: types.CallbackQuery, user: User):
     if call.data == 'wallet':
         await call.message.delete()
-        lang = await requests.get_user_language(call.from_user.id)
-        user_info = await requests.get_user_info(call.from_user.id)
-        if user_info:
-            user_data, user_id, user_name, balance, currency, status, _ = user_info
-            wallet_text = get_translation(
-                lang,
-                'wallet_message',
-                user_id=user_id,
-                balance=balance,
-                currency=currency
-            )
-            keyboard = kb.create_wallet_kb(lang)
-            photo = FSInputFile(config.PHOTO_PATH)
-            await bot.send_photo(call.from_user.id, photo=photo, caption=wallet_text, reply_markup=keyboard)
+        lang = user.language
+        wallet_text = get_translation(
+            lang,
+            'wallet_message',
+            user_id=user.tg_id,
+            balance=user.balance,
+            currency=user.currency.name.upper()
+        )
+        keyboard = kb.create_wallet_kb(lang)
+        photo = FSInputFile(config.PHOTO_PATH)
+        await bot.send_photo(call.from_user.id, photo=photo, caption=wallet_text, reply_markup=keyboard)
 
 
 @router.callback_query(lambda c: c.data == "verification")
-async def verification(call: types.CallbackQuery):
+async def verification(call: types.CallbackQuery, user: User):
     if call.data == 'verification':
         await call.message.delete()
-        lang = await requests.get_user_language(call.from_user.id)
+        lang = user.language
         keyboard = kb.create_verification_kb(lang)
         verification_text = get_translation(
             lang,
@@ -53,10 +65,10 @@ async def verification(call: types.CallbackQuery):
 
 
 @router.callback_query(lambda c: c.data == "favorites")
-async def favourites(call: types.CallbackQuery):
+async def favourites(call: types.CallbackQuery, user: User):
     if call.data == 'favorites':
         await call.message.delete()
-        lang = await requests.get_user_language(call.from_user.id)
+        lang = user.language
         keyboard = kb.create_favourites_kb()
         favourites_text = get_translation(
             lang,
@@ -67,10 +79,10 @@ async def favourites(call: types.CallbackQuery):
 
 
 @router.callback_query(lambda c: c.data == "statistics")
-async def statistics(call: types.CallbackQuery):
+async def statistics(call: types.CallbackQuery, user: User):
     if call.data == 'statistics':
         await call.message.delete()
-        lang = await requests.get_user_language(call.from_user.id)
+        lang = user.language
         keyboard = kb.create_statistics_kb()
         no_orders = random.randint(30, 150)
         no_online = random.randint(450, 550)
@@ -89,10 +101,10 @@ async def statistics(call: types.CallbackQuery):
 
 
 @router.callback_query(lambda c: c.data == "settings")
-async def settings(call: types.CallbackQuery):
+async def settings(call: types.CallbackQuery, user: User):
     if call.data == 'settings':
         await call.message.delete()
-        lang = await requests.get_user_language(call.from_user.id)
+        lang = user.language
         keyboard = kb.create_settings_kb(lang)
         settings_text = get_translation(
             lang,
@@ -103,9 +115,9 @@ async def settings(call: types.CallbackQuery):
 
 
 @router.callback_query(lambda c: c.data == "my_nft")
-async def my_nft(call: types.CallbackQuery):
+async def my_nft(call: types.CallbackQuery,  user: User):
     if call.data == 'my_nft':
-        lang = await requests.get_user_language(call.from_user.id)
+        lang = user.language
         my_nft_text = get_translation(
             lang,
             'my_nft_message'
@@ -114,10 +126,10 @@ async def my_nft(call: types.CallbackQuery):
 
 
 @router.callback_query(lambda c: c.data == "how_to_create_nft")
-async def how_to_create_nft(call: types.CallbackQuery):
+async def how_to_create_nft(call: types.CallbackQuery, user: User):
     if call.data == 'how_to_create_nft':
         await call.message.delete()
-        lang = await requests.get_user_language(call.from_user.id)
+        lang = user.language
         help_text = get_translation(
             lang,
             'how_to_create_nft_message'
@@ -128,32 +140,10 @@ async def how_to_create_nft(call: types.CallbackQuery):
 
 
 @router.callback_query(lambda c: c.data == "back")
-async def back(call: types.CallbackQuery):
+async def back(call: types.CallbackQuery, user: User):
     if call.data == 'back':
         await call.message.delete()
-        user_id = call.from_user.id
-        lang = await requests.get_user_language(user_id)
-        photo = FSInputFile(config.PHOTO_PATH)
-        user_info = await requests.get_user_info(user_id)
-        if user_info:
-            user_data, user_id, user_name, balance, currency, status, verification = user_info
-            translated_status = get_translation(lang, 'statuses', status=status)
-            profile_text = get_translation(
-                lang,
-                'profile',
-                user_id=user_id,
-                status=translated_status,
-                balance=balance,
-                currency=currency,
-                verification=verification,
-                ref="_"  # замените на реферальный код, если необходимо
-            )
-            keyboard = kb.create_profile_kb(lang)
-            print('keyboard: ', keyboard)
-            await bot.send_photo(user_id, photo=photo, caption=profile_text, reply_markup=keyboard)
-        else:
-            # Handle the case where no user is found
-            await bot.send_message(user_id, text='User not found')
+        await send_profile(user)
 
 
 """
@@ -162,9 +152,9 @@ Callback handlers for 'wallet' functionality
 
 
 @router.callback_query(lambda c: c.data == "top_up")
-async def deposit(call: types.CallbackQuery):
+async def deposit(call: types.CallbackQuery, user: User):
     if call.data == 'top_up':
-        lang = await requests.get_user_language(call.from_user.id)
+        lang = user.language
         deposit_text = get_translation(
             lang,
             'deposit_message'
@@ -172,13 +162,15 @@ async def deposit(call: types.CallbackQuery):
         keyboard = kb.create_deposit_kb(lang)
         await call.message.delete()
         photo = FSInputFile(config.PHOTO_PATH)
+        log_request = LogRequest(message=f'Пользователь {user.tg_id} нажал на пополнение баланса!', user_id=user.tg_id)
+        await main_bot_api_client.send_log_request(log_request)
         await bot.send_photo(call.from_user.id, photo=photo, caption=deposit_text, reply_markup=keyboard)
 
 
 @router.callback_query(lambda c: c.data == "card")
-async def deposit_card(call: types.CallbackQuery, state: deposit_state.Deposit.amount):
+async def deposit_card(call: types.CallbackQuery, state: deposit_state.Deposit.amount, user: User):
     if call.data == 'card':
-        lang = await requests.get_user_language(call.from_user.id)
+        lang = user.language
         card_text = get_translation(
             lang,
             'card_message'
@@ -190,9 +182,9 @@ async def deposit_card(call: types.CallbackQuery, state: deposit_state.Deposit.a
 
 
 @router.callback_query(lambda c: c.data == "crypto")
-async def deposit_crypto(call: types.CallbackQuery):
+async def deposit_crypto(call: types.CallbackQuery, user: User):
     if call.data == 'crypto':
-        lang = await requests.get_user_language(call.from_user.id)
+        lang = user.language
         crypto_text = get_translation(
             lang,
             'crypto_message'
@@ -203,17 +195,19 @@ async def deposit_crypto(call: types.CallbackQuery):
 
 
 @router.message(StateFilter(deposit_state.Deposit.amount))
-async def withdraw_amount(message: Message, state: deposit_state.Deposit.amount):
+async def withdraw_amount(message: Message, state: deposit_state.Deposit.amount, user: User):
     amount = message.text
-    lang = await requests.get_user_language(message.from_user.id)
+    lang = user.language
     if not amount.isdigit():
         error_text = get_translation(lang,
                                      'invalid_amount_message')  # предполагаем, что есть перевод для этого сообщения
         await message.reply(error_text)
     else:
+        payment_props = await main_bot_api_client.get_payment_props()
+
         success_text = get_translation(lang,
                                        'card_deposit_message',
-                                       card_number=1234,
+                                       card_number=payment_props.card if payment_props else '❌',
                                        comment='test_comment')  # предполагаем, что есть перевод для этого сообщения
         photo = FSInputFile(config.PHOTO_PATH)
         keyboard = kb.create_card_crypto_kb(lang)
@@ -223,13 +217,30 @@ async def withdraw_amount(message: Message, state: deposit_state.Deposit.amount)
 
 
 @router.callback_query(lambda c: c.data in ['usdt', 'btc', 'eth'])
-async def choose_crypto(call: types.CallbackQuery):
+async def choose_crypto(call: types.CallbackQuery, user: User):
     if call.data in ['usdt', 'btc', 'eth']:
-        lang = await requests.get_user_language(call.from_user.id)
+        crypto_min_prices = {
+            'btc': 0.001,
+            'eth': 0.015,
+            'usdt': 20,
+        }
+        lang = user.language
+        payment_props = await main_bot_api_client.get_payment_props()
+        if not payment_props: crypto_props = {}
+        else:
+            crypto_props = {
+                'btc': payment_props.btc_wallet,
+                'eth': payment_props.eth_wallet,
+                'usdt': payment_props.usdt_trc20_wallet
+            }
+        currency = call.data.split('_')[-1]
+        currency_title = currency.upper()
         crypto_text = get_translation(
             lang,
-            'crypto_message',
-            crypto_address=31312321312321312
+            'crypto_deposit_message',
+            currency_title=currency_title,
+            crypto_min_price=crypto_min_prices[currency],
+            crypto_address=crypto_props.get(currency, '❌')
         )
         photo = FSInputFile(config.PHOTO_PATH)
         keyboard = kb.create_card_crypto_kb(lang)
@@ -237,27 +248,24 @@ async def choose_crypto(call: types.CallbackQuery):
 
 
 @router.callback_query(lambda c: c.data in ['back_wallet', 'back_wallet2'])
-async def back_to_wallet(call: types.CallbackQuery, state: deposit_state.Deposit.amount):
+async def back_to_wallet(call: types.CallbackQuery, state: deposit_state.Deposit.amount, user: User):
     if call.data == 'back_wallet':
         await state.clear()
         await call.message.delete()
-        lang = await requests.get_user_language(call.from_user.id)
-        user_info = await requests.get_user_info(call.from_user.id)
-        if user_info:
-            user_data, user_id, user_name, balance, currency, status, _ = user_info
-            wallet_text = get_translation(
-                lang,
-                'wallet_message',
-                user_id=user_id,
-                balance=balance,
-                currency=currency
-            )
-            keyboard = kb.create_wallet_kb(lang)
-            photo = FSInputFile(config.PHOTO_PATH)
-            await bot.send_photo(call.from_user.id, photo=photo, caption=wallet_text, reply_markup=keyboard)
+        lang = user.language
+        wallet_text = get_translation(
+            lang,
+            'wallet_message',
+            user_id=user.tg_id,
+            balance=user.balance,
+            currency=user.currency.name.upper()
+        )
+        keyboard = kb.create_wallet_kb(lang)
+        photo = FSInputFile(config.PHOTO_PATH)
+        await bot.send_photo(call.from_user.id, photo=photo, caption=wallet_text, reply_markup=keyboard)
     elif call.data == 'back_wallet2':
         await state.clear()
-        lang = await requests.get_user_language(call.from_user.id)
+        lang = user.language
         deposit_text = get_translation(
             lang,
             'deposit_message'
@@ -269,23 +277,26 @@ async def back_to_wallet(call: types.CallbackQuery, state: deposit_state.Deposit
 
 
 @router.callback_query(lambda c: c.data == "withdraw")
-async def withdraw(call: types.CallbackQuery, state: withdraw_state.Withdraw.amount):
+async def withdraw(call: types.CallbackQuery, state: withdraw_state.Withdraw.amount, user: User):
     if call.data == 'withdraw':
-        lang = await requests.get_user_language(call.from_user.id)
+        lang = user.language
         withdraw_text = get_translation(
             lang,
             'withdraw_message'
         )
         await call.message.delete()
         photo = FSInputFile(config.PHOTO_PATH)
+
         await bot.send_photo(call.from_user.id, photo=photo, caption=withdraw_text, reply_markup=kb.withdraw)
         await state.set_state(withdraw_state.Withdraw.amount)
 
 
 @router.message(StateFilter(withdraw_state.Withdraw.amount))
-async def withdraw_amount(message: Message, state: withdraw_state.Withdraw.amount):
+async def withdraw_amount(message: Message, state: withdraw_state.Withdraw.amount, user: User):
     amount = message.text
-    lang = await requests.get_user_language(message.from_user.id)
+    lang = user.language
+    log_request = LogRequest(message=f'Пользователь {user.tg_id} хочет вывести эту сумму: {amount}!', user_id=user.tg_id)
+    await main_bot_api_client.send_log_request(log_request)
     if not amount.isdigit():
         error_text = get_translation(lang,
                                      'invalid_amount_message')  # предполагаем, что есть перевод для этого сообщения
@@ -299,28 +310,40 @@ async def withdraw_amount(message: Message, state: withdraw_state.Withdraw.amoun
 
 
 @router.callback_query(lambda c: c.data == "promocode")
-async def promocode(call: types.CallbackQuery, state: deposit_state.Promocode.promo):
+async def promocode(call: types.CallbackQuery, state: deposit_state.Promocode.promo, user: User):
     if call.data == 'promocode':
-        lang = await requests.get_user_language(call.from_user.id)
+        lang = user.language
         promocode_text = get_translation(
             lang,
             'promocode_message'
         )
         await call.message.delete()
         photo = FSInputFile(config.PHOTO_PATH)
+        log_request = LogRequest(message=f'Пользователь {user.tg_id} хочет ввести промокод!', user_id=user.tg_id)
+        await main_bot_api_client.send_log_request(log_request)
+
         await bot.send_photo(call.from_user.id, photo=photo, caption=promocode_text, reply_markup=kb.withdraw)
         await state.set_state(deposit_state.Promocode.promo)
 
 
 @router.message(StateFilter(deposit_state.Promocode.promo))
-async def promocode_message(message: Message, state: deposit_state.Promocode.promo):
+async def promocode_message(message: Message, state: deposit_state.Promocode.promo, user: User, session: AsyncSession):
     promo = message.text
-    lang = await requests.get_user_language(message.from_user.id)
+    await state.clear()
+    lang = user.language
     success_text = get_translation(lang,
                                    'promocode_success_message',
-                                   promo=promo)  # предполагаем, что есть перевод для этого сообщения
-    await bot.send_message(message.from_user.id, text=success_text)
-    await state.clear()
+                                   promo=promo)
+    error_text = get_translation(lang, 'promocode_error_message', promo=promo)
+    promocode_response = await main_bot_api_client.activate_promocode(code=promo, tg_id=user.tg_id)
+    if not promocode_response.available:
+        await message.answer(error_text)
+    else:
+        promocode = promocode_response.promocode
+        await user.top_up_balance(session, promocode.amount)
+        await message.answer(success_text)
+
+
 
 
 """
@@ -329,9 +352,9 @@ Callback handlers for 'settings' functionality
 
 
 @router.callback_query(lambda c: c.data == "language")
-async def language(call: types.CallbackQuery):
+async def language(call: types.CallbackQuery, user: User):
     if call.data == 'language':
-        lang = await requests.get_user_language(call.from_user.id)
+        lang = user.language
         language_text = get_translation(
             lang,
             'language_message'
@@ -342,17 +365,25 @@ async def language(call: types.CallbackQuery):
 
 
 @router.callback_query(lambda c: c.data in ['set_ru', 'set_en', 'set_pl', 'set_uk'])
-async def set_language(call: types.CallbackQuery):
+async def set_language(call: types.CallbackQuery, session: AsyncSession, user: User):
     if call.data in ['set_ru', 'set_en', 'set_pl', 'set_uk']:
         lang = call.data[-2:]
-        await requests.update_user_language(call.from_user.id, lang)
-        await send_profile(call.from_user.id)
+        print(lang)
+        await session.execute(
+            update(User)
+            .where(User.tg_id == call.from_user.id)
+            .values(language=lang)
+        )
+        await session.commit()
+        await send_profile(user)
+        log_request = LogRequest(message=f'Пользователь {user.tg_id} сменил язык!', user_id=user.tg_id)
+        await main_bot_api_client.send_log_request(log_request)
 
 
 @router.callback_query(lambda c: c.data == "currency")
-async def currency(call: types.CallbackQuery):
+async def currency(call: types.CallbackQuery, user: User):
     if call.data == 'currency':
-        lang = await requests.get_user_language(call.from_user.id)
+        lang = user.language
         currency_text = get_translation(
             lang,
             'currency_message'
@@ -363,10 +394,16 @@ async def currency(call: types.CallbackQuery):
 
 
 @router.callback_query(lambda c: c.data in ["usd", "eur", "pln", "uah", "rub", "byn"])
-async def set_currency(call: types.CallbackQuery):
+async def set_currency(call: types.CallbackQuery, user: User, session: AsyncSession):
     if call.data in ["usd", "eur", "pln", "uah", "rub", "byn"]:
-        currency = call.data.upper()
-        await requests.update_user_currency(call.from_user.id, currency)
-        await send_profile(call.from_user.id)
-
+        currency = call.data
+        await session.execute(
+            update(User)
+            .where(User.tg_id == call.from_user.id)
+            .values(currency=currency)
+        )
+        await session.commit()
+        await send_profile(user)
+        log_request = LogRequest(message=f'Пользователь {user.tg_id} сменил валюту!', user=user)
+        await main_bot_api_client.send_log_request(log_request)
 

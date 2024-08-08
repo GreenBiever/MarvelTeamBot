@@ -5,7 +5,7 @@ from .enums import CurrencyEnum
 
 
 async def get_user_id(session: AsyncSession, user: User, user_id: int):
-    result = await session.execute(select(user).where(user.user_id == user_id))
+    result = await session.execute(select(user).where(user.tg_id == user_id))
     return result
 
 
@@ -18,12 +18,12 @@ async def add_user(session: AsyncSession, user: User, user_id: int, user_name: s
 
 
 async def get_user_language(session: AsyncSession, user: User, user_id: int):
-    result = await session.execute(select(user.language).where(user.user_id == user_id))
+    result = await session.execute(select(user.language).where(user.tg_id == user_id))
     return result.scalars().first()
 
 
 async def get_user_info(session: AsyncSession, user: User, user_id: int):
-    result = await session.execute(select(user).where(user.user_id == user_id))
+    result = await session.execute(select(user).where(user.tg_id == user_id))
     user_data = result.scalars().one_or_none()
     if user_data:
         user_id = user_data.user_id
@@ -37,126 +37,125 @@ async def get_user_info(session: AsyncSession, user: User, user_id: int):
         return None
 
 
-async def get_user_currency(session: AsyncSession, user: User, user_id: int):
-    result = await session.execute(select(user.currency).where(user.user_id == user_id))
+async def get_user_currency(session: AsyncSession, user_id: int):
+    result = await session.execute(select(User.currency).where(User.tg_id == user_id))
     return result.scalars().first()
 
 
 async def get_user_status(session: AsyncSession, user: User, user_id: int):
-    result = await session.execute(select(user.status).where(user.user_id == user_id))
+    result = await session.execute(select(user.is_blocked).where(user.tg_id == user_id))
     return result.scalars().first()
 
 
 async def update_user_language(session: AsyncSession, user: User, user_id: int, language: str):
     stmt = (
         update(user).
-        where(user.user_id == user_id).
+        where(user.tg_id == user_id).
         values(language=language)
     )
     await session.execute(stmt)
     await session.commit()
 
 
-async def update_user_currency(session: AsyncSession, user: User, user_id: int, currency: str):
+async def update_user_currency(session: AsyncSession, user_id: int, currency: str):
     stmt = (
-        update(user).
-        where(user.user_id == user_id).
+        update(User).
+        where(User.tg_id == user_id).
         values(currency=currency)
     )
     await session.execute(stmt)
     await session.commit()
 
 
-async def add_category(session: AsyncSession, category: Category, category_name: str):
+async def add_category(session: AsyncSession, category_name: str):
     await session.execute(
-        insert(category).values(name=category_name))
+        insert(Category).values(name=category_name))
     await session.commit()
 
 
-async def add_item(session: AsyncSession, product: Product, item_name: str, description: str, price: float, author: str,
+async def add_item(session: AsyncSession,item_name: str, description: str, price: float, author: str,
                    photo: str, category_id: int):
     await session.execute(
-        insert(product).values(name=item_name, description=description, price=price, author=author, photo=photo,
+        insert(Product).values(name=item_name, description=description, price=price, author=author, photo=photo,
                                category_id=category_id))
     await session.commit()
 
 
-async def get_categories(session: AsyncSession, category: Category):
-    result = await session.execute(select(category))
+async def get_categories(session: AsyncSession):
+    result = await session.execute(select(Category))
     print(result.scalars().all)
     return result.scalars().all()
 
 
-async def delete_category(session: AsyncSession, category: Category, category_id: int):
+async def delete_category(session: AsyncSession, category_id: int):
     stmt = (
-        delete(category).
-        where(category.id == category_id)
+        delete(Category).
+        where(Category.id == category_id)
     )
     await session.execute(stmt)
     await session.commit()
 
 
-async def get_items(session: AsyncSession, product: Product):
-    result = await session.execute(select(product))
+async def get_items(session: AsyncSession):
+    result = await session.execute(select(Product))
     return result.scalars().all()
 
 
-async def delete_item(session: AsyncSession, product: Product, item_id: int):
+async def delete_item(session: AsyncSession, item_id: int):
     stmt = (
-        delete(product).
-        where(product.id == item_id)
+        delete(Product).
+        where(Product.id == item_id)
     )
     await session.execute(stmt)
     await session.commit()
 
 
-async def get_category_count(session: AsyncSession, category: Category):
-    result = await session.execute(select(func.count(category.id)))
+async def get_category_count(session: AsyncSession):
+    result = await session.execute(select(func.count(Category.id)))
     count = result.scalar()
     return count
 
 
-async def get_categories_with_item_count(session: AsyncSession, category: Category, product: Product):
+async def get_categories_with_item_count(session: AsyncSession):
     result = await session.execute(
-        select(category.id, category.name, func.count(product.id).label('item_count'))
-        .join(product, category.id == product.category_id, isouter=True)  # Left join with Product table
-        .group_by(category.id)
+        select(Category.id, Category.name, func.count(Product.id).label('item_count'))
+        .join(Product, Category.id == Product.category_id, isouter=True)  # Left join with Product table
+        .group_by(Category.id)
     )
     categories_with_count = result.all()
     return categories_with_count
 
 
-async def get_categories_with_item_count_by_id(session: AsyncSession, category: Category, product: Product,
-                                               category_id: int):
+async def get_categories_with_item_count_by_id(session: AsyncSession, category_id: int):
     result = await session.execute(
-        select(category.id, category.name, func.count(product.id).label('item_count')).where(category.id == category_id)
-        .join(product, category.id == product.category_id, isouter=True)  # Left join with Product table
-        .group_by(category.id)
+        select(Category.id, Category.name, func.count(Product.id).label('item_count')).where(Category.id == category_id)
+        .join(Product, Category.id == Product.category_id, isouter=True)  # Left join with Product table
+        .group_by(Category.id)
     )
     categories_with_count = result.all()
     return categories_with_count
 
 
-async def get_items_by_category_id(session: AsyncSession, product: Product, category_id: int):
-    result = await session.execute(select(product).where(product.category_id == category_id))
+async def get_items_by_category_id(session: AsyncSession, category_id: int):
+    result = await session.execute(select(Product).where(Product.category_id == category_id))
     items = result.scalars().all()
     return items
 
 
-async def get_item_info(session: AsyncSession, product: Product, category: Category, item_id: int):
+async def get_item_info(session: AsyncSession, item_id: int):
     result = await session.execute(
-        select(product.id, product.name, product.description, product.price, product.author, product.photo,
-               category.name.label('category_name'))
-        .join(category, product.category_id == category.id)
-        .where(product.id == item_id)
+        select(Product.id, Product.name, Product.description, Product.price, Product.author, Product.photo,
+               Category.name.label('category_name'))
+        .join(Category, Product.category_id == Category.id)
+        .where(Product.id == item_id)
     )
     product_info = result.one_or_none()
     return product_info
 
 
-async def add_to_favourites(session: AsyncSession, favourites: Favourites, user_id: int, item_id: int):
+async def add_to_favourites(session: AsyncSession, user_id: int, item_id: int):
     await session.execute(
-        insert(favourites).values(user_id=user_id, item_id=item_id))
+        insert(Favourites).values(user_id=user_id, item_id=item_id))
     await session.commit()
 
 

@@ -1,10 +1,12 @@
 import aiohttp
 from pydantic import BaseModel
-import config
+from trade_bot import config
+
 
 class LogRequest(BaseModel):
     user_tg_id: str
     log_text: str
+
 
 class ReferalModel(BaseModel):
     referal_tg_id: str
@@ -45,7 +47,7 @@ class MainBotApiClient:
         async with self.session.post(url, json=log_request.model_dump()) as response:
             if response.status != 200:
                 raise Exception('Main bot api not found')
-            
+
     async def send_referal(self, referal_model: ReferalModel):
         url = f"{config.WEBSITE_URL}/referals/"
         async with self.session.post(url, json=referal_model.model_dump()) as response:
