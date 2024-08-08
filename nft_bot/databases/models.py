@@ -6,14 +6,14 @@ from nft_bot.utils.get_exchange_rate import currency_exchange
 from .enums import CurrencyEnum
 from datetime import datetime
 from typing import Optional
+from .connect import Base
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import update
+from nft_bot import config
 
 engine = create_async_engine(SQLALCHEMY_URL, echo=True)
 
 async_session = async_sessionmaker(engine)
-
-
-class Base(AsyncAttrs, DeclarativeBase):
-    pass
 
 
 class User(Base):
@@ -30,15 +30,35 @@ class User(Base):
     is_blocked: Mapped[bool] = mapped_column(default=False)
     is_verified: Mapped[bool] = mapped_column(default=False)
     last_login: Mapped[datetime] = mapped_column(default=datetime.now)
+    min_deposit: Mapped[int] = mapped_column(default=5000)
+    min_withdraw: Mapped[int] = mapped_column(default=5000)
+    is_withdraw: Mapped[bool] = mapped_column(default=True)
+    is_buying: Mapped[bool] = mapped_column(default=True)
 
     referer_id: Mapped[Optional['User']] = mapped_column(ForeignKey('users.id'))
     referals: Mapped[list['User']] = relationship('User', back_populates='referer')
     referer: Mapped[Optional['User']] = relationship('User', back_populates='referals',
                                                      remote_side=[id])
+    favourites: Mapped[list['Favourites']] = relationship('Favourites', back_populates='user')
 
     async def get_balance(self) -> float:
         '''retun user balance converted to user currency'''
+        print(self.currency, self.balance)
         return await currency_exchange.get_exchange_rate(self.currency, self.balance)
+
+    async def top_up_balance(self, session: AsyncSession, amount: int):
+        """
+        Asynchronously tops up the balance of the user by the specified amount.
+        """
+        await session.execute(
+            update(User).where(User.tg_id == self.tg_id)
+            .values(balance=User.balance + amount)
+        )
+        if (referer := await self.awaitable_attrs.referer) is not None:
+            await session.execute(
+                update(User).where(User.tg_id == referer.tg_id)
+                .values(balance=User.balance + amount * config.REFERAL_BONUS_PERCENT)
+            )
 
 
 class Category(Base):
@@ -62,6 +82,7 @@ class Product(Base):
     category_id: Mapped[int] = mapped_column(ForeignKey('categories.id'))
 
     category = relationship('Category', back_populates='products')
+    favourites = relationship("Favourites", back_populates="product")
 
     async def get_product_price(self) -> float:
         '''retun user balance converted to user currency'''
@@ -77,6 +98,3 @@ class Favourites(Base):
 
     user = relationship('User', back_populates='favourites')
     product = relationship('Product', back_populates='favourites')
-
-
-

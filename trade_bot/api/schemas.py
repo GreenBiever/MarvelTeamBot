@@ -13,3 +13,15 @@ class UserProfile(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class OrderView(BaseModel):
+    id: int
+    user_tg_id: int
+    buying_cryptocurrency: str
+    buying_amount: int
+    time: str
+    is_finished: bool
+
+    class Config:
+        from_attributes = True

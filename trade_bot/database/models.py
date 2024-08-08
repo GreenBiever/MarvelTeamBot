@@ -3,11 +3,11 @@ from sqlalchemy import ForeignKey, select, update
 from .connect import Base
 from datetime import datetime
 from .enums import LangEnum, CurrencyEnum
-from utils import currency_exchange
-from locales import data as lang_data
+from trade_bot.utils import currency_exchange
+from trade_bot.locales import data as lang_data
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional
-import config
+from trade_bot import config
 
 
 class User(Base):
@@ -65,4 +65,21 @@ class User(Base):
     @property
     def lang_data(self) -> dict:
         return lang_data[self.language]
-    
+
+
+class Orders(Base):
+    __tablename__ = "orders"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    user_tg_id: Mapped[str] = mapped_column(ForeignKey('users.tg_id'))
+    buying_cryptocurrency: Mapped[str | None]
+    buying_amount: Mapped[int] = mapped_column(default=0)
+    time: Mapped[datetime] = mapped_column(default=datetime.now)
+    is_finished: Mapped[bool] = mapped_column(default=False)
+
+    # Define the relationship to the User model
+    user: Mapped[User] = relationship('User', back_populates='orders')
+
+
+# Update the User class to include the back_populates relationship
+User.orders = relationship('Orders', back_populates='user')
