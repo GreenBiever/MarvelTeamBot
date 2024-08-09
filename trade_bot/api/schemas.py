@@ -1,13 +1,14 @@
 from pydantic import BaseModel, field_validator
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 class OrderView(BaseModel):
     cryptocurrency: str
     amount: int
-    time: datetime
+    time: timedelta
     bets_result_win: bool  # False - lose, True - win
     profit: int
+    created_at: datetime = datetime.now
     
     class Config:
         from_attributes = True

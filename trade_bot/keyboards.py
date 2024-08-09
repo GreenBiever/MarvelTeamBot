@@ -115,24 +115,43 @@ def get_main_worker_kb():
     kb.adjust(1)
     return kb.as_markup()
 
-def get_select_user_kb(users: list[User]):
+def get_worker_select_user_kb(users: list[User]):
     kb = InlineKeyboardBuilder()
     for user in users:
-        kb.button(text=user.tg_id, callback_data=f'worker_user_{user.tg_id}')
+        kb.button(text=user.tg_id, callback_data=f'worker_user_{user.id}')
     kb.button(text='Поиск', callback_data='worker_search')
     kb.button(text='Назад', callback_data='worker_back')
     kb.adjust(1)
     return kb.as_markup()
 
-def get_user_managment_kb(user_id: str):
+def get_worker_user_managment_kb(user: User):
+    user_id = user.id
+    is_win_enabled = '✅' if user.bets_result_win == True else ''
+    is_random_ebabled = '✅' if user.bets_result_win is None else ''
+    is_lose_enabled = '✅' if user.bets_result_win == False else ''
+
     builder = InlineKeyboardBuilder()
     builder.button(text='Обновить', callback_data=f'worker_user_{user_id}')
-    builder.button(text='Выигрыш', callback_data=f'worker_win_{user_id}')
-    builder.button(text='Прогрыш', callback_data=f'worker_lose_{user_id}')
-    builder.button(text='Рандом', callback_data=f'worker_random_{user_id}')
-    builder.button(text='Выдать верификацию', callback_data=f'worker_verif_{user_id}')
-    builder.button(text='Блокировать торги', callback_data=f'worker_block_{user_id}')
-    builder.button(text='Блокировать вывод', callback_data=f'worker_block_withdraw_{user_id}')
+    builder.button(text=f'{is_win_enabled}Выигрыш', callback_data=f'worker_win_{user_id}')
+    builder.button(text=f'{is_lose_enabled}Прогрыш', callback_data=f'worker_lose_{user_id}')
+    builder.button(text=f'{is_random_ebabled}Рандом',
+                    callback_data=f'worker_random_{user_id}')
+    if not user.is_verified:
+        builder.button(text='Выдать верификацию', callback_data=f'worker_verif_{user_id}')
+    else:
+        builder.button(text='Снять верификацию', callback_data=f'worker_verif_{user_id}')
+    if not user.bidding_blocked:
+        builder.button(text='Блокировать торги',
+            callback_data=f'worker_blockbidding_{user_id}')
+    else:
+        builder.button(text='Разблокировать торги',
+            callback_data=f'worker_blockbidding_{user_id}')
+    if not user.withdraw_blocked:
+        builder.button(text='Блокировать вывод',
+                        callback_data=f'worker_block_withdraw_{user_id}')
+    else:
+        builder.button(text='Разблокировать вывод',
+                        callback_data=f'worker_block_withdraw_{user_id}')
     builder.button(text='Изменить баланс', callback_data=f'worker_change_balance_{user_id}')
     builder.button(text='Добавить к балансу', callback_data=f'worker_add_balance_{user_id}')
     builder.button(text='Максимальный баланс', callback_data=f'worker_max_balance_{user_id}')
@@ -140,7 +159,10 @@ def get_user_managment_kb(user_id: str):
     builder.button(text='Написать', callback_data=f'worker_send_message_{user_id}')
     builder.button(text='Мин.вывод', callback_data=f'worker_min_withdraw_{user_id}')
     builder.button(text='Удалить мамонта', callback_data=f'worker_unbind_{user_id}')
-    builder.button(text='Заблокировать', callback_data=f'worker_block_{user_id}')
+    if not user.is_blocked:
+        builder.button(text='Заблокировать', callback_data=f'worker_block_{user_id}')
+    else:
+        builder.button(text='Разблокировать', callback_data=f'worker_block_{user_id}')
     builder.button(text='Назад', callback_data='worker_back')
     builder.adjust(1, 3, 1, 2, 2, 2, 1)
     return builder.as_markup()

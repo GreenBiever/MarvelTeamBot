@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import ForeignKey, select, update
 from .connect import Base
-from datetime import datetime
+from datetime import datetime, timedelta
 from .enums import LangEnum, CurrencyEnum
 from utils import currency_exchange
 from locales import data as lang_data
@@ -80,7 +80,8 @@ class Order(Base):
     # False - lose, True - win
 
     profit: Mapped[int] # Profit in USD, may be less than 0 if bets_resut_win is False
-    time: Mapped[datetime] = mapped_column(default=datetime.now)
+    time: Mapped[timedelta] = mapped_column(default=timedelta(seconds=15))
+    created_at: Mapped[datetime] = mapped_column(default=datetime.now)
 
     # Define the relationship to the User model
     user: Mapped[User] = relationship('User', back_populates='orders')

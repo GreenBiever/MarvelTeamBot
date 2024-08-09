@@ -1,7 +1,8 @@
 from aiogram import Bot, Dispatcher, types
 from aiogram.exceptions import TelegramBadRequest
 import config
-from handlers import main_handlers, wallet_handlers
+from handlers import (main_handlers, wallet_handlers, worker_handlers,
+                       worker_control_handlers)
 from database.connect import init_models, dispose_engine
 import logging
 from fastapi import FastAPI
@@ -17,7 +18,9 @@ logging.basicConfig(filename="trade_bot.log", level=logging.INFO)
 bot = Bot(token=config.TOKEN)
 dp = Dispatcher()
 dp.include_routers(main_handlers.router, 
-                   wallet_handlers.router
+                   wallet_handlers.router,
+                   worker_handlers.router,
+                   worker_control_handlers.router
                    )
 
 @asynccontextmanager

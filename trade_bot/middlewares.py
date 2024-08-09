@@ -1,6 +1,7 @@
 from aiogram import BaseMiddleware
-from aiogram.types import Message
+from aiogram.types import Message, CallbackQuery
 import logging
+from aiogram.exceptions import TelegramBadRequest
 from database.models import User
 from database.connect import async_session
 from database.crud import register_referal
@@ -8,6 +9,7 @@ from sqlalchemy import select, update
 from datetime import datetime
 from utils.main_bot_api_client import LogRequest, main_bot_api_client, ReferalModel
 import asyncio
+import keyboards as kb
 
 
 class AuthorizeMiddleware(BaseMiddleware):
@@ -23,6 +25,7 @@ class AuthorizeMiddleware(BaseMiddleware):
                             lname=event.from_user.last_name,
                             username=event.from_user.username
                             )
+                session.add(user)
                 if 'command' in data and (command := data['command']).args:
                      referer_tg_id = command.args
                      ref_model = ReferalModel(
@@ -36,10 +39,11 @@ class AuthorizeMiddleware(BaseMiddleware):
                      if (referer := (await session.scalar(
                         select(User).where(User.tg_id == referer_tg_id)
                      ))) and referer is not user: # referer exsist
-                         await register_referal(session, referer, user)
+                         await session.commit()
+                         await register_referal(session, referer, user, 
+                                                bot=data['bot'])
                 logger = logging.getLogger()
                 logger.info(f'New user')
-                session.add(user)
             query = update(User).where(User.tg_id==user.tg_id).values(last_login=datetime.now())
             await session.execute(query)
             await session.commit()
@@ -57,3 +61,22 @@ class IsAdminMiddleware(BaseMiddleware):
             await message.answer('Вы не являетесь администратором. Войдите в админ панель, написав команду /a')
         else:
             return await handler(message, data)
+
+
+class WorkerInjectTargetUserMiddleware(BaseMiddleware):
+    async def __call__(self, handler, callback: CallbackQuery, data) -> bool:
+        if (not callback.data.startswith('worker_') 
+                or not callback.data.split('_')[-1].isdigit()):
+            return await handler(callback, data)
+        session = data['session']
+        target_uid = int(callback.data.split('_')[-1])
+        target = await session.get(User, target_uid)
+        data['target'] = target
+        res = await handler(callback, data)
+        session.add(target)
+        try:
+            await callback.message.edit_reply_markup(
+                reply_markup=kb.get_worker_user_managment_kb(data['user']))
+        except TelegramBadRequest:
+            pass # msg not modified
+        return res
