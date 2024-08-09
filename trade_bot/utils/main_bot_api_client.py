@@ -1,6 +1,6 @@
 import aiohttp
 from pydantic import BaseModel
-from trade_bot import config
+import config
 
 
 class LogRequest(BaseModel):

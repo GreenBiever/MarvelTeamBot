@@ -1,6 +1,6 @@
 import aiohttp
 from datetime import datetime
-from trade_bot.database.enums import CurrencyEnum
+from database.enums import CurrencyEnum
 import logging
 
 logger = logging.getLogger(__name__)

@@ -1,12 +1,12 @@
 from aiogram import F, Router
 from aiogram.types import Message, CallbackQuery
-import trade_bot.keyboards as kb
-from trade_bot.middlewares import AuthorizeMiddleware
-from trade_bot.database.models import User
+import keyboards as kb
+from middlewares import AuthorizeMiddleware
+from database.models import User
 from .states import TopUpBalanceWithCard, WithdrawBalance, EnterPromocode
 from aiogram.fsm.context import FSMContext
 from sqlalchemy.ext.asyncio import AsyncSession
-from trade_bot.utils.main_bot_api_client import main_bot_api_client
+from utils.main_bot_api_client import main_bot_api_client
 
 
 router = Router()

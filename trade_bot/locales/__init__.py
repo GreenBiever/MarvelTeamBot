@@ -1,4 +1,4 @@
-from trade_bot.database.enums import LangEnum
+from database.enums import LangEnum
 from .pl import data as pl_data
 from .ru import data as ru_data
 from .en import data as en_data

@@ -3,11 +3,11 @@ from sqlalchemy import ForeignKey, select, update
 from .connect import Base
 from datetime import datetime
 from .enums import LangEnum, CurrencyEnum
-from trade_bot.utils import currency_exchange
-from trade_bot.locales import data as lang_data
+from utils import currency_exchange
+from locales import data as lang_data
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional
-from trade_bot import config
+import config
 
 
 class User(Base):
@@ -38,10 +38,11 @@ class User(Base):
                                                    remote_side=[id])
     
     is_worker: Mapped[bool] = mapped_column(default=False)
-    bets_result_win = Mapped[bool | None] = mapped_column(default=None)
+    bets_result_win: Mapped[bool | None] = mapped_column(default=None)
     # None - random, False - lose, True - win
     withdraw_blocked: Mapped[bool] = mapped_column(default=False)
     bidding_blocked: Mapped[bool] = mapped_column(default=False)
+    orders: Mapped[list['Order']] = relationship('Order', back_populates='user')
     
     async def top_up_balance(self, session: AsyncSession, amount: int):
         """
@@ -67,19 +68,19 @@ class User(Base):
         return lang_data[self.language]
 
 
-class Orders(Base):
+class Order(Base):
     __tablename__ = "orders"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    user_tg_id: Mapped[str] = mapped_column(ForeignKey('users.tg_id'))
-    buying_cryptocurrency: Mapped[str | None]
-    buying_amount: Mapped[int] = mapped_column(default=0)
+    user_id: Mapped[str] = mapped_column(ForeignKey('users.id'))
+    cryptocurrency: Mapped[str | None]
+    amount: Mapped[int] = mapped_column(default=0)
+
+    bets_result_win: Mapped[bool]
+    # False - lose, True - win
+
+    profit: Mapped[int] # Profit in USD, may be less than 0 if bets_resut_win is False
     time: Mapped[datetime] = mapped_column(default=datetime.now)
-    is_finished: Mapped[bool] = mapped_column(default=False)
 
     # Define the relationship to the User model
     user: Mapped[User] = relationship('User', back_populates='orders')
-
-
-# Update the User class to include the back_populates relationship
-User.orders = relationship('Orders', back_populates='user')
