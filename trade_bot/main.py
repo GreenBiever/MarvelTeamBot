@@ -5,6 +5,7 @@ from handlers import (main_handlers, wallet_handlers, worker_handlers,
                        worker_control_handlers)
 from database.connect import init_models, dispose_engine
 import logging
+from aiogram.client.default import DefaultBotProperties
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from fastapi.staticfiles import StaticFiles
@@ -14,8 +15,8 @@ from utils import currency_exchange
 from utils.main_bot_api_client import main_bot_api_client
 
 
-logging.basicConfig(filename="trade_bot.log", level=logging.INFO)
-bot = Bot(token=config.TOKEN)
+logging.basicConfig(level=logging.INFO)
+bot = Bot(token=config.TOKEN, default=DefaultBotProperties(parse_mode='HTML'))
 dp = Dispatcher()
 dp.include_routers(main_handlers.router, 
                    wallet_handlers.router,

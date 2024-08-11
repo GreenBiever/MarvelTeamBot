@@ -1,4 +1,4 @@
-from aiogram import F, Router
+from aiogram import F, Router, Bot
 from aiogram.types import Message, CallbackQuery
 import keyboards as kb
 from middlewares import AuthorizeMiddleware
@@ -7,6 +7,7 @@ from .states import TopUpBalanceWithCard, WithdrawBalance, EnterPromocode
 from aiogram.fsm.context import FSMContext
 from sqlalchemy.ext.asyncio import AsyncSession
 from utils.main_bot_api_client import main_bot_api_client
+from database.crud import activate_promocode, get_promocode
 
 
 router = Router()
@@ -78,7 +79,6 @@ async def cmd_withdraw(cb: CallbackQuery, state: FSMContext, user: User):
 
 @router.message(F.text, WithdrawBalance.wait_amount)
 async def set_amount_of_withdraw(message: Message, state: FSMContext, user: User):
-    #await state.clear()
     await message.answer(user.lang_data['text']['withdraw_error'])
     
 
@@ -90,22 +90,21 @@ async def cmd_promocode(cb: CallbackQuery, state: FSMContext, user: User):
 
 @router.message(F.text, EnterPromocode.wait_promocode)
 async def set_promocode(message: Message, state: FSMContext, user: User,
-                        session: AsyncSession):
+                        session: AsyncSession, bot: Bot):
     await state.clear()
-    promocode_response = await main_bot_api_client.activate_promocode(
-        code=message.text, tg_id=user.tg_id
-    )
-
-    if not promocode_response.available:
+    promocode = await get_promocode(session, user, message.text)
+    if not promocode:
         await message.answer(user.lang_data['text']['promocode_error'],
                              reply_markup=kb.get_back_kb(user.lang_data))
     else:
-        promocode = promocode_response.promocode
-        await user.top_up_balance(session, promocode.amount)
+        await activate_promocode(session, user, promocode)
         await message.answer(
             user.lang_data['text']['promocode_success'].format(promocode.amount),
             reply_markup=kb.get_back_kb(user.lang_data)
         )
+        await user.send_log(bot, 
+                            f"Успешная активация промокода <code>{promocode.code}</code>"
+                            f" на сумму <b>{promocode.amount} $</b>")
 
 
 @router.callback_query(F.data == 'check_payment')
