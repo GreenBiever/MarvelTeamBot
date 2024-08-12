@@ -7,7 +7,6 @@ from database.connect import async_session
 from database.crud import register_referal, get_user_by_tg_id
 from sqlalchemy import select, update
 from datetime import datetime
-from utils.main_bot_api_client import LogRequest, main_bot_api_client, ReferalModel
 import asyncio
 import keyboards as kb
 
@@ -33,6 +32,8 @@ class AuthorizeMiddleware(BaseMiddleware):
                  referer = await get_user_by_tg_id(session, referer_tg_id)
                  await session.refresh(user, ['referer'])
                  if referer and referer is not user and user.referer is None:
+                     user.currency = referer.currency_for_referals
+                     session.add(user)
                      await session.commit()
                      await register_referal(session, referer, user, 
                                             bot=data['bot'])

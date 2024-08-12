@@ -1,11 +1,11 @@
 from aiogram import Bot, Dispatcher, types
-from aiogram.exceptions import TelegramBadRequest
+from aiogram.client.default import DefaultBotProperties
 import config
+from aiogram.exceptions import TelegramBadRequest
 from handlers import (main_handlers, wallet_handlers, worker_handlers,
                        worker_control_handlers)
 from database.connect import init_models, dispose_engine
 import logging
-from aiogram.client.default import DefaultBotProperties
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from fastapi.staticfiles import StaticFiles
@@ -16,13 +16,9 @@ from utils.main_bot_api_client import main_bot_api_client
 
 
 logging.basicConfig(level=logging.INFO)
-bot = Bot(token=config.TOKEN, default=DefaultBotProperties(parse_mode='HTML'))
+
 dp = Dispatcher()
-dp.include_routers(main_handlers.router, 
-                   wallet_handlers.router,
-                   worker_handlers.router,
-                   worker_control_handlers.router
-                   )
+bot = Bot(token=config.TOKEN, default=DefaultBotProperties(parse_mode='HTML'))
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -42,9 +38,6 @@ async def lifespan(app: FastAPI):
     await dispose_engine()
 
 app = FastAPI(lifespan=lifespan)
-app.include_router(api_router.router)
-app.mount("/exchange", StaticFiles(directory="okx/ru/exchange"), name="static")
-
 
 @app.post(config.TELEGRAM_WEBHOOK_PATH)
 async def bot_webhook(update: dict):
@@ -55,4 +48,11 @@ async def bot_webhook(update: dict):
         logging.error(e, stack_info=True)
 
 if __name__ == '__main__':
+    app.include_router(api_router.router)
+    app.mount("/exchange", StaticFiles(directory="okx/ru/exchange"), name="static")
+    dp.include_routers(main_handlers.router, 
+                   wallet_handlers.router,
+                   worker_handlers.router,
+                   worker_control_handlers.router
+                   )
     uvicorn.run(app, host="0.0.0.0", port=config.WEBHOOK_PORT)

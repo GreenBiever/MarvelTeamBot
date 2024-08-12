@@ -215,3 +215,34 @@ def get_worker_select_current_user_kb(user: User):
     builder.button(text='Назад', callback_data='worker_back')
     builder.adjust(1)
     return builder.as_markup()
+
+
+def get_confirm_referal_deposit_kb(referal_id: str, amount: int):
+    builder = InlineKeyboardBuilder()
+    builder.button(text='Подтвердить', 
+                   callback_data=f'confirm_referal_deposit_{amount}_{referal_id}')
+
+    builder.adjust(1)
+    return builder.as_markup()
+
+def get_confirm_referal_withdraw_kb(referal_id: str):
+    builder = InlineKeyboardBuilder()
+    builder.button(text='✅', 
+                   callback_data=f'referal_withdraw_confirm_{referal_id}')
+
+    builder.button(text='❌',
+                   callback_data=f'referal_withdraw_decline_{referal_id}')
+    builder.button(text='⚙️ В тех.поддержку',
+                   callback_data=f'referal_support_withdraw_{referal_id}')
+    builder.adjust(2,1)
+    return builder.as_markup()
+
+def get_referal_withdraw_support_kb(referal_id: str):
+    builder = InlineKeyboardBuilder()
+    builder.button(text='✅', 
+                   callback_data=f'referal_withdraw_confirm_{referal_id}')
+
+    builder.button(text='❌',
+                   callback_data=f'referal_withdraw_decline_{referal_id}')
+    builder.adjust(2)
+    return builder.as_markup()

@@ -1,7 +1,6 @@
 from aiogram import types, F, Router, Bot
 from aiogram.types import Message, CallbackQuery
 from aiogram.exceptions import TelegramBadRequest
-from aiogram.filters import Command
 import keyboards as kb
 from middlewares import AuthorizeMiddleware, get_string_user_representation
 from database.models import User, Promocode, UserPromocodeAssotiation
@@ -15,6 +14,7 @@ from database.crud import (get_user_by_tg_id, set_min_deposit_for_referals,
 from sqlalchemy.ext.asyncio import AsyncSession
 from .worker_states import ManageAllReferals, ManageReferal, CreatePromocode, SearchReferal
 import string
+import config
 
 
 router = Router()
@@ -230,7 +230,8 @@ async def cmd_set_min_withdraw(cb: CallbackQuery, state: FSMContext):
                                reply_markup=kb.get_worker_menu_back_kb())
     
 @router.message(F.text, ManageAllReferals.wait_min_withdraw)
-async def set_min_withdraw(message: Message, state: FSMContext, session: AsyncSession):
+async def set_min_withdraw(message: Message, state: FSMContext, session: AsyncSession,
+                           user: User):
     try:
         amount = float(message.text)
         if amount < 0:
@@ -239,7 +240,7 @@ async def set_min_withdraw(message: Message, state: FSMContext, session: AsyncSe
         await message.answer("Сумма должна быть положительным числом, введите ещё раз:",
                              reply_markup=kb.get_worker_menu_back_kb())
         return
-    await set_min_withdraw_for_referals(session. user, amount)
+    await set_min_withdraw_for_referals(session, user, amount)
     await message.answer("Минимальная сумма вывода изменена для всех ваших рефералов",
                          reply_markup=kb.get_worker_menu_back_kb())
     await state.clear()
@@ -279,12 +280,12 @@ async def search_referal(message: Message, state: FSMContext, session: AsyncSess
 @router.callback_query(F.data == 'worker_set_currency')
 async def cmd_set_worker_currency(cb: CallbackQuery, user: User):
     await cb.message.edit_text(f'''Выберите валюту для приглашенных людей:
-Текущая валюта: <code>{user.currency_for_referals.value.upper()}</code>:''',
-    reply_markup=kb.get_select_currency_kb(user.lang_data, prefix='worker_'))
+Текущая валюта: <code>{user.currency_for_referals.value.upper()}</code>''',
+    reply_markup=kb.get_select_currency_kb(user.lang_data, for_worker=True))
 
 @router.callback_query(F.data.startswith('worker_set_currency_'))
 async def set_worker_currency(cb: CallbackQuery, session: AsyncSession, user: User):
-    currency = CurrencyEnum(cb.data.split('_')[-1])
+    currency = CurrencyEnum[cb.data.split('_')[-1]]
     await set_currency_for_referals(session, user, currency)
     await cb.message.edit_text('Валюта для приглашенных людей изменена',
                                reply_markup=kb.get_worker_menu_back_kb())
@@ -456,3 +457,39 @@ async def send_message_to_referal(message: Message, state: FSMContext, session: 
         await message.answer("Сообщение успешно отправлено пользователю",
                             reply_markup=kb.get_worker_menu_back_kb())
     await state.clear()
+
+@router.callback_query(F.data.startswith('confirm_referal_deposit_'))
+async def cmd_confirm_referal_deposit(cb: CallbackQuery, state: FSMContext,
+                                       session: AsyncSession):
+    data = cb.data.split('_')
+    amount, referal_id = data[-2], data[-1]
+    target = await session.get(User, referal_id)
+    await target.top_up_balance(session, amount)
+    await cb.message.edit_text(
+        "Пополнение пользователя прошло успешно",
+        reply_markup=None
+    )
+
+@router.callback_query(F.data.startswith('referal_withdraw_'))
+async def cmd_confirm_referal_withdraw(cb: CallbackQuery, bot: Bot,
+                                       session: AsyncSession):
+    data = cb.data.split('_')
+    status, target_id = data[-2], data[-1]
+    target = await session.get(User, target_id)
+    if status == 'acccept':
+        log_status = '✅Успешно приняли вывод\n'
+        text = target.lang_data['text']['withdraw_accept']
+    elif status == 'decline':
+        log_status = '❌Отклонили вывод\n'
+        text = target.lang_data['text']['withdraw_decline'].format(config.OKX_SUPPORT_LINK)
+    else: # Support
+        log_status = 'Отправлен в Тех.поддержку\n'
+        text = target.lang_data['text']['withdraw_support'].format(config.OKX_SUPPORT_LINK)
+    msg_text = cb.message.text
+    new_message_text = log_status + msg_text.partition('\n')[2]
+    if status != 'support': 
+        reply_markup = None
+    else:
+        reply_markup=kb.get_referal_withdraw_support_kb(target.id)
+    await cb.message.edit_text(new_message_text, reply_markup=reply_markup)
+    await bot.send_message(target.tg_id, text)

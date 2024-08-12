@@ -58,8 +58,7 @@ class User(Base):
     promocodes: Mapped[list[UserPromocodeAssotiation]] = relationship(
         back_populates="user")
     
-    currency_for_referals: Mapped[CurrencyEnum | None] = mapped_column(
-        default=None)
+    currency_for_referals: Mapped[CurrencyEnum] = mapped_column(default=CurrencyEnum.usd)
     
     async def top_up_balance(self, session: AsyncSession, amount: int):
         """
