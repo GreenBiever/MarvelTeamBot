@@ -1,6 +1,6 @@
 from pydantic import BaseModel, field_validator
 from datetime import datetime, timedelta
-from trade_bot.database.models import User
+from database.models import User
 
 
 class OrderView(BaseModel):

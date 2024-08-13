@@ -125,6 +125,26 @@ Support rules:
     'enter_promocode': "Enter the promo code:",
     'promocode_error': "Such a promo code does not exist or it has already been used",
     'promocode_success': "The promo code has been successfully activated. You have received {} USD",
-
+    'invalid_amount': "Invalid amount. Minimum amount: from {} {}",
+'success_withdrawal': '''💸Withdrawal of {} {} will be made to the details from which the last deposit was made\n
+Thank you for being with us!''',
+'withdraw_accept': '''✅ Your withdrawal has been approved\n
+Sincerely, OKX''',
+'withdraw_decline': '''❌ Your withdrawal has been declined, please contact technical support:\n
+{}\n
+Sincerely, OKX''',
+'withdraw_support': '''❌ To withdraw funds, please contact support at the contact below:\n
+{}\n
+Sincerely, OKX''',
+'order_success': '''✅ Your transaction was successful:
+Amount: {} {}
+Profit: +{} {}
+Currency: {}
+Time of transaction closure: {}''',
+'order_fail': '''❌ Your transaction was unsuccessful:
+Amount: {} {}
+Loss: -{} {}
+Currency: {}
+Time of transaction closure: {}'''
     }
 }

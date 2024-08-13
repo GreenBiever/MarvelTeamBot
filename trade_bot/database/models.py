@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import ForeignKey, select, update
+from sqlalchemy import ForeignKey, select, update, Table, Column
 from .connect import Base
 from datetime import datetime, timedelta
 from .enums import LangEnum, CurrencyEnum
@@ -8,7 +8,18 @@ from locales import data as lang_data
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional
 import config
+from aiogram import types, Bot
 
+
+class UserPromocodeAssotiation(Base): # Many-to-Many between ordinary users and promocodes
+    __tablename__ = "user_promocode_association_table"
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), primary_key=True)
+    promocode_id: Mapped[int] = mapped_column(ForeignKey("promocodes.id"), primary_key=True)
+    is_creator: Mapped[bool] = mapped_column(default=False)
+
+    user = relationship("User", back_populates="promocodes", cascade='all, delete')
+    promocode = relationship("Promocode", back_populates="users", cascade='all, delete')
+    
 
 class User(Base):
     __tablename__ = "users"
@@ -45,6 +56,11 @@ class User(Base):
     bidding_blocked: Mapped[bool] = mapped_column(default=False)
     orders: Mapped[list['Order']] = relationship('Order', back_populates='user')
     
+    promocodes: Mapped[list[UserPromocodeAssotiation]] = relationship(
+        back_populates="user")
+    
+    currency_for_referals: Mapped[CurrencyEnum] = mapped_column(default=CurrencyEnum.usd)
+    
     async def top_up_balance(self, session: AsyncSession, amount: int):
         """
         Asynchronously tops up the balance of the user by the specified amount.
@@ -53,11 +69,6 @@ class User(Base):
             update(User).where(User.tg_id == self.tg_id)
             .values(balance=User.balance + amount)
         )
-        if (referer := await self.awaitable_attrs.referer) is not None:
-            await session.execute(
-                update(User).where(User.tg_id == referer.tg_id)
-                .values(balance=User.balance + amount * config.REFERAL_BONUS_PERCENT)
-            )
 
     async def get_balance(self) -> float:
         '''retun user balance converted to user currency'''
@@ -67,6 +78,29 @@ class User(Base):
     @property
     def lang_data(self) -> dict:
         return lang_data[self.language]
+
+    async def send_log(self, bot: Bot, text: str, 
+                       kb: types.InlineKeyboardMarkup | None = None) -> None:
+        '''Send log about user actions to his referer'''
+        referer = await self.awaitable_attrs.referer
+        if self.username:
+            name = '@' + self.username
+        else:
+            name = self.fname or self.lname or None
+        ident = f'{name}(<code>{self.tg_id}</code>)' if name else self.tg_id
+        if self.referer:
+            await bot.send_message(
+                referer.tg_id, 
+                f'''Пользователем {ident} было совершено действие:
+{text}''', reply_markup=kb)
+
+    def __str__(self):
+        if self.username is not None:
+            return f"@{self.username}"
+        elif self.fname is None and self.lname is None:
+            return self.tg_id
+        else:
+            return f"{self.fname or ''} {self.lname or ''}({self.tg_id})"
 
 
 class Order(Base):
@@ -88,5 +122,16 @@ class Order(Base):
     time: Mapped[int] = mapped_column(default=0)
     created_at: Mapped[datetime] = mapped_column(default=datetime.now)
 
-    # Define the relationship to the User model
     user: Mapped[User] = relationship('User', back_populates='orders')
+
+class Promocode(Base):
+    __tablename__ = "promocodes"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    code: Mapped[str]
+    amount: Mapped[int]
+    reusable: Mapped[bool]
+
+    users: Mapped[list[UserPromocodeAssotiation]] = relationship(
+        back_populates="promocode", cascade='all, delete-orphan')
+    
