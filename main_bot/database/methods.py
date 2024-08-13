@@ -1,8 +1,9 @@
 from api.schemas import ReferalModel, Promocode as PromocodeModel
-from sqlalchemy import select, update
+from sqlalchemy import select, func
 from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 from database.models import User, OrdinaryUser, Promocode
+import datetime as dt
 
 
 async def get_user_by_tg_id(session: AsyncSession, tg_id: int):
@@ -46,3 +47,10 @@ async def activate_promocode(session: AsyncSession, code: str,
         await session.commit()
         return PromocodeModel(promocode, creator_tg_id=creator.tg_id)
     return None
+
+async def get_active_users_count(session: AsyncSession) -> list[User]:
+    '''return count of users who usebot in last 24 hours'''
+    separator = dt.datetime.now() - dt.timedelta(hours=24)
+    return (await session.execute(
+        select(func.count(User.id))
+        .where(User.last_login >= separator))).scalars().all()

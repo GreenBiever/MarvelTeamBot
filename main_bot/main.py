@@ -11,7 +11,7 @@ from fastapi import FastAPI
 import uvicorn
 from database.connect import init_models, dispose_engine
 from utils.bot_methods import bot
-from utils.trade_bot_api_client import_api_client
+from utils.trade_bot_api_client import trade_bot_api_client
 
 
 storage = MemoryStorage()

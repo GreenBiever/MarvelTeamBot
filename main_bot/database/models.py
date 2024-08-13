@@ -13,7 +13,6 @@ class User(Base):
     lname: Mapped[str | None]
     username: Mapped[str | None]
     last_login: Mapped[datetime] = mapped_column(default=datetime.now)
-    balance: Mapped[int] = mapped_column(default=0)
     is_verified: Mapped[bool] = mapped_column(default=False)
     ordinary_users: Mapped[list['OrdinaryUser']] = relationship(
         'OrdinaryUser', back_populates='regulatory_user') # аккаунты обычных пользователей
@@ -21,6 +20,7 @@ class User(Base):
     is_blocked: Mapped[bool] = mapped_column(default=False)
     promocodes: Mapped[list['Promocode']] = relationship('Promocode', 
                                                          back_populates='creator')
+    created_at: Mapped[datetime] = mapped_column(default=datetime.now)
 
 user_promo_association_table = Table( # Many-to-Many between ordinary users and promocodes
     "user_promocode_association_table",

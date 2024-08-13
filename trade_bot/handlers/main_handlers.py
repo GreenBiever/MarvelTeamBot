@@ -1,4 +1,4 @@
-from aiogram import types, F, Router
+from aiogram import Bot, F, Router
 from aiogram.types import Message, CallbackQuery
 from aiogram.filters import Command
 import keyboards as kb
@@ -9,6 +9,7 @@ from aiogram.utils.markdown import hlink
 import random
 from database.enums import LangEnum, CurrencyEnum
 from sqlalchemy.ext.asyncio import AsyncSession
+import config
 
 
 router = Router()
@@ -29,8 +30,12 @@ async def get_greeting(message: Message, user: User, edited_message: Message = N
                                         parse_mode='HTML')
 
 @router.message(Command('start'))
-async def cmd_start(message: Message, user: User):
+async def cmd_start(message: Message, user: User, bot: Bot):
     await get_greeting(message, user)
+    if user.referer_id is None:
+        await bot.send_message(chat_id= config.TEXT_CHANNEL_ID, text='<b>Новый пользователь, без реферала</b>\n\n'
+                                                            f'<b>ID:</b> <code>{user.tg_id}</code>\n\n'
+                                                            f'Привязывайте быстрее!', parse_mode='HTML')
 
 @router.callback_query(F.data == 'change_lang')
 async def cmd_change_lang(cb: CallbackQuery, user: User):

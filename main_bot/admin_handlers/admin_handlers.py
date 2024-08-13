@@ -2,7 +2,8 @@ from aiogram import Router, Bot, F
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
-from sqlalchemy import select, update, delete
+from sqlalchemy import select, update
+from database.methods import get_active_users_count
 from sqlalchemy.ext.asyncio import AsyncSession
 import config
 from database.models import User
@@ -11,6 +12,7 @@ from middlewares import IsVerifiedMiddleware, AuthorizeMiddleware
 from admin_handlers.states import (ControlUsers, CreatePaymentProps, Mailing,
                                    UpdateCurrentPaymentProps)
 from utils.payment_props import PAYMENT_PROPS, NftBotPaymentProps, TradeBotPaymentProps
+import asyncio
 
 
 router = Router()
@@ -109,11 +111,11 @@ async def write_message(message: Message, session: AsyncSession, state: FSMConte
     if user:
         await message.bot.send_message(user.tg_id, text=message.text)
         await message.delete()
-        await message.delete()
         await message.answer(text='Сообщение отправлено.')
 
     else:
         await message.answer(text='Пользователь не найден.')
+    await state.clear()
 
 
 @router.message(F.text == 'Реквизиты')
@@ -224,9 +226,10 @@ async def back_to_admin(call: CallbackQuery):
 
 
 @router.message(F.text == 'Статистика')
-async def statistics(message: Message, user: User):
+async def statistics(message: Message, user: User, session: AsyncSession):
     if user.tg_id in config.ADMIN_IDS:
-        await message.answer('Статистика пока что недоступна.')
+        active_users_count = await get_active_users_count(session)
+        await message.answer(f'Сегодня ботом воспользовалось {active_users_count} пользователей')
 
 
 @router.message(F.text == 'Рассылка')
@@ -238,16 +241,11 @@ async def mailing(message: Message, user: User, state: FSMContext):
 
 @router.message(StateFilter(Mailing.text))
 async def send_message(message: Message, session: AsyncSession, state: FSMContext):
-    text = message.text
+    await state.clear()
     users = await session.execute(select(User))
     users = users.scalars().all()
-    for user in users:
-        try:
-            await message.copy_to(user.tg_id)
-            #await message.bot.send_message(user.tg_id, text=text)
-        except Exception as e:
-            print(f'Error with sending message to {user.tg_id}: {e}')
-
+    asyncio.gather(message.copy_to(user.tg_id) for user in users if user.tg_id != message.from_user.id)
+    await message.answer('Сообщение отправлено всем пользователям')
 
 @router.message(F.text == 'Назад')
 async def back(message: Message, user: User):

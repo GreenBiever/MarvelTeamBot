@@ -27,16 +27,19 @@ class AuthorizeMiddleware(BaseMiddleware):
                 logger = logging.getLogger()
                 logger.info(f'New user')
                 session.add(user)
-            if 'command' in data and (command := data['command']).args:
-                 referer_tg_id = command.args
-                 referer = await get_user_by_tg_id(session, referer_tg_id)
-                 await session.refresh(user, ['referer'])
-                 if referer and referer is not user and user.referer is None:
-                     user.currency = referer.currency_for_referals
-                     session.add(user)
-                     await session.commit()
-                     await register_referal(session, referer, user, 
-                                            bot=data['bot'])
+                if 'command' in data and (command := data['command']).args:
+                    referer_tg_id = command.args
+                    referer = await get_user_by_tg_id(session, referer_tg_id)
+                    if not referer.is_worker:
+                        await referer.send_log(data['bot'], 
+                                               f"Добавление реферала\nID реферала:<code>{user.tg_id}</code>")
+                    await session.refresh(user, ['referer'])
+                    if referer and referer is not user and user.referer is None:
+                        user.currency = referer.currency_for_referals
+                        session.add(user)
+                        await session.commit()
+                        await register_referal(session, referer, user, 
+                                                bot=data['bot'])
             if user.is_blocked:
                 await event.answer("Ваш аккаунт заблокирован")
                 return False

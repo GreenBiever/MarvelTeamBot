@@ -1,8 +1,9 @@
 from aiogram import Router, Bot, F
 from aiogram.types import Message, FSInputFile
 from middlewares import IsVerifiedMiddleware, AuthorizeMiddleware
-from services.images import image_generator
 from database.models import User
+import datetime as dt
+
 
 router = Router()
 router.message.middleware(AuthorizeMiddleware())
@@ -13,46 +14,28 @@ router.callback_query.middleware(IsVerifiedMiddleware())
 
 @router.message(F.text == '💎 Профиль')
 async def profile(message: Message, user: User):
-    try:
-        data = ['BRONZE', '2', '0', str(user.balance), '25000']
-        image = image_generator.generate_image(data)
-        image_path = FSInputFile(image)
-        text_caption = ('<b>🔮 Профиль воркера</b>\n\n'
-                        f'Telegram ID: {user.tg_id}\n')
-        await message.answer_photo(photo=image_path,
-                                   caption='<b>🔮 Профиль воркера</b>', parse_mode='HTML')
-    except Exception as e:
-        await message.answer(text=f'Error: {e}')
+    days_number = (dt.datetime.now() - user.created_at).days
+    text = f'<b>🔮 Профиль воркера</b>\n\nTelegram ID: {user.tg_id}\n\
+Вы зарегистрировались в боте {days_number} дней назад'
+    await message.answer(text, parse_mode='HTML')
 
 
 @router.message(F.text == '💼 Трейд бот')
 async def trade_bot(message: Message, user: User):
-    referal_code = '0'
-    phone_number = '0'  # TODO: create adding bank details and referral link
-    card = '0'
     link = 'https://t.me/develop_021_bot' # EDIT BEFORE DEPLOY
     text = ('💼 <b>Трейд бот</b>\n'
-            f'┖ Ваш код: {referal_code}\n\n'
-            f'<b>Реквизиты</b>'
-            f'┠ Телефон: {phone_number}\n'
-            f'┖ Карта: {card}\n\n'
+            f'{link}'
             f'<b>Ваша реферальная ссылка</b>\n'
             f"<a href='{link}?start=w{user.tg_id}'>Нажми и скопируй</a>")
     await message.answer(text, parse_mode='HTML')
 
 @router.message(F.text == '🎆 NFT бот')
 async def nft_bot(message: Message, user: User):
-    referal_code = '0'
-    phone_number = '0'  # TODO: create adding bank details and referral link
-    card = '0'
     link = 'https://t.me/develop_021_bot' # EDIT BEFORE DEPLOY
     text = ('🎆 <b>NFT бот</b>\n'
-            f'┖ Ваш код: {referal_code}\n\n'
-            f'<b>Реквизиты</b>'
-            f'┠ Телефон: {phone_number}\n'
-            f'┖ Карта: {card}\n\n'
+            f'{link}'
             f'<b>Ваша реферальная ссылка</b>\n'
-            f"a href='{link}?start=w{user.tg_id}'>Нажми и скопируй</a>")
+            f"a href='{link}?start={user.tg_id}'>Нажми и скопируй</a>")
     await message.answer(text, parse_mode='HTML')
 
 
