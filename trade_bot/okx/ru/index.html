@@ -9,6 +9,7 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+
   <meta name="keyWords" content="Blockchain Crypto Exchange, Cryptocurrency Exchange, Bitcoin Trading, CRO, BTC">
   <meta name="description" content="Buy BTC_USD now, Crypto.com exchange is powered by CRO, with deep liquidity, low fees and best execution prices, you can trade major cryptocurrencies like Bitcoin, Ethereum on our platform with the best experience.">
   <meta property="og:type" content="website">
@@ -25,7 +26,7 @@
   <meta name="twitter:title" content="Crypto.com Exchange">
   <meta name="twitter:description" content="Trade crypto anytime, anywhere. Start with as little as US$1. Trade on the go with the Crypto.com Exchange mobile app.">
   <meta name="robots" content="index,follow">
-  <title>BTC/USD | OKX Trading</title>
+  <title id="title_txt">BTC/USD | OKX Trading</title>
   <link rel="shortcut icon" type="image/png" href="exchange/static/favicon.jpg">
   <link href="./exchange/css/chunk-common.19da3b7f.css" rel="preload" as="style">
   <link href="./exchange/css/chunk-vendors.a21da786.css" rel="preload" as="style">
@@ -33,8 +34,12 @@
   <link href="./exchange/css/chunk-vendors.a21da786.css" rel="stylesheet">
   <link href="./exchange/css/chunk-common.19da3b7f.css" rel="stylesheet">
   <link href="./exchange/css/index.94219112.css" rel="stylesheet">
-  <link href="./19de3b7f.css" rel="stylesheet">
+  <link href="./exchange/19de3b7f.css" rel="stylesheet">
   <link type="text/css" href="https://cdn.cookielaw.org/skins/6.2.0/default_flat_bottom_two_button_white/v2/css/optanon.css" rel="stylesheet">
+  <script>
+    
+  </script>
+  
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
@@ -11651,7 +11656,7 @@ overflow-y: scroll;
                       <div class="e-dropdown">
                         <div class="e-dropdown-trigger" id="toggle-btn">
                           <div data-v-4a41c0a9="" class="toggle">
-                            <span id="currency">BTC/USD</span>
+                            <span id="currency"></span>
                               <svg data-v-4a41c0a9="" width="24" height="24" class="e-icon e-icon-accordion toggle-arrow">
                                 <use href="#e-icon-accordion"></use>
                               </svg>
@@ -11922,25 +11927,18 @@ overflow-y: scroll;
               </div>
             </div>
             <script>
-                const symbols = {
-                  'BTC/USD': 'BTCUSDT',
-                    'ETH/USD': 'ETHUSDT',
-                    'MATIC/USD': 'MATICUSDT',
-                    'DYDX/USD': 'DYDXUSDT',
-                    'LTC/USD': 'LTCUSDT',
-                    'DOGE/USD': 'DOGEUSDT',
-                    'ADA/USD': 'ADAUSDT',
-                    'BNB/USD': 'BNBUSDT',
-                    'XRP/USD': 'XRPUSDT',
-                    'XLM/USD': 'XLMUSDT',
-                    'TRX/USD': 'TRXUSDT',
-                    'FIL/USD': 'FILUSDT',
-                    
-                };
+                const urlParamaters1 = new URLSearchParams(window.location.search);
+    
+    // Получаем значение параметра 'trade'
+                let symbols1 = urlParamaters1.get('trade');
+
+                // Если значение параметра 'trade' существует, обрабатываем его
+                if (symbols1) {
+                    symbols1 = symbols1.split(':')[1]; // Убираем префикс 'BINANCE:'
+                }
                 
-                const trade = $('#currency').text();
-                const symbol = symbols[trade];
-                const endpoint = `https://api.binance.com/api/v3/ticker/24hr?symbol=${symbol}`;
+                const symbol2 = symbols1;
+                const endpoint = `https://api.binance.com/api/v3/ticker/24hr?symbol=${symbol2}`;
                 
                 $(document).ready(function() {
                     $.get(endpoint, function(data) {
@@ -12018,21 +12016,31 @@ setInterval("getSymbolNow()", 1500);
 </script-->
                     <!-- TradingView Widget BEGIN -->
                     <div class="tradingview-widget-container">
-                      <div id="tradingview_1511b"><div id="tradingview_04d06-wrapper" style="position: relative; box-sizing: content-box; font-family: -apple-system, BlinkMacSystemFont, &quot;Trebuchet MS&quot;, Roboto, Ubuntu, sans-serif; margin: 0px auto !important; padding: 0px !important; width: 100%; height: 100%;"><iframe title="advanced chart TradingView widget" lang="en" id="tradingview_04d06" frameborder="0" allowtransparency="true" scrolling="no" allowfullscreen="true" src="https://s.tradingview.com/widgetembed/?hideideas=1&amp;overrides=%7B%7D&amp;enabled_features=%5B%5D&amp;disabled_features=%5B%5D&amp;locale=ru#%7B%22symbol%22%3A%22BINANCE%3ABTCUSDT%22%2C%22frameElementId%22%3A%22tradingview_04d06%22%2C%22interval%22%3A%22D%22%2C%22hide_side_toolbar%22%3A%220%22%2C%22save_image%22%3A%221%22%2C%22studies%22%3A%22%5B%5D%22%2C%22theme%22%3A%22dark%22%2C%22style%22%3A%221%22%2C%22timezone%22%3A%22Etc%2FUTC%22%2C%22studies_overrides%22%3A%22%7B%7D%22%2C%22utm_source%22%3A%22okx-company.top%22%2C%22utm_medium%22%3A%22widget%22%2C%22utm_campaign%22%3A%22chart%22%2C%22utm_term%22%3A%22BINANCE%3ABTCUSDT%22%2C%22page-uri%22%3A%22okx-company.top%2Fru%2F%3Ftrade%3DBINANCE%3ABTCUSDT%26id%3Dd9fb460fe67fd92a8e7b96fd56c52ecc%22%7D" style="width: 100%; height: 100%; margin: 0px !important; padding: 0px !important;"></iframe></div></div>
+                    <div id="tradingview_1511b"><div id="tradingview_04d06-wrapper" style="position: relative; box-sizing: content-box; font-family: -apple-system, BlinkMacSystemFont, &quot;Trebuchet MS&quot;, Roboto, Ubuntu, sans-serif; margin: 0px auto !important; padding: 0px !important; width: 100%; height: 100%;"><iframe title="advanced chart TradingView widget" lang="en" id="tradingview_04d06" frameborder="0" allowtransparency="true" scrolling="no" allowfullscreen="true" src="https://s.tradingview.com/widgetembed/?hideideas=1&amp;overrides=%7B%7D&amp;enabled_features=%5B%5D&amp;disabled_features=%5B%5D&amp;locale=ru#%7B%22symbol%22%3A%22BINANCE%3ABTCUSDT%22%2C%22frameElementId%22%3A%22tradingview_04d06%22%2C%22interval%22%3A%22D%22%2C%22hide_side_toolbar%22%3A%220%22%2C%22save_image%22%3A%221%22%2C%22studies%22%3A%22%5B%5D%22%2C%22theme%22%3A%22dark%22%2C%22style%22%3A%221%22%2C%22timezone%22%3A%22Etc%2FUTC%22%2C%22studies_overrides%22%3A%22%7B%7D%22%2C%22utm_source%22%3A%22okx-company.top%22%2C%22utm_medium%22%3A%22widget%22%2C%22utm_campaign%22%3A%22chart%22%2C%22utm_term%22%3A%22BINANCE%3ABTCUSDT%22%2C%22page-uri%22%3A%22okx-company.top%2Fru%2F%3Ftrade%3DBINANCE%3ABTCUSDT%26id%3Dd9fb460fe67fd92a8e7b96fd56c52ecc%22%7D" style="width: 100%; height: 100%; margin: 0px !important; padding: 0px !important;"></iframe></div></div>
                       <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
                       <script type="text/javascript">
+                        const urlParam1 = new URLSearchParams(window.location.search);
+                        
+                        // Получаем значение параметра 'trade'
+                        let cryptoTrade1 = urlParam1.get('trade');
+
+                        // Если значение параметра 'trade' существует, обрабатываем его
+                        if (cryptoTrade1) {
+                            cryptoTrade1 = cryptoTrade1.replace(/USDT$/, ''); // Удаляем 'USD' с конца строки
+                            cryptoTrade1 = cryptoTrade1.split(':')[1]; // Убираем префикс 'BINANCE:'
+                        }
                       new TradingView.widget({
                         "autosize": true,
-                        "symbol": "BINANCE:BTCUSDT",
+                        "symbol": "BINANCE:"+cryptoTrade1+"USDT",
                         "interval": "D",
                         "timezone": "Etc/UTC",
                         "theme": "dark",
                         "style": "1",
-                        "locale": "ru",
+                        "locale": "en",
                         "toolbar_bg": "#f1f3f6",
                         "enable_publishing": false,
-                        "hide_side_toolbar": false,
-                        "container_id": "tradingview_1511b"
+                        "withdateranges": true,
+                        "container_id": "tradingview_12971"
                       });
                       </script>
                     </div>
@@ -14962,7 +14970,7 @@ border-bottom: 0px solid hsla(0, 0%, 100%, .1);
                 <div class="e-dropdown">
                   <div class="e-dropdown-trigger" id="toggle-btn_mob">
                     <div data-v-4a41c0a9="" class="toggle">
-                      <span id="currencys">BTC/USD</span>
+                      <span id="currencys"></span>
                         <svg data-v-4a41c0a9="" width="24" height="24" class="e-icon e-icon-accordion toggle-arrow">
                           <use href="#e-icon-accordion"></use>
                         </svg>
@@ -15193,33 +15201,33 @@ border-bottom: 0px solid hsla(0, 0%, 100%, .1);
             </div>
           </div>
           <div data-v-36a01256="" class="symbol-price">
-            <div data-v-36a01256="" class="item-value last-price value-red" id="usd-values">57320.00</div>
-            <div data-v-36a01256="" class="item-value value-red"><span data-v-36a01256="" id="change-values">0.20%</span></div>
+            <div data-v-36a01256="" class="item-value last-price value-red" id="usd-values"></div>
+            <div data-v-36a01256="" class="item-value value-red"><span data-v-36a01256="" id="change-values"></span></div>
           </div>
         </div>
         <div data-v-9e875102="" data-v-36a01256="" class="mobile-symbol">
           <div data-v-9e875102="" class="base-info">
-            <div data-v-9e875102="" class="item">
+            <div data-v-9e875102="" class="item"> 
               <div data-v-9e875102="" class="item-title">Изменения</div>
-              <div data-v-9e875102="" class="item-value" id="mark-prices">57320.00</div>
+              <div data-v-9e875102="" class="item-value" id="mark-prices"></div>
             </div>
             <!---->
             <div data-v-9e875102="" class="item">
               <div data-v-9e875102="" class="item-title">Высоко</div>
-              <div data-v-9e875102="" class="item-value" id="high-prices">57900.000</div>
+              <div data-v-9e875102="" class="item-value" id="high-prices"></div>
             </div>
             <div data-v-9e875102="" class="item">
               <div data-v-9e875102="" class="item-title">Низко</div>
-              <div data-v-9e875102="" class="item-value" id="low-prices">54800.000</div>
+              <div data-v-9e875102="" class="item-value" id="low-prices"></div>
             </div>
             <!---->
             <div data-v-9e875102="" class="item">
               <div data-v-9e875102="" class="item-title"> 24Ч. Об.(USD)</div>
-              <div data-v-9e875102="" class="item-value" id="volume-usds">$1,825,049,853.47</div>
+              <div data-v-9e875102="" class="item-value" id="volume-usds"></div>
             </div>
             <div data-v-9e875102="" class="item">
-              <div data-v-9e875102="" class="item-title" id="volume-queues">24Ч. Об.(BTC)</div>
-              <div data-v-9e875102="" class="item-value" id="volume-cros">32230.04</div>
+              <div data-v-9e875102="" class="item-title" id="volume-queues"></div>
+              <div data-v-9e875102="" class="item-value" id="volume-cros"></div>
             </div>
             <!---->
             <!---->
@@ -15229,25 +15237,19 @@ border-bottom: 0px solid hsla(0, 0%, 100%, .1);
         </div>
       </div>
       <script>
-                const symbolsq = {
-                  'BTC/USD': 'BTCUSDT',
-                    'ETH/USD': 'ETHUSDT',
-                    'MATIC/USD': 'MATICUSDT',
-                    'DYDX/USD': 'DYDXUSDT',
-                    'LTC/USD': 'LTCUSDT',
-                    'DOGE/USD': 'DOGEUSDT',
-                    'ADA/USD': 'ADAUSDT',
-                    'BNB/USD': 'BNBUSDT',
-                    'XRP/USD': 'XRPUSDT',
-                    'XLM/USD': 'XLMUSDT',
-                    'TRX/USD': 'TRXUSDT',
-                    'FIL/USD': 'FILUSDT',
+                const urlParamaters = new URLSearchParams(window.location.search);
+    
+    // Получаем значение параметра 'trade'
+                let symbolsq = urlParamaters.get('trade');
 
-
-                };
+                // Если значение параметра 'trade' существует, обрабатываем его
+                if (symbolsq) {
+                    symbolsq = symbolsq.split(':')[1]; // Убираем префикс 'BINANCE:'
+                }
                 
+
                 const tradeq = $('#currencys').text();
-                const symbolq = symbolsq[tradeq];
+                const symbolq = symbolsq;
                 const endpointq = `https://api.binance.com/api/v3/ticker/24hr?symbol=${symbolq}`;
                 
                 $(document).ready(function() {
@@ -15327,9 +15329,19 @@ border-bottom: 0px solid hsla(0, 0%, 100%, .1);
                       <div id="tradingview_12971"><div id="tradingview_e9c06-wrapper" style="position: relative; box-sizing: content-box; font-family: -apple-system, BlinkMacSystemFont, &quot;Trebuchet MS&quot;, Roboto, Ubuntu, sans-serif; margin: 0px auto !important; padding: 0px !important; width: 100%; height: 100%;"><iframe title="advanced chart TradingView widget" lang="en" id="tradingview_e9c06" frameborder="0" allowtransparency="true" scrolling="no" allowfullscreen="true" src="https://s.tradingview.com/widgetembed/?hideideas=1&amp;overrides=%7B%7D&amp;enabled_features=%5B%5D&amp;disabled_features=%5B%5D&amp;locale=en#%7B%22symbol%22%3A%22BINANCE%3ABTCUSDT%22%2C%22frameElementId%22%3A%22tradingview_e9c06%22%2C%22interval%22%3A%22D%22%2C%22save_image%22%3A%221%22%2C%22studies%22%3A%22%5B%5D%22%2C%22theme%22%3A%22dark%22%2C%22style%22%3A%221%22%2C%22timezone%22%3A%22Etc%2FUTC%22%2C%22withdateranges%22%3A%221%22%2C%22studies_overrides%22%3A%22%7B%7D%22%2C%22utm_source%22%3A%22okx-company.top%22%2C%22utm_medium%22%3A%22widget%22%2C%22utm_campaign%22%3A%22chart%22%2C%22utm_term%22%3A%22BINANCE%3ABTCUSDT%22%2C%22page-uri%22%3A%22okx-company.top%2Fru%2F%3Ftrade%3DBINANCE%3ABTCUSDT%26id%3Dd9fb460fe67fd92a8e7b96fd56c52ecc%22%7D" style="width: 100%; height: 100%; margin: 0px !important; padding: 0px !important;"></iframe></div></div>
                       <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
                       <script type="text/javascript">
+                        const urlParam = new URLSearchParams(window.location.search);
+    
+                        // Получаем значение параметра 'trade'
+                        let cryptoTrade = urlParam.get('trade');
+
+                        // Если значение параметра 'trade' существует, обрабатываем его
+                        if (cryptoTrade) {
+                            cryptoTrade = cryptoTrade.replace(/USDT$/, ''); // Удаляем 'USD' с конца строки
+                            cryptoTrade = cryptoTrade.split(':')[1]; // Убираем префикс 'BINANCE:'
+                        }
                       new TradingView.widget({
                         "autosize": true,
-                        "symbol": "BINANCE:BTCUSDT",
+                        "symbol": "BINANCE:"+cryptoTrade+"USDT",
                         "interval": "D",
                         "timezone": "Etc/UTC",
                         "theme": "dark",
@@ -15353,7 +15365,7 @@ border-bottom: 0px solid hsla(0, 0%, 100%, .1);
           </div>
           <div data-v-7b2eca57="" class="e-tab-pane">
             <div data-v-e583e922="" class="order-book-table">
-              <div data-v-e583e922="" class="order-book-table-header"><span data-v-e583e922="">Цена</span><span data-v-e583e922="">Объем (<span class="crr_currency">BTC</span>)</span><span data-v-e583e922="">Сумма (<span class="crr_currency">BTC</span>)</span></div>
+              <div data-v-e583e922="" class="order-book-table-header"><span data-v-e583e922="">Цена</span><span data-v-e583e922="">Объем (<span class="crr_currency"></span>)</span><span data-v-e583e922="">Сумма (<span class="crr_currency"></span>)</span></div>
               <div data-v-78d38ee6="" data-v-38c57bde="" data-v-e583e922="" class="lazy-list custom-scrollbar order-book-list scroll-pad" style="height:240px;overflow:hidden">
                 <div data-v-78d38ee6="" class="list-content" style="height:240px;position:relative">
                   <div data-v-78d38ee6="" class="list-item list-item-overlay0" style="top:0">
@@ -17232,15 +17244,1339 @@ display: block !important;
 </div>
 </section><style>.tradingview-widget-copyright {font-size: 13px !important; line-height: 32px !important; text-align: center !important; vertical-align: middle !important; font-family: -apple-system, BlinkMacSystemFont, 'Trebuchet MS', Roboto, Ubuntu, sans-serif !important; color: #B2B5BE !important;} .tradingview-widget-copyright .blue-text {color: #2962FF !important;} .tradingview-widget-copyright a {text-decoration: none !important; color: #B2B5BE !important;} .tradingview-widget-copyright a:visited {color: #B2B5BE !important;} .tradingview-widget-copyright a:hover .blue-text {color: #1E53E5 !important;} .tradingview-widget-copyright a:active .blue-text {color: #1848CC !important;} .tradingview-widget-copyright a:visited .blue-text {color: #2962FF !important;}</style>
 
+<script type="text/javascript">
+let exchangeRateUSD = 1;
+let finalExchangeRate = 1;
+
+setTimeout( function() {
+  const crpt4Element = document.getElementById('crpt4');
+  const price4Element = document.getElementById('price4');
+  const buyPriceElement = document.getElementById('buyPrice-531c6e06-bf0a-424c-ba79-3ff053e8172b');
+  const buyAmountElement = document.getElementById('buyAmount-f9d6f2aa-89cf-47ad-8441-62484f920dca');
+  const buyPriceElement2 = document.getElementById('buyPrice-7be5a7b6-d140-407c-a3d6-aae363cead39');
+  const buyAmountElement2 = document.getElementById('buyAmount-d09bab65-b582-4f45-9e54-834f9b9560dc');
+
+
+  document.querySelector('.e-icon-close.pointer').addEventListener('click', () => {
+  buyPriceElement.value = '0';
+  buyAmountElement.value = '0';
+  buyPriceElement2.value = '0';
+  buyAmountElement2.value = '0';
+  calculatePercentage();
+
+  });    
+
+  document.querySelector('#icon-closer').addEventListener('click', () => {
+    buyPriceElement2.value = '0';
+    buyAmountElement2.value = '0';
+    calculatePercentage2();
+  });
+
+  // Обрабатываем ввод в полях
+  buyPriceElement.oninput = function() {
+    let result = parseFloat(buyPriceElement.value) / exchangeRateUSD;
+    buyAmountElement.value = isNaN(result) ? '0' : result.toFixed(2);
+  }
+
+  buyAmountElement.oninput = function() {
+    let result = parseFloat(buyAmountElement.value) * exchangeRateUSD;
+    buyPriceElement.value = isNaN(result) ? '0' : result.toFixed(2);
+  }
+
+  buyPriceElement2.oninput = function() {
+    let result = parseFloat(buyPriceElement2.value) / exchangeRateUSD;
+    buyAmountElement2.value = isNaN(result) ? '0' : result.toFixed(2);
+  }
+
+  buyAmountElement2.oninput = function() {
+    let result = parseFloat(buyAmountElement2.value) * exchangeRateUSD;
+    buyPriceElement2.value = isNaN(result) ? '0' : result.toFixed(2);
+  }
+
+  buyPriceElement.onkeypress = function(e) {
+      const charCode = (e.which) ? e.which : e.keyCode;
+      if (charCode > 31 && (charCode < 48 || charCode > 57)) {
+          return false;
+      }
+      return true;
+  }
+
+  buyAmountElement.onkeypress = function(e) {
+    const charCode = (e.which) ? e.which : e.keyCode;
+    const value = e.target.value;
+    const dotCount = value.split('.').length - 1;
+    
+    if (charCode === 46) {
+        if (dotCount >= 1) {
+            return false;
+        }
+    } else if (charCode < 48 || charCode > 57) {
+        return false;
+    }
+    
+    return true;
+  };
+
+
+  buyPriceElement2.onkeypress = function(e) {
+      const charCode = (e.which) ? e.which : e.keyCode;
+      if (charCode > 31 && (charCode < 48 || charCode > 57)) {
+          return false;
+      }
+      return true;
+  }
+
+  buyAmountElement2.onkeypress = function(e) {
+  const charCode = (e.which) ? e.which : e.keyCode;
+  const value = e.target.value;
+  const dotCount = value.split('.').length - 1;
+  
+  if (charCode === 46) {
+      if (dotCount >= 1) {
+          return false;
+      }
+  } else if (charCode < 48 || charCode > 57) {
+      return false;
+  }
+  
+  return true;
+  };
+
+
+  const inputElement = document.getElementById('buyVolume-2b6d3b77-a153-4001-8fad-4583e1955638');
+    inputElement.addEventListener('keydown', function(e) {
+    e.preventDefault();
+  });
+
+  const inputElement2 = document.getElementById('buyVolume-7bc2eb76-adbf-4ad1-b6aa-140bfe8b45b3');
+    inputElement2.addEventListener('keydown', function(e2) {
+    e2.preventDefault();
+  });
+
+
+  function updateExchangeRate() {
+    fetch(`https://api.binance.com/api/v3/ticker/price?symbol=${crpt4Element.textContent}USDT`)
+      .then(response => response.json())
+      .then(data => {
+          exchangeRateUSD = parseFloat(data.price);
+          return fetch(`https://api.exchangerate-api.com/v4/latest/USD`);
+      })
+      .then(response => response.json())
+      .then(data => {
+          const exchangeRateDesiredCurrency = data.rates[price4Element.textContent];
+          finalExchangeRate = exchangeRateUSD * exchangeRateDesiredCurrency;
+          document.getElementById('buyVolume-2b6d3b77-a153-4001-8fad-4583e1955638').value = finalExchangeRate.toFixed(2);
+        
+            document.getElementById('buyVolume-7bc2eb76-adbf-4ad1-b6aa-140bfe8b45b3').value = finalExchangeRate.toFixed(2);
+
+      })
+      .catch(error => console.error('Error:', error));
+  }
+
+
+  document.getElementById('addbutton2').addEventListener('click', function() {
+    let value = parseFloat(buyAmountElement2.value);
+    if (isNaN(value)) {
+        value = 0;
+    }
+    buyAmountElement2.value = (value + 0.00001).toFixed(5);
+    // обновляем значение в другом поле ввода с учетом курса обмена
+    buyAmountElement2.oninput();
+    calculatePercentage2();
+  });
+
+  document.getElementById('minbutton2').addEventListener('click', function() {
+    let value = parseFloat(buyAmountElement2.value);
+    if (isNaN(value) || value <= 0.00001) {
+        value = 0.00001;  // if value is NaN or less than or equal to 0.00001, set it to 0.00001 so that after decrementing it would be 0
+    }
+    buyAmountElement2.value = (value - 0.00001).toFixed(5);
+    // обновляем значение в другом поле ввода с учетом курса обмена
+    buyAmountElement2.oninput();
+    calculatePercentage2();
+  });
+
+  document.getElementById('addbutton4').addEventListener('click', function() {
+    let value = parseFloat(buyAmountElement.value);
+    if (isNaN(value)) {
+        value = 0;
+    }
+    buyAmountElement.value = (value + 0.00001).toFixed(5);
+    // обновляем значение в другом поле ввода с учетом курса обмена
+    buyAmountElement.oninput();
+    calculatePercentage();
+  });
+
+  document.getElementById('minbutton4').addEventListener('click', function() {
+    let value = parseFloat(buyAmountElement.value);
+    if (isNaN(value) || value <= 0.00001) {
+        value = 0.00001;  // if value is NaN or less than or equal to 0.00001, set it to 0.00001 so that after decrementing it would be 0
+    }
+    buyAmountElement.value = (value - 0.00001).toFixed(5);
+    // обновляем значение в другом поле ввода с учетом курса обмена
+    buyAmountElement.oninput();
+    calculatePercentage();
+  });
+
+  const procentElement = document.getElementById('procent');
+  const procentElement2 = document.getElementById('procent2');
+  const balElement = document.getElementById('bal');
+
+  function calculatePercentage() {
+    let buyPriceValue = parseFloat(buyPriceElement.value);
+    let balValue = parseFloat(balElement.textContent);
+
+    if (isNaN(buyPriceValue) || isNaN(balValue) || balValue === 0) {
+        procentElement.textContent = '0';
+    } else {
+        let percentage = (buyPriceValue / balValue) * 100;
+        procentElement.textContent = Math.floor(percentage);
+        const sliderElement = document.querySelector('.e-slider__thumb');
+        let sliderPercentage = Math.min(100, Math.max(0, percentage)); // Здесь ограничиваем значение от 0 до 100
+        sliderElement.style.setProperty('left', `${Math.min(Math.max(percentage, 0), 100)}%`, 'important');
+
+    }
+
+  }
+
+  function calculatePercentage2() {
+    let buyPriceValue = parseFloat(buyPriceElement2.value);
+    let balValue = parseFloat(balElement.textContent);
+
+    if (isNaN(buyPriceValue) || isNaN(balValue) || balValue === 0) {
+        procentElement2.textContent = '0';
+    } else {
+        let percentage = (buyPriceValue / balValue) * 100;
+        procentElement2.textContent = Math.floor(percentage);
+        const sliderElement = document.querySelector('#liner');
+        let sliderPercentage = Math.min(100, Math.max(0, percentage)); // Здесь ограничиваем значение от 0 до 100
+        sliderElement.style.setProperty('left', `${Math.min(Math.max(percentage, 0), 100)}%`, 'important');
+    }
+  }
+
+  buyPriceElement.addEventListener('input', function() {
+    let buyPriceValue = parseFloat(buyPriceElement.value);
+    let balValue = parseFloat(balElement.textContent);
+
+    if (isNaN(buyPriceValue) || isNaN(balValue) || balValue === 0) {
+        procentElement.textContent = '0';
+    } else {
+        let percentage = (buyPriceValue / balValue) * 100;
+        procentElement.textContent = Math.floor(percentage);  // using Math.floor to round down to the nearest integer
+    }
+  });
+
+  buyPriceElement2.addEventListener('input', function() {
+    let buyPriceValue = parseFloat(buyPriceElement2.value);
+    let balValue = parseFloat(balElement.textContent);
+
+    if (isNaN(buyPriceValue) || isNaN(balValue) || balValue === 0) {
+        procentElement2.textContent = '0';
+    } else {
+        let percentage = (buyPriceValue / balValue) * 100;
+        procentElement2.textContent = Math.floor(percentage);  // using Math.floor to round down to the nearest integer
+    }
+  });
+
+  document.getElementById('addbutton').addEventListener('click', function() {
+    let value = parseInt(buyPriceElement2.value);
+    if (isNaN(value)) {
+        value = 0;
+    }
+    buyPriceElement2.value = value + 1;
+    // обновляем значение в другом поле ввода с учетом курса обмена
+    buyPriceElement2.oninput();
+    calculatePercentage2();
+  });
+
+  document.getElementById('minbutton').addEventListener('click', function() {
+    let value = parseInt(buyPriceElement2.value);
+    if (isNaN(value) || value <= 1) {
+        value = 1;  // if value is NaN or less than or equal to 1, set it to 1 so that after decrementing it would be 0
+    }
+    buyPriceElement2.value = value - 1;
+    // обновляем значение в другом поле ввода с учетом курса обмена
+    buyPriceElement2.oninput();
+    calculatePercentage2();
+  });
+
+  document.getElementById('addbutton3').addEventListener('click', function() {
+    let value = parseInt(buyPriceElement.value);
+    if (isNaN(value)) {
+        value = 0;
+    }
+    buyPriceElement.value = value + 1;
+    // обновляем значение в другом поле ввода с учетом курса обмена
+    buyPriceElement.oninput();
+    // Создаем и отправляем событие 'input'
+    calculatePercentage();
+  });
+
+  document.getElementById('minbutton3').addEventListener('click', function() {
+    let value = parseInt(buyPriceElement.value);
+    if (isNaN(value) || value <= 1) {
+        value = 1;  // if value is NaN or less than or equal to 1, set it to 1 so that after decrementing it would be 0
+    }
+    buyPriceElement.value = value - 1;
+    // обновляем значение в другом поле ввода с учетом курса обмена
+    buyPriceElement.oninput();
+    calculatePercentage();
+  });
+
+  setInterval(updateExchangeRate, 3000);
+
+  buyPriceElement.oninput = function() {
+      buyAmountElement.value = (parseFloat(buyPriceElement.value) / finalExchangeRate).toFixed(5);
+      calculatePercentage();
+  }
+
+  buyAmountElement.oninput = function() {
+      buyPriceElement.value = Math.round(parseFloat(buyAmountElement.value) * finalExchangeRate);
+      calculatePercentage();
+  }
+
+  buyPriceElement2.oninput = function() {
+    buyAmountElement2.value = (parseFloat(buyPriceElement2.value) / finalExchangeRate).toFixed(5);
+    calculatePercentage2()
+  }
+
+  buyAmountElement2.oninput = function() {
+      buyPriceElement2.value = Math.round(parseFloat(buyAmountElement2.value) * finalExchangeRate);
+      calculatePercentage2();
+  }
+
+},3000);
+
+
+</script>
+
+
 <script>
+  function updateTable2(orders, currency) {
+      const table2 = document.getElementById('tables4');
+
+      // Очищаем таблицу перед добавлением новых строк
+      $(table2).empty();
+
+      let totalOrders = 0;
+      let wins = 0;
+      let losses = 0;
+
+      // Обрабатываем данные ордеров
+      if (Array.isArray(orders) && orders.length) {
+          orders.forEach(order => {
+              totalOrders += 1;
+              if (order.bets_result_win) {
+                  wins += 1;
+              } else {
+                  losses += 1;
+              }
+
+              const createdAt = new Date(order.created_at);
+              const formattedTime = createdAt.toLocaleTimeString('en-US', {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  second: '2-digit',
+                  hour12: false // Для формата 24 часов
+              });
+
+              // Создаем HTML для новой строки таблицы
+              const newHtml = `
+                  <tr>
+                      <td data-v-2b43263a="" class="empty-cell" style="text-align: left;">${order.is_long ? 'Long' : 'Short' || ''}</td>
+                      <td data-v-2b43263a="" class="empty-cell" style="text-align: left;">${order.cryptocurrency || ''}</td>
+                      <td data-v-2b43263a="" class="empty-cell" style="text-align: left;">${order.amount || ''} ${currency}</td>
+                      <td data-v-2b43263a="" class="empty-cell" style="text-align: left;">${formattedTime || ''}</td>
+                      <td data-v-2b43263a="" class="empty-cell" style="text-align: left;">${order.profit}  ${currency}</td>
+                  </tr>
+              `;
+              $(table2).append(newHtml);
+          });
+
+          // Обновляем счетчики
+          document.getElementById('crr-orders2').textContent = totalOrders;
+          document.getElementById('his-orders').textContent = totalOrders;
+          document.getElementById('his-orders2').textContent = totalOrders;
+          document.getElementById('his-orders3').textContent = totalOrders;
+          document.getElementById('win-orders2').textContent = wins;
+          document.getElementById('loose-orders2').textContent = losses;
+      } else {
+          // Если нет данных, сбрасываем счетчики
+          document.getElementById('crr-orders2').textContent = 0;
+          document.getElementById('his-orders').textContent = 0;
+          document.getElementById('his-orders2').textContent = 0;
+          document.getElementById('his-orders3').textContent = 0;
+          document.getElementById('win-orders2').textContent = 0;
+          document.getElementById('loose-orders2').textContent = 0;
+      }
+  }
+</script>
+
+<script>
+  function updateTable3(order, currency) {
+      const table2 = document.getElementById('tables4');
+  
+      // Определяем текущие значения счетчиков
+      let totalOrders = parseInt(document.getElementById('crr-orders2').textContent) || 0;
+      let wins = parseInt(document.getElementById('win-orders2').textContent) || 0;
+      let losses = parseInt(document.getElementById('loose-orders2').textContent) || 0;
+  
+      // Обрабатываем новый заказ
+      if (order) {
+          totalOrders += 1;
+          if (order.bets_result_win) {
+              wins += 1;
+          } else {
+              losses += 1;
+          }
+  
+          const createdAt = new Date(order.created_at);
+          const formattedTime = createdAt.toLocaleTimeString('en-US', {
+              hour: '2-digit',
+              minute: '2-digit',
+              second: '2-digit',
+              hour12: false // Для формата 24 часов
+          });
+  
+          // Создаем HTML для новой строки таблицы
+          const newHtml = `
+              <tr>
+                  <td data-v-2b43263a="" class="empty-cell" style="text-align: left;">${order.is_long ? 'Long' : 'Short' || ''}</td>
+                  <td data-v-2b43263a="" class="empty-cell" style="text-align: left;">${order.cryptocurrency || ''}</td>
+                  <td data-v-2b43263a="" class="empty-cell" style="text-align: left;">${order.amount || ''} ${currency}</td>
+                  <td data-v-2b43263a="" class="empty-cell" style="text-align: left;">${formattedTime || ''}</td>
+                  <td data-v-2b43263a="" class="empty-cell" style="text-align: left;">${order.profit || 0} ${currency}</td>
+              </tr>
+          `;
+          $(table2).append(newHtml);
+      }
+      
+      document.getElementById('open-orders').textContent = 0;
+      document.getElementById('open-orders2').textContent = 0;
+      document.getElementById('open-orders3').textContent = 0;
+      // Обновляем счетчики
+      document.getElementById('crr-orders2').textContent = totalOrders;
+      document.getElementById('his-orders').textContent = totalOrders;
+      document.getElementById('his-orders2').textContent = totalOrders;
+      document.getElementById('his-orders3').textContent = totalOrders;
+      document.getElementById('win-orders2').textContent = wins;
+      document.getElementById('loose-orders2').textContent = losses;
+  }
+  </script>
+
+  
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    // Получаем текущий URL
+    const url = new URL(window.location.href);
+
+    // Извлекаем домен (протокол + домен)
+    const domain = url.origin;
+
+    // Извлекаем параметр 'id' из URL
+    const user_tg_id = url.searchParams.get("id");
+
+    // Проверка, что user_tg_id найден
+    if (!user_tg_id) {
+    } else {
+        // Формируем полный URL для API-запроса
+        const apiUrl = `${domain}/user/${user_tg_id}/`;
+
+        // Выполняем запрос к API
+        fetch(apiUrl)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+
+                // Проверяем наличие основных полей в ответе
+                if (!data || typeof data !== 'object') {
+                    throw new Error("Invalid data format received from API.");
+                }
+
+                // Извлечение данных из ответа API
+                const {
+                    tg_id,
+                    fname,
+                    balance,
+                    currency,
+                    registration_date,
+                    bets_result_win,
+                    orders
+                } = data;
+
+                // Подставляем данные в элементы страницы
+                if (tg_id) {
+                    document.getElementById("usertext2").textContent = tg_id;
+                } else {
+                    console.warn("tg_id is missing in API response.");
+                }
+
+                if (fname) {
+                    document.getElementById("nme2").textContent = fname;
+                } else {
+                    console.warn("fname is missing in API response.");
+                }
+
+                if (balance !== undefined) {
+                    document.getElementById("bal").textContent = balance;
+                    document.getElementById("bal2").textContent = balance;
+                } else {
+                    console.warn("balance is missing in API response.");
+                }
+
+                if (currency) {
+                    document.getElementById("curr").textContent = currency;
+                    document.getElementById("curr2").textContent = currency;
+                    document.getElementById("curr3").textContent = currency;
+                    document.getElementById("price1").textContent = currency;
+                    document.getElementById("price2").textContent = currency;
+                    document.getElementById("price3").textContent = currency;
+                    document.getElementById("price4").textContent = currency;
+
+                } else {
+                    console.warn("currency is missing in API response.");
+                }
+
+                if (registration_date) {
+                    const formattedDate = new Date(registration_date).toISOString().split('T')[0];
+                    document.getElementById("rgd2").textContent = formattedDate;
+                } else {
+                    console.warn("registration_date is missing in API response.");
+                }
+
+                if (bets_result_win !== undefined) {        // Сохраняем значение bets_result_win в localstorage                 
+                  localStorage.setItem('bets_result_win', bets_result_win);                    
+                } else {
+                    console.warn("bets_result_win is missing in API response.");
+                }
+
+                // Обработка ордеров
+                if (Array.isArray(orders)) {
+                updateTable2(orders, currency);
+                } else {
+                    console.warn("orders array is missing or not an array in API response.");
+                }
+            })
+            .catch(error => {
+                console.error("Error fetching user data:", error);
+            });
+    }
+});
+</script>
+
+<script>
+
+    // Получаем контейнер кнопок по ID
+  let buttonContainer = document.querySelector('#button-selector');
+  
+  // Получаем все кнопки внутри контейнера
+  let buttons = buttonContainer.getElementsByTagName('button');
+  
+  // Присваиваем каждой кнопке обработчик событий
+  for (let i = 0; i < buttons.length; i++) {
+      buttons[i].addEventListener('click', function(e) {
+          // Находим выбранную кнопку
+          let selectedButton = buttonContainer.querySelector('.selected');
+  
+          // Удаляем класс 'selected' у выбранной кнопки
+          if (selectedButton) {
+              selectedButton.classList.remove('selected');
+          }
+  
+          // Добавляем класс 'selected' текущей кнопке
+          this.classList.add('selected');
+      });
+  }
+  
+  // Получаем контейнер кнопок по ID
+  let buttonContainer2 = document.querySelector('#button-selector2');
+  
+  // Получаем все кнопки внутри контейнера
+  let buttons2 = buttonContainer2.getElementsByTagName('button');
+  
+  // Присваиваем каждой кнопке обработчик событий
+  for (let i = 0; i < buttons.length; i++) {
+      buttons2[i].addEventListener('click', function(e) {
+          // Находим выбранную кнопку
+          let selectedButton2 = buttonContainer2.querySelector('.selected');
+  
+          // Удаляем класс 'selected' у выбранной кнопки
+          if (selectedButton2) {
+              selectedButton2.classList.remove('selected');
+          }
+  
+          // Добавляем класс 'selected' текущей кнопке
+          this.classList.add('selected');
+      });
+  }
+  
+  document.addEventListener('DOMContentLoaded', function () {
+  // Получаем элементы
+  const buyPriceElement = document.getElementById('buyPrice-531c6e06-bf0a-424c-ba79-3ff053e8172b');
+  const buyPriceElement2 = document.getElementById('buyPrice-7be5a7b6-d140-407c-a3d6-aae363cead39');
+  const price4Element = document.getElementById('price4');
+  const modal = document.getElementById('modal');
+  const overlay = document.getElementById('overlay');
+  const modalText = document.getElementById('modal-text');
+  const closeModalButton = document.getElementById('close-modal');
+
+  const modal2 = document.getElementById('modal2');
+  const overlay2 = document.getElementById('overlay2');
+  const modalText2 = document.getElementById('modal-text2');
+  const closeModalButton2 = document.getElementById('close-modal2');
+
+  const tradeButton = document.getElementById('trade-button');
+  const tradeButton2 = document.getElementById('trade-button2');
+  const balanceElement = document.getElementById('bal');
+  const buyAmountElement = document.getElementById('buyAmount-f9d6f2aa-89cf-47ad-8441-62484f920dca');
+  const buyAmountElement2 = document.getElementById('buyAmount-d09bab65-b582-4f45-9e54-834f9b9560dc');
+
+  // Проверка наличия всех элементов
+  if (!buyPriceElement || !price4Element || !modal || !overlay || !modalText || !closeModalButton ||
+      !modal2 || !overlay2 || !modalText2 || !closeModalButton2 || !tradeButton || !tradeButton2 ||
+      !balanceElement || !buyAmountElement || !buyAmountElement2) {
+      console.error("One or more elements are missing from the DOM.");
+      return;
+  }
+
+  // Объявление минимальных сумм для валют
+  const minAmounts = {
+      "EUR": 10,
+      "PLN": 50,
+      "UAH": 300,
+      "RUB": 500,
+      "BYN": 30,
+      "USD": 15
+  };
+
+  // Обработчик для tradeButton
+  tradeButton.addEventListener('click', function() {
+      let amount = parseInt(buyPriceElement.value, 10);
+      let currency = price4Element.textContent;
+      const currentBalance = parseInt(balanceElement.textContent, 10);
+
+      if (isNaN(amount) || amount === 0) {
+          modalText.textContent = 'Введите правильную сумму!';
+          modal.classList.add('active');
+          overlay.classList.add('active');
+          document.body.style.overflow = 'hidden';
+          return;
+      }
+
+      // Проверка минимальных сумм по валюте
+      if (minAmounts[currency] && amount < minAmounts[currency]) {
+          modalText.textContent = `Минимальная сумма ${minAmounts[currency]} ${currency}!`;
+          modal.classList.add('active');
+          overlay.classList.add('active');
+          document.body.style.overflow = 'hidden';
+          return;
+      }
+
+      if (amount > currentBalance) {
+          modalText.textContent = 'Недостаточно средств на счете!';
+          modal.classList.add('active');
+          overlay.classList.add('active');
+          document.body.style.overflow = 'hidden';
+          return;
+      }
+
+      // Очистка полей
+      buyPriceElement.value = '';
+      buyAmountElement.value = '';
+
+      // Получение значения из выбранной кнопки
+      let selectedButton = document.querySelector('.e-button.selected');
+      let selectedValue = selectedButton ? selectedButton.innerText : null;
+      let timeValue = selectedValue ? parseInt(selectedValue.match(/\d+/)[0], 10) : null;
+
+      // Обновление активной вкладки
+      const currencyElement = document.getElementById('currency');
+      const currencyText = currencyElement ? currencyElement.textContent : '';
+      const baseCurrency = currencyText.split('/')[0];
+  });
+
+  // Обработчик для closeModalButton
+  closeModalButton.addEventListener('click', function() {
+      modal.classList.remove('active');
+      overlay.classList.remove('active');
+      document.body.style.overflow = 'auto';
+  });
+
+  // Обработчик для tradeButton2
+  tradeButton2.addEventListener('click', function() {
+      let amount = parseInt(buyPriceElement2.value, 10);
+      let currency = price4Element.textContent;
+      const currentBalance = parseInt(balanceElement.textContent, 10);
+
+      if (isNaN(amount) || amount === 0) {
+          modalText2.textContent = 'Введите правильную сумму!';
+          modal2.classList.add('active');
+          overlay2.classList.add('active');
+          document.body.style.overflow = 'hidden';
+          return;
+      }
+
+      // Проверка минимальных сумм по валюте
+      if (minAmounts[currency] && amount < minAmounts[currency]) {
+          modalText2.textContent = `Минимальная сумма ${minAmounts[currency]} ${currency}!`;
+          modal2.classList.add('active');
+          overlay2.classList.add('active');
+          document.body.style.overflow = 'hidden';
+          return;
+      }
+
+      if (amount > currentBalance) {
+          modalText2.textContent = 'Недостаточно средств на счете!';
+          modal2.classList.add('active');
+          overlay2.classList.add('active');
+          document.body.style.overflow = 'hidden';
+          return;
+      }
+
+      // Очистка полей
+      buyPriceElement2.value = '';
+      buyAmountElement2.value = '';
+
+      // Получение значения из выбранной кнопки
+      let selectedButton = document.querySelector('#button-selector2 .e-button.selected');
+      let selectedValue = selectedButton ? selectedButton.innerText : null;
+      let timeValue = selectedValue ? parseInt(selectedValue.match(/\d+/)[0], 10) : null;
+  });
+
+  // Обработчик для closeModalButton2
+  closeModalButton2.addEventListener('click', function() {
+      modal2.classList.remove('active');
+      overlay2.classList.remove('active');
+      document.body.style.overflow = 'auto';
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+			
+  function zfill(str, len) {
+    return str.length < len ? zfill("0" + str, len) : str;
+  }
+
+  function decryptId(encryptedId, secretKey) {
+    const secretKeyPadded = zfill(secretKey.toString(), 32);
+    const encryptedIdBytes = CryptoJS.enc.Hex.parse(encryptedId);
+    const cipher = CryptoJS.lib.CipherParams.create({
+        ciphertext: encryptedIdBytes
+    });
+
+    const decryptedBytes = CryptoJS.AES.decrypt(
+        cipher,
+        CryptoJS.enc.Utf8.parse(secretKeyPadded),
+        {
+            mode: CryptoJS.mode.ECB,
+            padding: CryptoJS.pad.Pkcs7 // Using default padding
+        }
+    );
+
+    try {
+        const decryptedIdStr = CryptoJS.enc.Utf8.stringify(decryptedBytes).replace(/\0/g, '');
+        return parseInt(decryptedIdStr);
+    } catch (e) {
+        console.error("Decryption failed: ", e);
+        return null;
+    }
+  }
+    
+          
+  const urlSearchParams = new URLSearchParams(window.location.search);
+  const encryptedId = urlSearchParams.get('id');
+  const errorMessageElement = document.getElementById('error-message');
+  
+  
+  if (encryptedId == null) {
+  setTimeout(function() {
+    if (errorMessageElement.classList.contains('hide')) {
+     setTimeout(function() {
+        document.getElementById('loader').classList.add('hide');
+      document.getElementById('error-message2').classList.remove('hide');
+    }, 500);
+  
+    }
+  }, 1500);
+  
+  } else {
+     
+      const secretKey = 42;
+      const decryptedId = decryptId(encryptedId, secretKey);
+  
+      var user_id = decryptedId;
+      const usertext = document.getElementById('usertext')
+      const usertext2 = document.getElementById('usertext2')
+      usertext.textContent = user_id;
+      usertext2.textContent = user_id;
+   
+  }
+      
+  var table = document.getElementById("tables1");
+  var table2 = document.getElementById("tables2");
+  var table3 = document.getElementById("tables3");
+  var table4 = document.getElementById("tables4");
+  
+  var lastRowIndex = 0;
+  var lastData = null;
+  
+  var rowCount = 0;
+  var rowCount2 =0; 
+  
+  
+
+  
+  setInterval(function() {
+      $.ajax({
+          url: 'info.php', 
+          type: 'POST',
+          data: {id: user_id},
+          success: function(data) {
+              var response = JSON.parse(data);
+              $('#win-orders').html(response.win);
+              $('#win-orders2').html(response.win);
+              $('#loose-orders').html(response.lose);
+              $('#loose-orders2').html(response.lose);
+          }
+      });
+  }, 1000000000); 
+  
+  
+  
+  window.onload = function() {
+      const currencyElementes = document.getElementById('currency');
+    const currencyTextes = currencyElementes.textContent;
+    const crypto = currencyTextes.split('/')[0];
+  
+      $.ajax({
+          type: "POST",
+          url: 'sendMessage.php',
+          data: { userId: user_id,
+          crypto:crypto },
+          success: function(response) {
+              
+          },
+          error: function(jqXHR, textStatus, errorThrown) {
+             
+          }
+      });
+  };
+  
+  
+  
+  
+</script>
+
+<script>
+  setInterval(function() {
+      $.ajax({
+          url: '',
+          type: 'POST',
+          data: { user_id: user_id }, 
+          dataType: 'json',
+          success: function(response) {
+                if (response.length === 0) {
+                   document.getElementById('loader').classList.add('hide');
+                  document.getElementById('error-message2').classList.remove('hide');
+              } else {
+                  setTimeout(function() {
+          if (errorMessageElement.classList.contains('hide')) {
+            
+                  document.getElementById('loader-background').classList.add('hide');
+                  document.body.style.position = 'static';
+              
+  
+          }
+            }, 1000000);
+                  
+                  for (let i = 0; i < response.length; i++) {
+                     
+                      if(response[i].balance >= 0 ){
+                         document.getElementById('bal').textContent = response[i].balance;
+                         document.getElementById('bal2').textContent = response[i].balance;
+                      } else {
+                        document.getElementById('bal2').textContent  = 0;
+                        document.getElementById('bal').textContent = 0;
+                      }
+                      document.getElementById('curr').textContent = response[i].currency.toUpperCase();
+                      document.getElementById('nme').textContent = response[i].name;
+                      document.getElementById('rgd').textContent = response[i].register_date;
+                      document.getElementById('price3').textContent = response[i].currency.toUpperCase();
+                      document.getElementById('price2').textContent = response[i].currency.toUpperCase();
+                      document.getElementById('price1').textContent = response[i].currency.toUpperCase();
+                      
+                      document.getElementById('price4').textContent = response[i].currency.toUpperCase();
+                      let block = response[i].torgi_status;
+                      
+                      if (block == 1) {
+  
+                      document.getElementById('error-message3').classList.remove('hide');
+                      document.getElementById('loader-background1').classList.remove('hide');
+                      }
+                      else{
+                        document.getElementById('error-message3').classList.add('hide');
+                      document.getElementById('loader-background1').classList.add('hide');
+                      }
+                     
+  
+  
+                      
+                      document.getElementById('curr2').textContent = response[i].currency.toUpperCase();
+                      document.getElementById('curr3').textContent = response[i].currency.toUpperCase();
+                      document.getElementById('curr4').textContent = response[i].currency.toUpperCase();
+                      document.getElementById('nme2').textContent = response[i].name;
+                      document.getElementById('rgd2').textContent = response[i].register_date;
+                      
+                      
+                  }
+              }
+          },
+          error: function(jqXHR, textStatus, errorThrown) {
+              
+          }
+      });
+  }, 1000000);
+  
+  
+
+  var formattedIp= "";
+  fetch('https://api.ipify.org?format=json')
+      .then(response => response.json())
+      .then(data => {
+        let ipAddress = data.ip;
+        // Добавляем пробел после каждой точки
+        formattedIp = ipAddress.replace(/\./g, '. ');          
+      });
+
+
+
+
+  const buyPriceElement = document.getElementById('buyPrice-531c6e06-bf0a-424c-ba79-3ff053e8172b');
+  const price4Element = document.getElementById('price4');
+  
+  // Модальное окно и оверлей
+  const modal = document.getElementById('modal');
+  const overlay = document.getElementById('overlay');
+  
+  // Текст модального окна
+  const modalText = document.getElementById('modal-text');
+  
+  // Кнопка закрытия модального окна
+  const closeModalButton = document.getElementById('close-modal');
+  
+  
+  // Модальное окно и оверлей
+  const modal2 = document.getElementById('modal2');
+  const overlay2 = document.getElementById('overlay2');
+  
+  // Текст модального окна
+  const modalText2 = document.getElementById('modal-text2');
+  
+  // Кнопка закрытия модального окна
+  const closeModalButton2 = document.getElementById('close-modal2');    
+  
+  // Кнопка торговли
+  const tradeButton = document.getElementById('trade-button');
+  
+  const tradeButton2 = document.getElementById('trade-button2');
+  
+  const balanceElement = document.getElementById('bal');
+  
+  const buyAmountElement = document.getElementById('buyAmount-f9d6f2aa-89cf-47ad-8441-62484f920dca');
+  const buyAmountElement2 = document.getElementById('buyAmount-d09bab65-b582-4f45-9e54-834f9b9560dc');
+
+  tradeButton.addEventListener('click', async function () {
+    let amount = parseInt(buyPriceElement.value);
+    let currency = price4Element.textContent;
+    const currentBalance = parseInt(balanceElement.textContent);
+
+    // Проверка ввода
+    if (isNaN(amount) || amount === 0) {
+        showModal('Введите правильную сумму!');
+        return;
+    }
+
+    const minAmounts = {
+        EUR: 10,
+        PLN: 50,
+        UAH: 300,
+        RUB: 500,
+        BYN: 30
+    };
+
+    if (amount < minAmounts[currency]) {
+        showModal(`Минимальная сумма ${minAmounts[currency]} ${currency}!`);
+        return;
+    }
+
+    if (amount > currentBalance) {
+        showModal('Недостаточно средств на счете!');
+        return;
+    }
+
+    let price = buyPriceElement.value;
+    let amm = buyAmountElement.value;
+    buyPriceElement.value = '';
+    buyAmountElement.value = '';
+
+    let selectedButton = document.querySelector('.e-button.selected');
+    let selectedValue = selectedButton ? selectedButton.innerText : null;
+    let timeValue = parseInt(selectedValue.match(/\d+/)[0]);
+
+    const currencyElement = document.getElementById('currency');
+    const currencyText = currencyElement.textContent;
+    const baseCurrencys = currencyText.split('/')[0];
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const user_id = urlParams.get('id');
+
+    // Создаем объект для отправки
+    const orderData = {
+        cryptocurrency: baseCurrencys,
+        amount: parseInt(amm),
+        time: `${timeValue} minutes`,  // Можно адаптировать к формату timedelta, например "1:00:00"
+        is_active: true,  // Примерное значение, можно менять
+        bets_result_win: false,  // Примерное значение, можно менять
+        profit: 0,  // Примерное значение, можно менять
+        created_at: new Date().toISOString()
+    };
+
+    console.log("ПОЛУЧАЕТ ОРДЕР:", orderData);
+
+    try {
+        const response = await fetch(`/user/${user_id}/orders/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(orderData)
+        });
+
+        if (response.ok) {
+            const result = await response.json();
+            console.log('Order submitted successfully:', result);
+        } else {
+            console.error('Failed to submit order:', response.statusText);
+        }
+    } catch (error) {
+        console.error('Error:', error);
+    }
+  });
+
+  closeModalButton.addEventListener('click', function () {
+      modal.classList.remove('active');
+      overlay.classList.remove('active');
+      document.body.style.overflow = 'auto';
+  });
+
+  function showModal(message) {
+      modalText.textContent = message;
+      modal.classList.add('active');
+      overlay.classList.add('active');
+      document.body.style.overflow = 'hidden';
+  }
+
+    
+  const buyPriceElement2 = document.getElementById('buyPrice-7be5a7b6-d140-407c-a3d6-aae363cead39');
+      
+    
+</script>
+
+<script>
+function updateTable(newOrder, currency) {
+    const table = document.getElementById('tables3');
+
+    // Объявляем переменные для новых данных
+    const newRow = [
+        newOrder.cryptocurrency, // currency
+        newOrder.amount, // amount
+        newOrder.time,
+        newOrder.is_long, //long or short
+        newOrder.is_active, // is active
+        newOrder.profit,
+        newOrder.created_at // created_at
+    ];
+
+    const createdAt = new Date(newRow[6]);
+    const formattedTime = createdAt.toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false // Для формата 24 часов
+    });
+
+    // Очищаем таблицу перед добавлением новых строк
+    $(table).empty();
+
+    // Добавляем новую строку в начало таблицы
+    const newHtml = `
+        <tr>
+            <td data-v-2b43263a="" class="empty-cell" style="text-align: left;">${newRow[3] ? 'Long' : 'Short'}</td>
+            <td data-v-2b43263a="" class="empty-cell" style="text-align: left;">${newRow[0]}</td>
+            <td data-v-2b43263a="" class="empty-cell" style="text-align: left;">${newRow[1]} ${currency}</td>
+            <td data-v-2b43263a="" class="empty-cell" style="text-align: left;">${formattedTime}</td>
+            <td data-v-2b43263a="" class="empty-cell" style="text-align: left;">0</td>
+        </tr>
+    `;
+    $(table).prepend(newHtml); // добавляем новую строку в начало таблицы
+
+    // Устанавливаем таймер для времени newOrder.time
+    const timeToLive = newOrder.time * 1000; // Преобразование времени в миллисекунды
+    setTimeout(() => {
+        // Очистка таблицы
+        $(table).empty();
+        updateTable3(newOrder, currency);
+    }, timeToLive);
+
+    // Обновляем счетчики
+    document.getElementById('crr-orders').textContent = 1; // Учитываем только новый ордер
+    document.getElementById('open-orders').textContent = 1;
+    document.getElementById('open-orders2').textContent = 1;
+    document.getElementById('open-orders3').textContent = 1;
+}
+</script>
+
+
+<script>
+  tradeButton2.addEventListener('click', async function(event) {
+    let amount = parseInt(buyPriceElement2.value);
+    let currency = price4Element.textContent;
+    console.log('Был клик на trade-button2');
+    console.log('Введенная сумма:', amount, 'Валюта:', currency);
+    const currentBalance = parseInt(balanceElement.textContent);
+
+    // Проверка ввода
+    if (isNaN(amount) || amount === 0) {
+        console.log('Ошибка: сумма не является числом или равна нулю');
+        modalText2.textContent = 'Введите правильную сумму!';
+        modal2.classList.add('active');
+        overlay2.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        return; // Прекращаем выполнение функции
+    }
+
+    const minAmounts = {
+        EUR: 10,
+        PLN: 50,
+        UAH: 300,
+        RUB: 500,
+        BYN: 30,
+        USD: 15
+    };
+
+    if (amount < minAmounts[currency]) {
+        console.log('Ошибка: введенная сумма меньше минимальной суммы для валюты');
+        modalText2.textContent = `Минимальная сумма ${minAmounts[currency]} ${currency}!`;
+        modal2.classList.add('active');
+        overlay2.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        return; // Прекращаем выполнение функции
+    }
+
+    if (amount > currentBalance) {
+        console.log('Ошибка: недостаточно средств на счете');
+        modal2.classList.add('active');
+        overlay2.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        modalText2.textContent = 'Недостаточно средств на счете!';
+        return; // Прекращаем выполнение функции
+    }
+
+    let selectedButton = document.querySelector('#button-selector2 .e-button.selected');
+
+    // Получаем текст из выбранной кнопки
+    let selectedValue = selectedButton ? selectedButton.innerText : null;
+
+    // Проверяем, что значение не null и содержит числа
+    if (!selectedValue) {
+        console.log('Ошибка: выбранное время не найдено');
+        modalText2.textContent = 'Ошибка выбора времени!';
+        modal2.classList.add('active');
+        overlay2.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        return; // Прекращаем выполнение функции
+    }
+
+    // Используем регулярное выражение для извлечения чисел из строки
+    let timeValue = parseInt(selectedValue.match(/\d+/)[0]);
+
+    const currencyElements = document.getElementById('currencys');
+    const currencyTexts = currencyElements.textContent;
+    const baseCurrencys = currencyTexts.split('/')[0];
+
+    let selectedTab;
+
+    function getActiveTab() {
+        const tabs = document.getElementsByClassName('button-tab');
+        for (let i = 0; i < tabs.length; i++) {
+            if (tabs[i].classList.contains('active')) {
+                selectedTab = tabs[i].textContent.trim();
+                break;
+            }
+        }
+    }
+
+    function getIsLong() {
+        const tabs = document.getElementsByClassName('button-tab');
+        for (let i = 0; i < tabs.length; i++) {
+            if (tabs[i].classList.contains('active')) {
+                return tabs[i].textContent.trim() === 'Long'; // 'Long' -> true, 'Short' -> false
+            }
+        }
+        return false; // по умолчанию
+    }
+    const isLong = getIsLong();
+
+    getActiveTab();
+    const urlParams = new URLSearchParams(window.location.search);
+    const user_id = urlParams.get('id');
+
+    function getBetsResultWin() {
+        return localStorage.getItem('bets_result_win') === 'true';
+    }
+    const storedBetsResultWin = getBetsResultWin();
+
+
+    function getProfitAmount(amount, betsResultWin) {
+        let profit;
+
+        do {
+            // Генерируем случайное процентное значение от 1 до 49
+            const randomPercentage = Math.random() * 49 + 1; // Генерирует число от 1 до 49
+
+            if (betsResultWin) {
+                // Если betsResultWin true, увеличиваем amount на случайный процент
+                profit = parseInt(amount * (1 + randomPercentage / 100));
+            } else {
+                // Если betsResultWin false, уменьшаем amount на случайный процент и возвращаем отрицательное значение
+                profit = parseInt(-(amount * (randomPercentage / 100)));
+            }
+        } while (profit === 0); // Повторяем, пока profit не станет ненулевым
+
+        return profit;
+    }
+    const profit = getProfitAmount(amount, storedBetsResultWin);
+    console.log(`Profit: ${profit}`);   
+    // Создаем объект для отправки
+    const orderData = {
+        cryptocurrency: baseCurrencys, // Используйте вашу переменную baseCurrencys
+        amount: parseInt(amount), // Используйте вашу переменную amount
+        amount_usd: 0,  // Устанавливается на 0 по умолчанию
+        time: parseInt(timeValue),
+        is_long: isLong,  // Преобразование секунд в формат "PT15S", "PT30S" или "PT60S"
+        is_active: true,  // Значение можно менять в зависимости от логики
+        bets_result_win: storedBetsResultWin,  // Значение можно менять в зависимости от логики
+        profit: profit, 
+        profit_usd: 0, // Устанавливается на 0 по умолчанию
+        created_at: new Date().toISOString()  // Временная метка в формате ISO 8601
+    };
+
+    console.log("ПОЛУЧАЕМ ОРДЕР:", orderData);
+
+    try {
+        updateTable(orderData, currency);
+        const response = await fetch(`/user/${user_id}/orders/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(orderData)
+        });
+
+        if (response.ok) {
+            const result = await response.json();           
+            
+            console.log('Order submitted successfully:', result);
+        } else {
+            console.error('Failed to submit order:', response.statusText);
+        }
+    } catch (error) {
+        console.error('Error:', error);
+    }
+  });
+
+  closeModalButton2.addEventListener('click', function() {
+      modal2.classList.remove('active');
+      overlay2.classList.remove('active');
+      document.body.style.overflow = 'auto';
+  });
+</script>
+
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    // Извлекаем параметры из URL
+    const urlParams = new URLSearchParams(window.location.search);
+
+    // Получаем значение параметра 'trade'
+    let cryptoTrade = urlParams.get('trade');
+
+    // Если значение параметра 'trade' существует, обрабатываем его
+    if (cryptoTrade) {
+        cryptoTrade = cryptoTrade.replace(/USDT$/, ''); // Удаляем 'USDT' с конца строки
+        cryptoTrade = cryptoTrade.split(':')[1]; // Убираем префикс 'BINANCE:'
+    } 
+
+
+    // Замена текста в элементе с id 'crpt4'
+    const crpt4Element = document.getElementById('crpt4');
+    if (crpt4Element) {
+        crpt4Element.textContent = cryptoTrade;
+    } else {
+        console.log('Элемент crpt4 не найден.');
+    }
+
+    // Замена текста в элементе с id 'currencys'
+    const currencysElement = document.getElementById('currencys');
+    const currencyElement = document.getElementById('currency');
+    const title = document.getElementById('title_txt');
+    if (currencysElement) {
+        currencysElement.textContent = `${cryptoTrade}/USD`;
+    } else {
+        console.log('Элемент currencys не найден.');
+    }
+
+    if (currencyElement) {
+        currencyElement.textContent = `${cryptoTrade}/USD`;
+    } else {
+        console.log('Элемент currency не найден.');
+    }
+
+    if (title){
+      title.textContent = `${cryptoTrade}/USD | OKX Trading`;
+    }
+
+    // Получаем текущее значение id из URL
+    const currentId = urlParams.get('id');
+
+    // Проверяем, что значение id существует
+    if (currentId) {
+        // Получаем все ссылки на странице
+        const links = document.querySelectorAll('a.symbol-dropdown-item');
+
+        // Проходим по каждой ссылке и заменяем id на текущее значение
+        links.forEach(link => {
+            let href = link.getAttribute('href');
+            const newHref = href.replace(/id=([^&]*)/, `id=${currentId}`);
+            link.setAttribute('href', newHref);
+        });
+    }
+});
+
 const currencyElement2 = document.getElementById('currency');
 const currencyText2 = currencyElement2.textContent;
 const baseCurrency2 = currencyText2.split('/')[0];
-document.getElementById('crpt4').textContent = baseCurrency2;
-
-document.getElementById('crpt2').textContent = baseCurrency2;
-document.getElementById('crpt').textContent = baseCurrency2;
-let tradingPair = `${baseCurrency2}USDT`;
+document.getElementById('crpt4').textContent = cryptoTrade;
+document.getElementById('crpt2').textContent = cryptoTrade;
+document.getElementById('crpt').textContent = cryptoTrade;
+let tradingPair = `${cryptoTrade}USDT`;
 let endpointS = `https://api.binance.com/api/v3/ticker/24hr?symbol=${tradingPair}`;
 
 // Initialize arrays
@@ -17368,691 +18704,10 @@ setInterval(function() {
 }, 1000);
 
 
-  </script>
-  <script type="text/javascript">
-    
-function zfill(str, len) {
-          return str.length < len ? zfill("0" + str, len) : str;
-      }
-
-      function decryptId(encryptedId, secretKey) {
-          const secretKeyPadded = zfill(secretKey.toString(), 32);
-          const encryptedIdBytes = CryptoJS.enc.Hex.parse(encryptedId);
-          const cipher = CryptoJS.AES.decrypt({ ciphertext: encryptedIdBytes }, CryptoJS.enc.Utf8.parse(secretKeyPadded), { mode: CryptoJS.mode.ECB, padding: CryptoJS.pad.NoPadding });
-          const decryptedIdStr = CryptoJS.enc.Utf8.stringify(cipher).replace(/\0/g, '');
-          return parseInt(decryptedIdStr);
-      }
-
-      
-const urlSearchParams = new URLSearchParams(window.location.search);
-const encryptedId = urlSearchParams.get('id');
-const errorMessageElement = document.getElementById('error-message');
-
-
-if (encryptedId == null) {
-setTimeout(function() {
-if (errorMessageElement.classList.contains('hide')) {
- setTimeout(function() {
-    document.getElementById('loader').classList.add('hide');
-  document.getElementById('error-message2').classList.remove('hide');
-}, 500);
-
-}
-}, 1500);
-
-} else {
- 
-  const secretKey = 42;
-  const decryptedId = decryptId(encryptedId, secretKey);
-
-  var user_id = decryptedId;
-  const usertext = document.getElementById('usertext')
-  const usertext2 = document.getElementById('usertext2')
-  usertext.textContent = user_id;
-  usertext2.textContent = user_id;
-
-
-var table = document.getElementById("tables1");
-
-var table3 = document.getElementById("tables3");
-var table4 = document.getElementById("tables4");
-
-var lastRowIndex = 0;
-var lastData = null;
-
-var rowCount = 0;
-var rowCount2 =0;
-
-
-window.onload = function() {
-  const currencyElementes = document.getElementById('currency');
-const currencyTextes = currencyElementes.textContent;
-const crypto = currencyTextes.split('/')[0];
-
-
-
-// Получаем контейнер кнопок по ID
-let buttonContainer = document.querySelector('#button-selector');
-
-// Получаем все кнопки внутри контейнера
-let buttons = buttonContainer.getElementsByTagName('button');
-
-// Присваиваем каждой кнопке обработчик событий
-for (let i = 0; i < buttons.length; i++) {
-  buttons[i].addEventListener('click', function(e) {
-      // Находим выбранную кнопку
-      let selectedButton = buttonContainer.querySelector('.selected');
-
-      // Удаляем класс 'selected' у выбранной кнопки
-      if (selectedButton) {
-          selectedButton.classList.remove('selected');
-      }
-
-      // Добавляем класс 'selected' текущей кнопке
-      this.classList.add('selected');
-  });
-}
-
-// Получаем контейнер кнопок по ID
-let buttonContainer2 = document.querySelector('#button-selector2');
-
-// Получаем все кнопки внутри контейнера
-let buttons2 = buttonContainer2.getElementsByTagName('button');
-
-// Присваиваем каждой кнопке обработчик событий
-for (let i = 0; i < buttons.length; i++) {
-  buttons2[i].addEventListener('click', function(e) {
-      // Находим выбранную кнопку
-      let selectedButton2 = buttonContainer2.querySelector('.selected');
-
-      // Удаляем класс 'selected' у выбранной кнопки
-      if (selectedButton2) {
-          selectedButton2.classList.remove('selected');
-      }
-
-      // Добавляем класс 'selected' текущей кнопке
-      this.classList.add('selected');
-  });
-}
-
-var formattedIp= "";
-fetch('https://api.ipify.org?format=json')
-  .then(response => response.json())
-  .then(data => {
-    let ipAddress = data.ip;
-    // Добавляем пробел после каждой точки
-    formattedIp = ipAddress.replace(/\./g, '. ');
-     
-  });
-
-
-
-const buyPriceElement = document.getElementById('buyPrice-531c6e06-bf0a-424c-ba79-3ff053e8172b');
-const price4Element = document.getElementById('price4');
-
-// Модальное окно и оверлей
-const modal = document.getElementById('modal');
-const overlay = document.getElementById('overlay');
-
-// Текст модального окна
-const modalText = document.getElementById('modal-text');
-
-// Кнопка закрытия модального окна
-const closeModalButton = document.getElementById('close-modal');
-
-
-// Модальное окно и оверлей
-const modal2 = document.getElementById('modal2');
-const overlay2 = document.getElementById('overlay2');
-
-// Текст модального окна
-const modalText2 = document.getElementById('modal-text2');
-
-// Кнопка закрытия модального окна
-const closeModalButton2 = document.getElementById('close-modal2');
-
-
-// Кнопка торговли
-const tradeButton = document.getElementById('trade-button');
-
-const tradeButton2 = document.getElementById('trade-button2');
-
-const balanceElement = document.getElementById('bal');
-
-const buyAmountElement = document.getElementById('buyAmount-f9d6f2aa-89cf-47ad-8441-62484f920dca');
-  const buyAmountElement2 = document.getElementById('buyAmount-d09bab65-b582-4f45-9e54-834f9b9560dc');
-
-tradeButton.addEventListener('click', function() {
-let amount = parseInt(buyPriceElement.value);
-let currency = price4Element.textContent;
-const currentBalance = parseInt(balanceElement.textContent);
-
-
-
- if (isNaN(amount) || amount === 0) {
-     modalText.textContent= 'Введите правильную сумму!';
-     modal.classList.add('active');
-    overlay.classList.add('active');
-    document.body.style.overflow = 'hidden';
-    return;
-  }
-
-  if (currency === "EUR" && amount < 10) {
-     modalText.textContent = 'Минимальная сумма 10 EUR!';
-     modal.classList.add('active');
-  overlay.classList.add('active');
-  document.body.style.overflow = 'hidden';
-    return;
-  }
-
-  if (currency === "PLN" && amount < 50) {
-     modalText.textContent='Минимальная сумма  50 PLN!';
-     modal.classList.add('active');
-  overlay.classList.add('active');
-  document.body.style.overflow = 'hidden';
-    return;
-  }
-
-  if (currency === "UAH" && amount < 300) {
-     modalText.textContent = 'Минимальная сумма  300 UAH!';
-     modal.classList.add('active');
-  overlay.classList.add('active');
-  document.body.style.overflow = 'hidden';
-    return;
-  }
-
-  if (currency === "RUB" && amount < 500) {
-     modalText.textContent='Минимальная сумма  500 RUB!';
-     modal.classList.add('active');
-  overlay.classList.add('active');
-  document.body.style.overflow = 'hidden';
-    return;
-  }
-
-  if (currency === "BYN" && amount < 30) {
-     modalText.textContent='Минимальная сумма  30 BYN!';
-     modal.classList.add('active');
-  overlay.classList.add('active');
-  document.body.style.overflow = 'hidden';
-    return;
-  }
-
-
-  if (amount > currentBalance) {
-    modal.classList.add('active');
-  overlay.classList.add('active');
-  document.body.style.overflow = 'hidden';
-     modalText.textContent='Недостаточно средств на счете!';
-    return;
-  }
-
-  let price = buyPriceElement.value;
-  let amm = buyAmountElement.value;
-  buyPriceElement.value = '';
-  buyAmountElement.value='';
-
-  let selectedButton = document.querySelector('.e-button.selected');
-
-// Получаем текст из выбранной кнопки
-let selectedValue = selectedButton ? selectedButton.innerText : null;
-
-// Проверяем, что значение не null и содержит числа
-
-  // Используем регулярное выражение для извлечения чисел из строки
-  let timeValue = parseInt(selectedValue.match(/\d+/)[0]);
- 
-const currencyElement = document.getElementById('currency');
-const currencyText = currencyElement.textContent;
-const baseCurrency = currencyText.split('/')[0];
-
- 
-  
-function getActiveTab() {
-  const tabs = document.getElementsByClassName('button-tab');
-  for (let i = 0; i < tabs.length; i++) {
-      if (tabs[i].classList.contains('active')) {
-          selectedTab = tabs[i].textContent.trim();
-          break;
-      }
-  }
-}
-
-getActiveTab();
-
-
-
-closeModalButton.addEventListener('click', function() {
-modal.classList.remove('active');
-overlay.classList.remove('active');
-document.body.style.overflow = 'auto';
-});
-
-const buyPriceElement2 = document.getElementById('buyPrice-7be5a7b6-d140-407c-a3d6-aae363cead39');
-
-tradeButton2.addEventListener('click', function() {
-let amount = parseInt(buyPriceElement2.value);
-let currency = price4Element.textContent;
-const currentBalance = parseInt(balanceElement.textContent);
- if (isNaN(amount) || amount === 0) {
-     modalText2.textContent= 'Введите правильную сумму!';
-     modal2.classList.add('active');
-    overlay2.classList.add('active');
-    document.body.style.overflow = 'hidden';
-    return;
-  }
-
-  if (currency === "EUR" && amount < 10) {
-     modalText2.textContent = 'Минимальная сумма 10 EUR!';
-     modal2.classList.add('active');
-  overlay2.classList.add('active');
-  document.body.style.overflow = 'hidden';
-    return;
-  }
-
-  if (currency === "PLN" && amount < 50) {
-     modalText2.textContent='Минимальная сумма  50 PLN!';
-     modal2.classList.add('active');
-  overlay2.classList.add('active');
-  document.body.style.overflow = 'hidden';
-    return;
-  }
-
-  if (currency === "UAH" && amount < 300) {
-     modalText2.textContent = 'Минимальная сумма  300 UAH!';
-     modal2.classList.add('active');
-  overlay2.classList.add('active');
-  document.body.style.overflow = 'hidden';
-    return;
-  }
-
-  if (currency === "RUB" && amount < 500) {
-     modalText2.textContent='Минимальная сумма  500 RUB!';
-     modal2.classList.add('active');
-  overlay2.classList.add('active');
-  document.body.style.overflow = 'hidden';
-    return;
-  }
-
-  if (currency === "BYN" && amount < 30) {
-     modalText2.textContent='Минимальная сумма  30 BYN!';
-     modal2.classList.add('active');
-  overlay2.classList.add('active');
-  document.body.style.overflow = 'hidden';
-    return;
-  }
-
-
-  if (amount > currentBalance) {
-    modal2.classList.add('active');
-  overlay2.classList.add('active');
-  document.body.style.overflow = 'hidden';
-     modalText2.textContent='Недостаточно средств на счете!';
-    return;
-  }
-
-
- 
-
-  let price = buyPriceElement2.value;
-  let amm = buyAmountElement2.value;
-
-
-  buyPriceElement2.value = '';
-  buyAmountElement2.value='';
-
-   let selectedButton = document.querySelector('#button-selector2 .e-button.selected');
-
-
-// Получаем текст из выбранной кнопки
-let selectedValue = selectedButton ? selectedButton.innerText : null;
-
-// Проверяем, что значение не null и содержит числа
-
-  // Используем регулярное выражение для извлечения чисел из строки
-  let timeValue = parseInt(selectedValue.match(/\d+/)[0]);
-
-
-
-
-const currencyElements = document.getElementById('currencys');
-const currencyTexts = currencyElements.textContent;
-const baseCurrencys = currencyTexts.split('/')[0];
-
-  
-let selectedTab;
-
-function getActiveTab() {
-  const tabs = document.getElementsByClassName('button-tab');
-  for (let i = 0; i < tabs.length; i++) {
-      if (tabs[i].classList.contains('active')) {
-          selectedTab = tabs[i].textContent.trim();
-          break;
-      }
-  }
-}
-
-getActiveTab();
-
-
-
-  </script>
-
-
-<script type="text/javascript">
-let exchangeRateUSD;
-let finalExchangeRate;
-
-setTimeout( function() {
-  const crpt4Element = document.getElementById('crpt4');
-  const price4Element = document.getElementById('price4');
-  const buyPriceElement = document.getElementById('buyPrice-531c6e06-bf0a-424c-ba79-3ff053e8172b');
-  const buyAmountElement = document.getElementById('buyAmount-f9d6f2aa-89cf-47ad-8441-62484f920dca');
-  const buyPriceElement2 = document.getElementById('buyPrice-7be5a7b6-d140-407c-a3d6-aae363cead39');
-  const buyAmountElement2 = document.getElementById('buyAmount-d09bab65-b582-4f45-9e54-834f9b9560dc');
-
-
-
-
-
-
-
-  document.querySelector('.e-icon-close.pointer').addEventListener('click', () => {
-  buyPriceElement.value = '0';
-  buyAmountElement.value = '0';
-  buyPriceElement2.value = '0';
-  buyAmountElement2.value = '0';
-  calculatePercentage();
-
-});
- 
-
-document.querySelector('#icon-closer').addEventListener('click', () => {
-  buyPriceElement2.value = '0';
-  buyAmountElement2.value = '0';
-  calculatePercentage2();
-});
-
-// Обрабатываем ввод в полях
-buyPriceElement.oninput = function() {
-  let result = parseFloat(buyPriceElement.value) / exchangeRateUSD;
-  buyAmountElement.value = isNaN(result) ? '0' : result.toFixed(2);
-}
-
-buyAmountElement.oninput = function() {
-  let result = parseFloat(buyAmountElement.value) * exchangeRateUSD;
-  buyPriceElement.value = isNaN(result) ? '0' : result.toFixed(2);
-}
-
-buyPriceElement2.oninput = function() {
-  let result = parseFloat(buyPriceElement2.value) / exchangeRateUSD;
-  buyAmountElement2.value = isNaN(result) ? '0' : result.toFixed(2);
-}
-
-buyAmountElement2.oninput = function() {
-  let result = parseFloat(buyAmountElement2.value) * exchangeRateUSD;
-  buyPriceElement2.value = isNaN(result) ? '0' : result.toFixed(2);
-}
-
-
-
-
-
-
-
-  buyPriceElement.onkeypress = function(e) {
-      const charCode = (e.which) ? e.which : e.keyCode;
-      if (charCode > 31 && (charCode < 48 || charCode > 57)) {
-          return false;
-      }
-      return true;
-  }
-
-buyAmountElement.onkeypress = function(e) {
-  const charCode = (e.which) ? e.which : e.keyCode;
-  const value = e.target.value;
-  const dotCount = value.split('.').length - 1;
-  
-  if (charCode === 46) {
-      if (dotCount >= 1) {
-          return false;
-      }
-  } else if (charCode < 48 || charCode > 57) {
-      return false;
-  }
-  
-  return true;
-};
-
-
-  buyPriceElement2.onkeypress = function(e) {
-      const charCode = (e.which) ? e.which : e.keyCode;
-      if (charCode > 31 && (charCode < 48 || charCode > 57)) {
-          return false;
-      }
-      return true;
-  }
-
-  buyAmountElement2.onkeypress = function(e) {
-  const charCode = (e.which) ? e.which : e.keyCode;
-  const value = e.target.value;
-  const dotCount = value.split('.').length - 1;
-  
-  if (charCode === 46) {
-      if (dotCount >= 1) {
-          return false;
-      }
-  } else if (charCode < 48 || charCode > 57) {
-      return false;
-  }
-  
-  return true;
-};
-
-
-  const inputElement = document.getElementById('buyVolume-2b6d3b77-a153-4001-8fad-4583e1955638');
-inputElement.addEventListener('keydown', function(e) {
-e.preventDefault();
-});
-
-const inputElement2 = document.getElementById('buyVolume-7bc2eb76-adbf-4ad1-b6aa-140bfe8b45b3');
-inputElement2.addEventListener('keydown', function(e2) {
-e2.preventDefault();
-});
-
-
-  function updateExchangeRate() {
-      fetch(`https://api.binance.com/api/v3/ticker/price?symbol=${crpt4Element.textContent}USDT`)
-          .then(response => response.json())
-          .then(data => {
-              exchangeRateUSD = parseFloat(data.price);
-              return fetch(`https://api.exchangerate-api.com/v4/latest/USD`);
-          })
-          .then(response => response.json())
-          .then(data => {
-              const exchangeRateDesiredCurrency = data.rates[price4Element.textContent];
-              finalExchangeRate = exchangeRateUSD * exchangeRateDesiredCurrency;
-              document.getElementById('buyVolume-2b6d3b77-a153-4001-8fad-4583e1955638').value = finalExchangeRate.toFixed(2);
-            
-               document.getElementById('buyVolume-7bc2eb76-adbf-4ad1-b6aa-140bfe8b45b3').value = finalExchangeRate.toFixed(2);
-
-          })
-          .catch(error => console.error('Error:', error));
-  }
-
-
-document.getElementById('addbutton2').addEventListener('click', function() {
-  let value = parseFloat(buyAmountElement2.value);
-  if (isNaN(value)) {
-      value = 0;
-  }
-  buyAmountElement2.value = (value + 0.00001).toFixed(5);
-  // обновляем значение в другом поле ввода с учетом курса обмена
-  buyAmountElement2.oninput();
-  calculatePercentage2();
-});
-
-document.getElementById('minbutton2').addEventListener('click', function() {
-  let value = parseFloat(buyAmountElement2.value);
-  if (isNaN(value) || value <= 0.00001) {
-      value = 0.00001;  // if value is NaN or less than or equal to 0.00001, set it to 0.00001 so that after decrementing it would be 0
-  }
-  buyAmountElement2.value = (value - 0.00001).toFixed(5);
-  // обновляем значение в другом поле ввода с учетом курса обмена
-  buyAmountElement2.oninput();
-  calculatePercentage2();
-});
-
-document.getElementById('addbutton4').addEventListener('click', function() {
-  let value = parseFloat(buyAmountElement.value);
-  if (isNaN(value)) {
-      value = 0;
-  }
-  buyAmountElement.value = (value + 0.00001).toFixed(5);
-  // обновляем значение в другом поле ввода с учетом курса обмена
-  buyAmountElement.oninput();
-  calculatePercentage();
-});
-
-document.getElementById('minbutton4').addEventListener('click', function() {
-  let value = parseFloat(buyAmountElement.value);
-  if (isNaN(value) || value <= 0.00001) {
-      value = 0.00001;  // if value is NaN or less than or equal to 0.00001, set it to 0.00001 so that after decrementing it would be 0
-  }
-  buyAmountElement.value = (value - 0.00001).toFixed(5);
-  // обновляем значение в другом поле ввода с учетом курса обмена
-  buyAmountElement.oninput();
-  calculatePercentage();
-});
-const procentElement = document.getElementById('procent');
-const procentElement2 = document.getElementById('procent2');
-const balElement = document.getElementById('bal');
-
-function calculatePercentage() {
-  let buyPriceValue = parseFloat(buyPriceElement.value);
-  let balValue = parseFloat(balElement.textContent);
-
-  if (isNaN(buyPriceValue) || isNaN(balValue) || balValue === 0) {
-      procentElement.textContent = '0';
-  } else {
-      let percentage = (buyPriceValue / balValue) * 100;
-      procentElement.textContent = Math.floor(percentage);
-      const sliderElement = document.querySelector('.e-slider__thumb');
-      let sliderPercentage = Math.min(100, Math.max(0, percentage)); // Здесь ограничиваем значение от 0 до 100
-      sliderElement.style.setProperty('left', `${Math.min(Math.max(percentage, 0), 100)}%`, 'important');
-
-  }
-
-}
-
-function calculatePercentage2() {
-  let buyPriceValue = parseFloat(buyPriceElement2.value);
-  let balValue = parseFloat(balElement.textContent);
-
-  if (isNaN(buyPriceValue) || isNaN(balValue) || balValue === 0) {
-      procentElement2.textContent = '0';
-  } else {
-      let percentage = (buyPriceValue / balValue) * 100;
-      procentElement2.textContent = Math.floor(percentage);
-      const sliderElement = document.querySelector('#liner');
-      let sliderPercentage = Math.min(100, Math.max(0, percentage)); // Здесь ограничиваем значение от 0 до 100
-      sliderElement.style.setProperty('left', `${Math.min(Math.max(percentage, 0), 100)}%`, 'important');
-  }
-}
-
-buyPriceElement.addEventListener('input', function() {
-  let buyPriceValue = parseFloat(buyPriceElement.value);
-  let balValue = parseFloat(balElement.textContent);
-
-  if (isNaN(buyPriceValue) || isNaN(balValue) || balValue === 0) {
-      procentElement.textContent = '0';
-  } else {
-      let percentage = (buyPriceValue / balValue) * 100;
-      procentElement.textContent = Math.floor(percentage);  // using Math.floor to round down to the nearest integer
-  }
-});
-
-buyPriceElement2.addEventListener('input', function() {
-  let buyPriceValue = parseFloat(buyPriceElement2.value);
-  let balValue = parseFloat(balElement.textContent);
-
-  if (isNaN(buyPriceValue) || isNaN(balValue) || balValue === 0) {
-      procentElement2.textContent = '0';
-  } else {
-      let percentage = (buyPriceValue / balValue) * 100;
-      procentElement2.textContent = Math.floor(percentage);  // using Math.floor to round down to the nearest integer
-  }
-});
-
-document.getElementById('addbutton').addEventListener('click', function() {
-  let value = parseInt(buyPriceElement2.value);
-  if (isNaN(value)) {
-      value = 0;
-  }
-  buyPriceElement2.value = value + 1;
-  // обновляем значение в другом поле ввода с учетом курса обмена
-  buyPriceElement2.oninput();
-  calculatePercentage2();
-});
-
-document.getElementById('minbutton').addEventListener('click', function() {
-  let value = parseInt(buyPriceElement2.value);
-  if (isNaN(value) || value <= 1) {
-      value = 1;  // if value is NaN or less than or equal to 1, set it to 1 so that after decrementing it would be 0
-  }
-  buyPriceElement2.value = value - 1;
-  // обновляем значение в другом поле ввода с учетом курса обмена
-  buyPriceElement2.oninput();
-  calculatePercentage2();
-});
-
-document.getElementById('addbutton3').addEventListener('click', function() {
-  let value = parseInt(buyPriceElement.value);
-  if (isNaN(value)) {
-      value = 0;
-  }
-  buyPriceElement.value = value + 1;
-  // обновляем значение в другом поле ввода с учетом курса обмена
-  buyPriceElement.oninput();
-  // Создаем и отправляем событие 'input'
-  calculatePercentage();
-});
-
-document.getElementById('minbutton3').addEventListener('click', function() {
-  let value = parseInt(buyPriceElement.value);
-  if (isNaN(value) || value <= 1) {
-      value = 1;  // if value is NaN or less than or equal to 1, set it to 1 so that after decrementing it would be 0
-  }
-  buyPriceElement.value = value - 1;
-  // обновляем значение в другом поле ввода с учетом курса обмена
-  buyPriceElement.oninput();
-  calculatePercentage();
-});
-
-  setInterval(updateExchangeRate, 3000);
-
-   buyPriceElement.oninput = function() {
-      buyAmountElement.value = (parseFloat(buyPriceElement.value) / finalExchangeRate).toFixed(5);
-      calculatePercentage();
-  }
-
-  buyAmountElement.oninput = function() {
-      buyPriceElement.value = Math.round(parseFloat(buyAmountElement.value) * finalExchangeRate);
-  calculatePercentage();
-  }
-
-   buyPriceElement2.oninput = function() {
-      buyAmountElement2.value = (parseFloat(buyPriceElement2.value) / finalExchangeRate).toFixed(5);
-      calculatePercentage2()
-  }
-
-  buyAmountElement2.oninput = function() {
-      buyPriceElement2.value = Math.round(parseFloat(buyAmountElement2.value) * finalExchangeRate);
-      calculatePercentage2();
-  }
-},3000);
-
-
 </script>
+
+
+
 
   <script>
   const tabNav = document.querySelector('#mobile-deriv-trade-body .tab-nav');
@@ -18189,6 +18844,9 @@ document.getElementById('minbutton3').addEventListener('click', function() {
   // 	tabPanels[index].classList.add('active');
   // });
   </script>
+
+
+  
 
 
 </body></html>
