@@ -1,16 +1,7 @@
-from aiogram import types, F, Router
-from aiogram.types import Message, CallbackQuery
-from aiogram.exceptions import TelegramBadRequest
-from aiogram.filters import Command
-import keyboards as kb
+from aiogram import F, Router
+from aiogram.types import CallbackQuery
 from middlewares import AuthorizeMiddleware, WorkerInjectTargetUserMiddleware
 from database.models import User
-from aiogram.fsm.context import FSMContext
-from aiogram.utils.markdown import hlink
-import random
-from database.enums import LangEnum, CurrencyEnum
-from sqlalchemy.ext.asyncio import AsyncSession
-from functools import wraps
 
 
 router = Router()
