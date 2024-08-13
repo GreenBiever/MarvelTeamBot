@@ -15,7 +15,7 @@ from utils import currency_exchange
 from utils.main_bot_api_client import main_bot_api_client
 
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(filename="trade_bot.log", level=logging.INFO)
 
 dp = Dispatcher()
 bot = Bot(token=config.TOKEN, default=DefaultBotProperties(parse_mode='HTML'))

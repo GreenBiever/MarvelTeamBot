@@ -143,7 +143,7 @@ Currency: {}
 Time of transaction closure: {}''',
 'order_fail': '''❌ Your transaction was unsuccessful:
 Amount: {} {}
-Loss: -{} {}
+Loss: {} {}
 Currency: {}
 Time of transaction closure: {}'''
     }

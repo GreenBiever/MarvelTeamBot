@@ -141,7 +141,7 @@ Waluta: {}
 Czas zamknięcia transakcji: {}''',
 'order_fail': '''❌ Twoja transakcja była nieudana:
 Kwota: {} {}
-Strata: -{} {}
+Strata: {} {}
 Waluta: {}
 Czas zamknięcia transakcji: {}'''
     }
