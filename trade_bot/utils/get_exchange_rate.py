@@ -39,18 +39,17 @@ class CurrencyExchange:
                 >= self.TIME_BETWEEN_UPDATE_COURSE):
             await self.reload_currencies_rates()
         return round(self.exchange_rates[to_currency] * amount, self.DECIMAL_PLACES)
-    
+
     async def get_rate(self, from_currency: CurrencyEnum, to_currency: CurrencyEnum,
-                    amount: int) -> float:
+                       amount: int) -> float:
         if from_currency == CurrencyEnum.usd:
             return await self.get_exchange_rate(to_currency, amount)
         elif to_currency == CurrencyEnum.usd:
             return round(amount / (await self.get_exchange_rate(from_currency, 1)),
-                        self.DECIMAL_PLACES)
+                         self.DECIMAL_PLACES)
         else:
             return round((amount / (await self.get_exchange_rate(from_currency, 1))
-                    * await self.get_exchange_rate(to_currency, 1)), self.DECIMAL_PLACES)
-
+                          * await self.get_exchange_rate(to_currency, 1)), self.DECIMAL_PLACES)
 
     async def convert_to_usd(self, from_currency: CurrencyEnum, amount: float) -> float:
         '''Convert amount from given currency to USD'''
