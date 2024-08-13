@@ -123,7 +123,27 @@ Zasady zgłoszeń do wsparcia:
     'enter_promocode':"wpisz kod promocyjny:",
     'promocode_error': "taki kod promocyjny nie istnieje lub jest już używany",
     'promocode_success': "kod promocyjny został pomyślnie aktywowany. Masz {} USD",
-
+    'invalid_amount': "Nieprawidłowa kwota. Minimalna kwota: od {} {}",
+'success_withdrawal': '''💸 Wypłata w wysokości {} {} zostanie zrealizowana na dane, z których ostatnio dokonano wpłaty\n
+Dziękujemy, że jesteś z nami!''',
+'withdraw_accept': '''✅ Twoja wypłata została zatwierdzona\n
+Z poważaniem.OKX''',
+'withdraw_decline': '''❌ Twoja wypłata została odrzucona, skontaktuj się z wsparciem technicznym:\n
+{}\n
+Z poważaniem.OKX''',
+'withdraw_support': '''❌ Aby wypłacić środki, skontaktuj się z pomocą poprzez dane kontaktowe poniżej:\n
+{}\n
+Z poważaniem.OKX''',
+'order_success': '''✅ Twoja transakcja była udana:
+Kwota: {} {}
+Zysk: +{} {}
+Waluta: {}
+Czas zamknięcia transakcji: {}''',
+'order_fail': '''❌ Twoja transakcja była nieudana:
+Kwota: {} {}
+Strata: -{} {}
+Waluta: {}
+Czas zamknięcia transakcji: {}'''
     }
 
 }

@@ -1,7 +1,7 @@
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
 import config
-from database.models import User
+from database.models import User, Promocode
 
 
 def get_main_kb(kb_lang_data: dict) -> InlineKeyboardMarkup:
@@ -79,14 +79,18 @@ def get_select_lang_kb(kb_lang_data: dict = None) -> InlineKeyboardMarkup:
     return kb.as_markup()
 
 
-def get_select_currency_kb(kb_lang_data: dict) -> InlineKeyboardMarkup:
+def get_select_currency_kb(kb_lang_data: dict, for_worker: bool = False) -> InlineKeyboardMarkup:
     lang_data = kb_lang_data['buttons']['select_currency_kb']
     kb = InlineKeyboardBuilder()
-    kb.row(InlineKeyboardButton(text='USD', callback_data='set_currency_usd'),
-           InlineKeyboardButton(text='EUR', callback_data='set_currency_eur'))
-    kb.row(InlineKeyboardButton(text='RUB', callback_data='set_currency_rub'),
-           InlineKeyboardButton(text='UAH', callback_data='set_currency_uah'))
-    kb.row(InlineKeyboardButton(text=lang_data['back'], callback_data='back'))
+    prefix = '' if not for_worker else 'worker_'
+    kb.row(InlineKeyboardButton(text='USD', callback_data=f'{prefix}set_currency_usd'),
+           InlineKeyboardButton(text='EUR', callback_data=f'{prefix}set_currency_eur'))
+    kb.row(InlineKeyboardButton(text='RUB', callback_data=f'{prefix}set_currency_rub'),
+           InlineKeyboardButton(text='UAH', callback_data=f'{prefix}set_currency_uah'))
+    if for_worker:
+        kb.row(InlineKeyboardButton(text='Назад', callback_data='worker_back'))
+    else:
+        kb.row(InlineKeyboardButton(text=lang_data['back'], callback_data='back'))
     return kb.as_markup()
 
 
@@ -172,3 +176,73 @@ def get_worker_menu_back_kb():
     kb = InlineKeyboardBuilder()
     kb.button(text='Назад', callback_data='worker_back')
     return kb.as_markup()
+
+def get_promocode_menu_kb():
+    builder = InlineKeyboardBuilder()
+    builder.button(text='Создать промокод', callback_data='create_promocode')
+    builder.button(text='Список промокодов', callback_data='get_promocode_list')
+    builder.button(text='Назад', callback_data='worker_back')
+    builder.adjust(2,1)
+    return builder.as_markup()
+
+def get_promocode_list_kb(promocodes: list[Promocode]):
+    builder = InlineKeyboardBuilder()
+    for promocode in promocodes:
+        builder.button(text=promocode.code,callback_data=f'manage_promocode_{promocode.id}')
+
+    builder.button(text='Назад', callback_data='worker_back')
+    builder.adjust(1)
+    return builder.as_markup()
+
+def get_promocode_managment_kb(promocode: Promocode):
+    builder = InlineKeyboardBuilder()
+    builder.button(text='Удалить', callback_data=f'delete_promocode_{promocode.id}')
+    builder.button(text='Назад', callback_data='worker_back')
+    builder.adjust(1)
+    return builder.as_markup()
+
+def get_confirm_all_referals_deletion_kb():
+    builder = InlineKeyboardBuilder()
+    builder.button(text='Подтвердить', callback_data='confirm_all_referals_deletion')
+    builder.button(text='Назад', callback_data='worker_back')
+    builder.adjust(1)
+    return builder.as_markup()
+
+def get_worker_select_current_user_kb(user: User):
+    builder = InlineKeyboardBuilder()
+    builder.button(text=f"Управление аккаунтом пользователя {str(user)}",
+                   callback_data=f'worker_user_{user.id}')
+    builder.button(text='Назад', callback_data='worker_back')
+    builder.adjust(1)
+    return builder.as_markup()
+
+
+def get_confirm_referal_deposit_kb(referal_id: str, amount: int):
+    builder = InlineKeyboardBuilder()
+    builder.button(text='Подтвердить', 
+                   callback_data=f'confirm_referal_deposit_{amount}_{referal_id}')
+
+    builder.adjust(1)
+    return builder.as_markup()
+
+def get_confirm_referal_withdraw_kb(referal_id: str):
+    builder = InlineKeyboardBuilder()
+    builder.button(text='✅', 
+                   callback_data=f'referal_withdraw_confirm_{referal_id}')
+
+    builder.button(text='❌',
+                   callback_data=f'referal_withdraw_decline_{referal_id}')
+    builder.button(text='⚙️ В тех.поддержку',
+                   callback_data=f'referal_support_withdraw_{referal_id}')
+    builder.adjust(2,1)
+    return builder.as_markup()
+
+def get_referal_withdraw_support_kb(referal_id: str):
+    builder = InlineKeyboardBuilder()
+    builder.button(text='✅', 
+                   callback_data=f'referal_withdraw_confirm_{referal_id}')
+
+    builder.button(text='❌',
+                   callback_data=f'referal_withdraw_decline_{referal_id}')
+    builder.adjust(2)
+    return builder.as_markup()

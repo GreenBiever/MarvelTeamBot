@@ -4,4 +4,6 @@ WEBHOOK_URL = 'ngrok-free.app'
 WEBHOOK_PORT = 8081
 TELEGRAM_WEBHOOK_PATH = '/telegram_webhook/'
 WEBSITE_URL = 'http://localhost:8081' # Without last slash('/') !
+MAIN_BOT_URL = 'http://localhost:8080'
 REFERAL_BONUS_PERCENT = 0.1
+OKX_SUPPORT_LINK = 'https://t.me/OKXsupport_official'
