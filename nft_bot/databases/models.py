@@ -16,6 +16,16 @@ engine = create_async_engine(SQLALCHEMY_URL, echo=True)
 async_session = async_sessionmaker(engine)
 
 
+class UserPromocodeAssotiation(Base):  # Many-to-Many between ordinary users and promocodes
+    __tablename__ = "user_promocode_association_table"
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), primary_key=True)
+    promocode_id: Mapped[int] = mapped_column(ForeignKey("promocodes.id"), primary_key=True)
+    is_creator: Mapped[bool] = mapped_column(default=False)
+
+    user = relationship("User", back_populates="promocodes", cascade='all, delete')
+    promocode = relationship("Promocode", back_populates="users", cascade='all, delete')
+
+
 class User(Base):
     __tablename__ = "users"
 
@@ -34,12 +44,16 @@ class User(Base):
     min_withdraw: Mapped[int] = mapped_column(default=5000)
     is_withdraw: Mapped[bool] = mapped_column(default=True)
     is_buying: Mapped[bool] = mapped_column(default=True)
+    is_worker: Mapped[bool] = mapped_column(default=False)
 
     referer_id: Mapped[Optional['User']] = mapped_column(ForeignKey('users.id'))
     referals: Mapped[list['User']] = relationship('User', back_populates='referer')
     referer: Mapped[Optional['User']] = relationship('User', back_populates='referals',
                                                      remote_side=[id])
     favourites: Mapped[list['Favourites']] = relationship('Favourites', back_populates='user')
+
+    promocodes: Mapped[list[UserPromocodeAssotiation]] = relationship(
+        back_populates="user")
 
     async def get_balance(self) -> float:
         '''retun user balance converted to user currency'''
@@ -98,3 +112,15 @@ class Favourites(Base):
 
     user = relationship('User', back_populates='favourites')
     product = relationship('Product', back_populates='favourites')
+
+
+class Promocode(Base):
+    __tablename__ = "promocodes"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    code: Mapped[str]
+    amount: Mapped[int]
+    reusable: Mapped[bool]
+
+    users: Mapped[list[UserPromocodeAssotiation]] = relationship(
+        back_populates="promocode", cascade='all, delete-orphan')

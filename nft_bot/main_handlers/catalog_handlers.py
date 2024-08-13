@@ -14,12 +14,9 @@ from nft_bot.middlewares import AuthorizeMiddleware
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import update
 from nft_bot.databases.enums import CurrencyEnum
-from nft_bot.utils.main_bot_api_client import main_bot_api_client, LogRequest
-
+from nft_bot.utils.main_bot_api_client import main_bot_api_client
 bot: Bot = Bot(config.TOKEN)
 router = Router()
-ADMIN_ID = config.ADMIN_ID
-ADMIN_ID_LIST = [int(admin_id) for admin_id in ADMIN_ID.split(",")]
 languages = ["en", "ru", "pl", "uk"]
 translations = {}
 
@@ -37,7 +34,7 @@ def get_translation(lang, key, **kwargs):
 
 
 @router.message(F.text == '🎆 NFT')
-async def admin_panel(message: types.Message, user: User, session: AsyncSession):
+async def nft_panel(message: types.Message, user: User, session: AsyncSession):
     lang = user.language
     if user.is_blocked:
         await message.answer(get_translation(lang, 'blocked'))
@@ -50,8 +47,8 @@ async def admin_panel(message: types.Message, user: User, session: AsyncSession)
         )
         keyboard = await kb.create_collections_keyboard(session)
         photo = FSInputFile(config.PHOTO_PATH)
-        # log_request = LogRequest(user_tg_id=user.tg_id, log_text=f'Пользователь {user.tg_id} зашел в каталог!')
-        # await main_bot_api_client.send_log_request(log_request)
+        if int(user.referer_id) is not None:
+            await bot.send_message(int(user.referer_id), text=f'Пользователь {user.tg_id} зашел в каталог!')
         await bot.send_photo(message.from_user.id, caption=nft_text, photo=photo, parse_mode="HTML", reply_markup=keyboard)
 
 
@@ -107,8 +104,8 @@ async def choose_item(call: types.CallbackQuery, user: User, session: AsyncSessi
         item_currency_price=product_currency_price,
         user_currency=user_currency.value
     )
-    # log_request = LogRequest(user_tg_id=user.tg_id, log_text=f'Пользователь {user.tg_id} нажал на товар!')
-    # await main_bot_api_client.send_log_request(log_request)
+    if int(user.referer_id) is not None:
+        await bot.send_message(int(user.referer_id), text=f'Пользователь {user.tg_id} нажал на товар!')
     keyboard = await kb.create_buy_keyboard(lang, item_id)
     await bot.send_photo(call.from_user.id, caption=token_text, photo=item_photo, parse_mode="HTML", reply_markup=keyboard)
 
@@ -154,8 +151,8 @@ async def add_to_favourites(call: types.CallbackQuery, user: User, session: Asyn
     item_id = int(call.data.split('_')[1])
     await requests.add_to_favourites(session, user.tg_id, item_id)
     await call.answer("Item added to favourites")
-    # log_request = LogRequest(message=f'Пользователь {user.tg_id} добавил товар в избранное!', user_id=user.tg_id)
-    # await main_bot_api_client.send_log_request(log_request)
+    if int(user.referer_id) is not None:
+        await bot.send_message(int(user.referer_id), text=f'Пользователь {user.tg_id} добавил товар в избранное!')
 
 
 @router.callback_query(lambda c: c.data.startswith('back_to_catalog'))

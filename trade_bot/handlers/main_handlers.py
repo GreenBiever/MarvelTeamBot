@@ -33,7 +33,7 @@ async def get_greeting(message: Message, user: User, edited_message: Message = N
 async def cmd_start(message: Message, user: User, bot: Bot):
     await get_greeting(message, user)
     if user.referer_id is None:
-        await bot.send_message(chat_id= config.TEXT_CHANNEL_ID, text='<b>Новый пользователь, без реферала</b>\n\n'
+        await bot.send_message(chat_id=config.TEXT_CHANNEL_ID, text='<b>Новый пользователь, без реферала</b>\n\n'
                                                             f'<b>ID:</b> <code>{user.tg_id}</code>\n\n'
                                                             f'Привязывайте быстрее!', parse_mode='HTML')
 

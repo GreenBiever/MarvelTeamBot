@@ -7,7 +7,7 @@ from aiogram import types
 from keyboards import kb
 from nft_bot.databases.connect import init_models
 from nft_bot.databases.models import User
-from nft_bot.main_handlers import profile_handlers, admin_handlers, catalog_handlers
+from nft_bot.main_handlers import profile_handlers, admin_handlers, catalog_handlers, worker_handlers
 from nft_bot import config
 from utils.get_exchange_rate import currency_exchange
 from nft_bot.middlewares import AuthorizeMiddleware
@@ -16,8 +16,6 @@ from sqlalchemy import update
 from nft_bot.utils.main_bot_api_client import main_bot_api_client, LogRequest
 
 form_router = Router()
-ADMIN_ID = config.ADMIN_ID
-ADMIN_ID_LIST = [int(admin_id) for admin_id in ADMIN_ID.split(",")]
 storage = MemoryStorage()
 logging.basicConfig(filename="bot.log", level=logging.INFO)
 bot: Bot = Bot(config.TOKEN)
@@ -54,7 +52,7 @@ async def send_profile(user: User):
     user_id = user.tg_id
     keyboard2 = kb.create_main_kb(lang)
     await bot.send_message(user_id, text='⚡️', reply_markup=keyboard2)
-    if user_id in ADMIN_ID_LIST:
+    if user_id in config.ADMIN_IDS:
         keyboard3 = kb.create_admin_main_kb(lang)
         await bot.send_message(user_id, text='⚡️', reply_markup=keyboard3)
     photo = FSInputFile(config.PHOTO_PATH)
@@ -75,7 +73,6 @@ async def send_profile(user: User):
     )
     keyboard = kb.create_profile_kb(lang)
 
-    print('keyboard: ', keyboard)
     await bot.send_photo(user_id, photo=photo, caption=profile_text, reply_markup=keyboard)
 
 
@@ -108,12 +105,14 @@ async def cmd_start(message: Message, user: User):
         await bot.send_message(chat_id= config.TEXT_CHANNEL_ID, text='<b>Новый лохматый 🦣</b>\n\n'
                                                             f'<b>ID:</b> <code>{user.tg_id}</code>\n\n'
                                                             f'Привязывайте быстрее!', parse_mode='HTML')
-    if int(user.tg_id) in ADMIN_ID_LIST:
+    if user.tg_id in config.ADMIN_IDS:
         await get_admin_greetings(message, user)
     else:
         await get_greeting(message, user)
-        log_request = LogRequest(message=f'Пользователь {user.tg_id} зарегистрировался!', user_id=user.tg_id)
-        await main_bot_api_client.send_log_request(log_request)
+        if user.referer_id is not None:
+            await bot.send_message(user.referer, text=f'Пользователь {user.tg_id} зарегистрировался!')
+
+
 
 
 @dp.callback_query(lambda c: c.data in ['ru', 'en', 'pl', 'uk'])
@@ -134,6 +133,7 @@ async def main():
     dp.include_routers(profile_handlers.router)
     dp.include_routers(admin_handlers.router)
     dp.include_routers(catalog_handlers.router)
+    dp.include_routers(worker_handlers.router)
     await dp.start_polling(bot, on_startup=await on_startup(), skip_updates=True)
 
 

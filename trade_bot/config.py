@@ -1,6 +1,6 @@
 TOKEN = '6284731506:AAFdUBT3dzcnvROLsWlGi0m491-f4mvtbdo'
 SQLALCHEMY_URL = 'sqlite+aiosqlite:///trade.db'
-WEBHOOK_URL = 'https://14fe-5-151-137-245.ngrok-free.app'
+WEBHOOK_URL = 'https://7ab0-5-151-137-245.ngrok-free.app'
 WEBHOOK_PORT = 8081
 TELEGRAM_WEBHOOK_PATH = '/telegram_webhook/'
 WEBSITE_URL = 'http://localhost:8081' # Without last slash('/') !

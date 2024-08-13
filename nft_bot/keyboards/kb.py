@@ -1,12 +1,13 @@
 import json
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton
+from aiogram.utils.keyboard import InlineKeyboardBuilder
 from sqlalchemy import select
 
 from nft_bot import config
 from nft_bot.databases import requests
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from nft_bot.databases.models import User
+from nft_bot.databases.models import User, Promocode, UserPromocodeAssotiation
 
 languages = ["en", "ru", "pl", "uk"]
 translations = {}
@@ -63,6 +64,7 @@ admin_panel = InlineKeyboardMarkup(inline_keyboard=admin_panel_kb)
 
 
 work_panel_kb = [
+    [InlineKeyboardButton(text='Управление промокодами', callback_data='worker_promocode')],
     [InlineKeyboardButton(text='Привязать по ID', callback_data='connect_mamont')],
     [InlineKeyboardButton(text='Управление 🦣', callback_data='control_mamonts')],
     [InlineKeyboardButton(text='⬅️', callback_data='back_to_admin')]
@@ -111,6 +113,8 @@ def create_wallet_kb(lang):
 
     wallet = InlineKeyboardMarkup(inline_keyboard=wallet_kb)
     return wallet
+
+
 
 
 def create_verification_kb(lang):
@@ -197,6 +201,12 @@ deposit_crypto_kb = [
 
 deposit_crypto = InlineKeyboardMarkup(inline_keyboard=deposit_crypto_kb)
 
+
+profile_back_kb = [
+    [InlineKeyboardButton(text='⬅️️', callback_data='back')]
+]
+
+profile_back = InlineKeyboardMarkup(inline_keyboard=profile_back_kb)
 
 def create_card_crypto_kb(lang):
     buttons = translations[lang]["buttons"].get('deposit_top_up_kb', {})
@@ -352,3 +362,34 @@ async def create_mamont_control_kb(mamont_id, session):
     keyboard_markup = InlineKeyboardMarkup(inline_keyboard=keyboard)
 
     return keyboard_markup
+
+def get_worker_menu_back_kb():
+    kb = InlineKeyboardBuilder()
+    kb.button(text='Назад', callback_data='worker_back')
+    return kb.as_markup()
+
+def get_promocode_menu_kb():
+    builder = InlineKeyboardBuilder()
+    builder.button(text='Создать промокод', callback_data='create_promocode')
+    builder.button(text='Список промокодов', callback_data='get_promocode_list')
+    builder.button(text='Назад', callback_data='worker_back')
+    builder.adjust(2,1)
+    return builder.as_markup()
+
+def get_promocode_list_kb(promocodes: list[Promocode]):
+    builder = InlineKeyboardBuilder()
+    for promocode in promocodes:
+        builder.button(text=promocode.code,callback_data=f'manage_promocode_{promocode.id}')
+
+    builder.button(text='Назад', callback_data='worker_back')
+    builder.adjust(1)
+    return builder.as_markup()
+
+def get_promocode_managment_kb(promocode: Promocode):
+    builder = InlineKeyboardBuilder()
+    builder.button(text='Удалить', callback_data=f'delete_promocode_{promocode.id}')
+    builder.button(text='Назад', callback_data='worker_back')
+    builder.adjust(1)
+    return builder.as_markup()
+
+

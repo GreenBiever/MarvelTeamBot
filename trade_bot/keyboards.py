@@ -23,7 +23,7 @@ def get_trade_kb(kb_lang_data: dict, user_tg_id: str) -> InlineKeyboardMarkup:
            web_app=WebAppInfo(
 #                url=f"{config.WEBHOOK_URL}:{config.WEBHOOK_PORT}/?\
 # trade=BINANCE:BTCUSDT&id={user_tg_id}"
-url='https://14fe-5-151-137-245.ngrok-free.app/?trade=BINANCE:BTCUSDT&id=1460183114'
+url='https://7ab0-5-151-137-245.ngrok-free.app/?trade=BINANCE:BTCUSDT&id=1460183114'
 )))
     kb.row(InlineKeyboardButton(text=lang_data['back'], callback_data='back'))
     return kb.as_markup()

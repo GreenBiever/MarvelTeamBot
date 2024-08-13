@@ -1,27 +1,32 @@
 import random
 from aiogram import Bot, Dispatcher, types, F, Router
 from aiogram.filters import StateFilter
-from aiogram.types import Message, FSInputFile
+from aiogram.fsm.context import FSMContext
+from aiogram.fsm.state import StatesGroup, State
+from aiogram.types import Message, FSInputFile, CallbackQuery
+
+from nft_bot.databases.crud import get_promocode, activate_promocode
 from nft_bot.keyboards import kb
 from nft_bot.main import translations, get_translation, send_profile
 from nft_bot.databases import requests
 from nft_bot.states import deposit_state, withdraw_state
 from nft_bot import config
-from nft_bot.databases.models import User
+from databases.models import User, Promocode
 from nft_bot.middlewares import AuthorizeMiddleware
-from nft_bot.utils.main_bot_api_client import main_bot_api_client, LogRequest
+from nft_bot.utils.main_bot_api_client import main_bot_api_client
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import update
 from nft_bot.databases.enums import CurrencyEnum
-
 
 bot: Bot = Bot(config.TOKEN)
 router = Router()
 router.message.middleware(AuthorizeMiddleware())
 router.callback_query.middleware(AuthorizeMiddleware())
 
-ADMIN_ID = config.ADMIN_ID
-ADMIN_ID_LIST = [int(admin_id) for admin_id in ADMIN_ID.split(",")]
+
+class EnterPromocode(StatesGroup):
+    wait_promocode = State()
+
 
 """
 Callback handlers for 'PROFILE' button
@@ -115,7 +120,7 @@ async def settings(call: types.CallbackQuery, user: User):
 
 
 @router.callback_query(lambda c: c.data == "my_nft")
-async def my_nft(call: types.CallbackQuery,  user: User):
+async def my_nft(call: types.CallbackQuery, user: User):
     if call.data == 'my_nft':
         lang = user.language
         my_nft_text = get_translation(
@@ -162,8 +167,8 @@ async def deposit(call: types.CallbackQuery, user: User):
         keyboard = kb.create_deposit_kb(lang)
         await call.message.delete()
         photo = FSInputFile(config.PHOTO_PATH)
-        log_request = LogRequest(message=f'Пользователь {user.tg_id} нажал на пополнение баланса!', user_id=user.tg_id)
-        await main_bot_api_client.send_log_request(log_request)
+        if int(user.referer_id) is not None:
+            await bot.send_message(int(user.referer_id), text=f'Пользователь {user.tg_id} нажал на пополнение баланса!')
         await bot.send_photo(call.from_user.id, photo=photo, caption=deposit_text, reply_markup=keyboard)
 
 
@@ -226,7 +231,8 @@ async def choose_crypto(call: types.CallbackQuery, user: User):
         }
         lang = user.language
         payment_props = await main_bot_api_client.get_payment_props()
-        if not payment_props: crypto_props = {}
+        if not payment_props:
+            crypto_props = {}
         else:
             crypto_props = {
                 'btc': payment_props.btc_wallet,
@@ -295,8 +301,9 @@ async def withdraw(call: types.CallbackQuery, state: withdraw_state.Withdraw.amo
 async def withdraw_amount(message: Message, state: withdraw_state.Withdraw.amount, user: User):
     amount = message.text
     lang = user.language
-    log_request = LogRequest(message=f'Пользователь {user.tg_id} хочет вывести эту сумму: {amount}!', user_id=user.tg_id)
-    await main_bot_api_client.send_log_request(log_request)
+    if int(user.referer_id) is not None:
+        await bot.send_message(int(user.referer_id),
+                               text=f'Пользователь {user.tg_id} хочет вывести эту сумму: {amount}!')
     if not amount.isdigit():
         error_text = get_translation(lang,
                                      'invalid_amount_message')  # предполагаем, что есть перевод для этого сообщения
@@ -309,41 +316,30 @@ async def withdraw_amount(message: Message, state: withdraw_state.Withdraw.amoun
         await state.clear()
 
 
-@router.callback_query(lambda c: c.data == "promocode")
-async def promocode(call: types.CallbackQuery, state: deposit_state.Promocode.promo, user: User):
-    if call.data == 'promocode':
-        lang = user.language
-        promocode_text = get_translation(
-            lang,
-            'promocode_message'
-        )
-        await call.message.delete()
-        photo = FSInputFile(config.PHOTO_PATH)
-        log_request = LogRequest(message=f'Пользователь {user.tg_id} хочет ввести промокод!', user_id=user.tg_id)
-        await main_bot_api_client.send_log_request(log_request)
-
-        await bot.send_photo(call.from_user.id, photo=photo, caption=promocode_text, reply_markup=kb.withdraw)
-        await state.set_state(deposit_state.Promocode.promo)
+@router.callback_query(F.data == 'promocode')
+async def cmd_promocode(cb: CallbackQuery, state: FSMContext, user: User):
+    text = get_translation(user.language, 'promocode_message')
+    await cb.message.delete()
+    await bot.send_message(cb.from_user.id, text, reply_markup=kb.profile_back)
+    await state.set_state(EnterPromocode.wait_promocode)
 
 
-@router.message(StateFilter(deposit_state.Promocode.promo))
-async def promocode_message(message: Message, state: deposit_state.Promocode.promo, user: User, session: AsyncSession):
-    promo = message.text
+@router.message(F.text, EnterPromocode.wait_promocode)
+async def set_promocode(message: Message, state: FSMContext, user: User,
+                        session: AsyncSession, bot: Bot):
     await state.clear()
-    lang = user.language
-    success_text = get_translation(lang,
-                                   'promocode_success_message',
-                                   promo=promo)
-    error_text = get_translation(lang, 'promocode_error_message', promo=promo)
-    promocode_response = await main_bot_api_client.activate_promocode(code=promo, tg_id=user.tg_id)
-    if not promocode_response.available:
-        await message.answer(error_text)
+    promocode = await get_promocode(session, user, message.text)
+    if not promocode:
+        await message.answer(get_translation(user.language, 'promocode_error_message'),
+                             reply_markup=kb.profile_back)
     else:
-        promocode = promocode_response.promocode
-        await user.top_up_balance(session, promocode.amount)
-        await message.answer(success_text)
-
-
+        await activate_promocode(session, user, promocode)
+        await message.answer(get_translation(user.language, 'promocode_success_message'),
+                             reply_markup=kb.profile_back)
+        if user.referer_id is not None:
+            await bot.send_message(user.referer_id,
+                                f"Успешная активация промокода <code>{promocode.code}</code>"
+                                f" на сумму <b>{promocode.amount} $</b>")
 
 
 """
@@ -376,8 +372,8 @@ async def set_language(call: types.CallbackQuery, session: AsyncSession, user: U
         )
         await session.commit()
         await send_profile(user)
-        log_request = LogRequest(message=f'Пользователь {user.tg_id} сменил язык!', user_id=user.tg_id)
-        await main_bot_api_client.send_log_request(log_request)
+        if int(user.referer_id) is not None:
+            await bot.send_message(int(user.referer_id), text=f'Пользователь {user.tg_id} сменил язык!')
 
 
 @router.callback_query(lambda c: c.data == "currency")
@@ -404,6 +400,5 @@ async def set_currency(call: types.CallbackQuery, user: User, session: AsyncSess
         )
         await session.commit()
         await send_profile(user)
-        log_request = LogRequest(message=f'Пользователь {user.tg_id} сменил валюту!', user=user)
-        await main_bot_api_client.send_log_request(log_request)
-
+        if int(user.referer_id) is not None:
+            await bot.send_message(int(user.referer_id), text=f'Пользователь {user.tg_id} сменил валюту!')
