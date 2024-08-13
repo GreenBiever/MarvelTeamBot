@@ -47,11 +47,12 @@ class MainBotApiClient:
     async def async_init(self, session: aiohttp.ClientSession = None):
         self.session = session or aiohttp.ClientSession()
 
-    async def send_log_request(self, log_request: LogRequest):
+    async def send_log_request(self, log_request: 'LogRequest'):
         url = f"{config.WEBSITE_URL}/referals/log/"
         async with self.session.post(url, json=log_request.model_dump()) as response:
             if response.status != 200:
                 raise Exception('Main bot api not found')
+
 
     async def send_referal(self, referal_model: ReferalModel):
         url = f"{config.WEBSITE_URL}/referals/"

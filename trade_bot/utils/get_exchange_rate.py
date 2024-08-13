@@ -52,6 +52,19 @@ class CurrencyExchange:
                     * await self.get_exchange_rate(to_currency, 1)), self.DECIMAL_PLACES)
 
 
+    async def convert_to_usd(self, from_currency: CurrencyEnum, amount: float) -> float:
+        '''Convert amount from given currency to USD'''
+        if from_currency == CurrencyEnum.usd:
+            return amount
+
+        if not self.exchange_rates or (
+                datetime.now().hour - self.last_reload_time.hour
+                >= self.TIME_BETWEEN_UPDATE_COURSE):
+            await self.reload_currencies_rates()
+
+        exchange_rate = self.exchange_rates[from_currency]
+        return amount / exchange_rate
+
     async def close(self):
         await self.session.close()
 

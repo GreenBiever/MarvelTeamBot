@@ -35,6 +35,7 @@ class User(Base):
     is_blocked: Mapped[bool] = mapped_column(default=False)
     is_verified: Mapped[bool] = mapped_column(default=False)
     last_login: Mapped[datetime] = mapped_column(default=datetime.now)
+    registration_date: Mapped[datetime] = mapped_column(default=datetime.now)
 
     # On web-site
     purchase_enabled: Mapped[bool] = mapped_column(default=True) 
@@ -109,12 +110,16 @@ class Order(Base):
     user_id: Mapped[str] = mapped_column(ForeignKey('users.id'))
     cryptocurrency: Mapped[str | None]
     amount: Mapped[int] = mapped_column(default=0)
+    amount_usd: Mapped[int] = mapped_column(default=0)
+    is_long: Mapped[bool] = mapped_column(default=True)
+    is_active: Mapped[bool] = mapped_column(default=True)
 
     bets_result_win: Mapped[bool]
     # False - lose, True - win
 
-    profit: Mapped[int] # Profit in USD, may be less than 0 if bets_resut_win is False
-    time: Mapped[timedelta] = mapped_column(default=timedelta(seconds=15))
+    profit: Mapped[int] # Profit in User.Currency, may be less than 0 if bets_resut_win is False
+    profit_usd: Mapped[int]  # profit in USD
+    time: Mapped[int] = mapped_column(default=0)
     created_at: Mapped[datetime] = mapped_column(default=datetime.now)
 
     user: Mapped[User] = relationship('User', back_populates='orders')

@@ -131,7 +131,7 @@ async def set_promocode_code(message: Message, state: FSMContext, session: Async
         await message.answer('Используйте только большие англ. буквы и цифры, длина промокода больше 4 символов:',
                              reply_markup=kb.get_worker_menu_back_kb())
         return
-    if get_promocode_by_code(session, message.text) is not None:
+    if await get_promocode_by_code(session, message.text) is not None:
         await message.answer('Промокод с таким кодом уже существует, введите другой код:',
                              reply_markup=kb.get_worker_menu_back_kb())
         return

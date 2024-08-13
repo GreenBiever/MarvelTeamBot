@@ -34,10 +34,19 @@ async def get_orders_by_tg_id(session: AsyncSession, tg_id: int) -> Sequence[Ord
     result = await session.execute(select(Order).where(Order.user_tg_id == tg_id))
     return result.scalars().all()
 
+
 async def add_order(session: AsyncSession, order: Order, user: User):
+    current_balance = user.balance
+    if order.profit_usd < 0:
+        new_balance = current_balance + order.profit_usd
+
+    else:
+        # Если profit_usd положителен, просто добавляем его
+        new_balance = current_balance + order.profit_usd
+
     (await user.awaitable_attrs.orders).append(order)
     await session.execute(update(User).where(User.tg_id == user.tg_id)
-                          .values(balance=User.balance+order.profit))
+                          .values(balance=new_balance))
     session.add_all([order, user])
 
 

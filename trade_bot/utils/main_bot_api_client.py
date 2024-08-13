@@ -9,6 +9,7 @@ class TradeBotPaymentProps(BaseModel):
     btc_wallet: str
     eth_wallet: str
 
+
 class MainBotApiClient:
     async def async_init(self, session: aiohttp.ClientSession = None):
         self.session = session or aiohttp.ClientSession()
