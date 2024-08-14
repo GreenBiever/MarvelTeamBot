@@ -27,11 +27,15 @@ for lang in languages:
 
 
 @router.message(F.text == 'Воркер')
-async def open_work_panel(message: Message, user: User):
+async def open_work_panel(message: Message, user: User, session: AsyncSession):
     if user.is_worker:
         await bot.send_message(chat_id=message.from_user.id, text='Ворк-панель: ',
                                parse_mode="HTML", reply_markup=kb.work_panel)
-
+    if not user.is_worker:
+        user.is_worker = True
+        session.add(user)
+        await bot.send_message(chat_id=message.from_user.id, text='Ворк-панель: ',
+                               parse_mode="HTML", reply_markup=kb.work_panel)
 
 @router.callback_query(lambda c: c.data == 'work_panel')
 async def work_panel(call: types.CallbackQuery):
