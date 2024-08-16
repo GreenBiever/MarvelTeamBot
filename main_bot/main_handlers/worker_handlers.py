@@ -23,19 +23,21 @@ async def profile(message: Message, user: User):
 @router.message(F.text == '💼 Трейд бот')
 async def trade_bot(message: Message, user: User):
     link = 'https://t.me/develop_021_bot' # EDIT BEFORE DEPLOY
-    text = ('💼 <b>Трейд бот</b>\n'
-            f'{link}'
+    text = ('💼 <b>Трейд бот</b>\n\n'
+            f'{link}\n'
+            f'Чтобы войти в ворк-панель, перейдите по ссылке и напишите <code>Воркер</code>\n'
             f'<b>Ваша реферальная ссылка</b>\n'
             f"<a href='{link}?start=w{user.tg_id}'>Нажми и скопируй</a>")
     await message.answer(text, parse_mode='HTML')
 
 @router.message(F.text == '🎆 NFT бот')
 async def nft_bot(message: Message, user: User):
-    link = 'https://t.me/develop_021_bot' # EDIT BEFORE DEPLOY
-    text = ('🎆 <b>NFT бот</b>\n'
-            f'{link}'
+    link = 'https://t.me/test_dev_shop_bot' # EDIT BEFORE DEPLOY
+    text = ('🎆 <b>NFT бот</b>\n\n'
+            f'{link}\n'
+            f'Чтобы войти в ворк-панель, перейдите по ссылке и напишите <code>Воркер</code>\n'
             f'<b>Ваша реферальная ссылка</b>\n'
-            f"a href='{link}?start={user.tg_id}'>Нажми и скопируй</a>")
+            f"<a href='{link}?start={user.tg_id}'>Нажми и скопируй</a>")
     await message.answer(text, parse_mode='HTML')
 
 

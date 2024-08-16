@@ -15,7 +15,7 @@ from utils.trade_bot_api_client import trade_bot_api_client
 
 
 storage = MemoryStorage()
-logging.basicConfig(filename="bot.log", level=logging.INFO)
+logging.basicConfig(level=logging.INFO)
 
 dp = Dispatcher()
 dp.include_routers(main_handlers.router, worker_handlers.router, admin_handlers.router)
