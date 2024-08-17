@@ -4,7 +4,6 @@ from middlewares import IsVerifiedMiddleware, AuthorizeMiddleware
 from database.models import User
 import datetime as dt
 
-
 router = Router()
 router.message.middleware(AuthorizeMiddleware())
 router.message.middleware(IsVerifiedMiddleware())
@@ -22,7 +21,7 @@ async def profile(message: Message, user: User):
 
 @router.message(F.text == '💼 Трейд бот')
 async def trade_bot(message: Message, user: User):
-    link = 'https://t.me/develop_021_bot' # EDIT BEFORE DEPLOY
+    link = 'https://t.me/develop_021_bot'  # EDIT BEFORE DEPLOY
     text = ('💼 <b>Трейд бот</b>\n\n'
             f'{link}\n'
             f'Чтобы войти в ворк-панель, перейдите по ссылке и напишите <code>Воркер</code>\n'
@@ -30,9 +29,10 @@ async def trade_bot(message: Message, user: User):
             f"<a href='{link}?start=w{user.tg_id}'>Нажми и скопируй</a>")
     await message.answer(text, parse_mode='HTML')
 
+
 @router.message(F.text == '🎆 NFT бот')
 async def nft_bot(message: Message, user: User):
-    link = 'https://t.me/test_dev_shop_bot' # EDIT BEFORE DEPLOY
+    link = 'https://t.me/test_dev_shop_bot'  # EDIT BEFORE DEPLOY
     text = ('🎆 <b>NFT бот</b>\n\n'
             f'{link}\n'
             f'Чтобы войти в ворк-панель, перейдите по ссылке и напишите <code>Воркер</code>\n'
@@ -45,4 +45,3 @@ async def nft_bot(message: Message, user: User):
 async def about_project(message: Message, user: User):
     text = ('<b>🗽О проекте</b>\n\n')
     await message.answer(text, parse_mode='HTML')
-

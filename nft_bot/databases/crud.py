@@ -50,3 +50,8 @@ async def activate_promocode(session: AsyncSession, user: User, promocode: Promo
 
 async def get_promocode_by_code(session: AsyncSession, code: str) -> Promocode | None:
     return await session.scalar(select(Promocode).where(Promocode.code == code))
+
+
+async def get_user_by_tg_id(session: AsyncSession, tg_id: int) -> User | None:
+    result = await session.execute(select(User).where(User.tg_id == tg_id))
+    return result.scalars().first()

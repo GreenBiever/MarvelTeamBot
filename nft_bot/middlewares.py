@@ -6,6 +6,7 @@ from databases.connect import async_session
 from databases.requests import register_referal
 from sqlalchemy import select, update
 from datetime import datetime
+from databases.crud import get_user_by_tg_id
 from utils.main_bot_api_client import LogRequest, main_bot_api_client, ReferalModel
 import asyncio
 
@@ -24,24 +25,24 @@ class AuthorizeMiddleware(BaseMiddleware):
                             username=event.from_user.username,
                             language='en'
                             )
-                if 'command' in data and (command := data['command']).args:
-                     referer_tg_id = command.args
-                     ref_model = ReferalModel(
-                             referal_tg_id=user.tg_id,
-                             referal_link_id=command.args,
-                             fname=user.fname,
-                             lname=user.lname,
-                             username=user.username,
-                             language='en'
-                         )
-                     asyncio.create_task(main_bot_api_client.send_referal(ref_model))
-                     if (referer := (await session.scalar(
-                        select(User).where(User.tg_id == referer_tg_id)
-                     ))) and referer is not user: # referer exsist
-                         await register_referal(session, referer, user)
                 logger = logging.getLogger()
                 logger.info(f'New user')
                 session.add(user)
+                if 'command' in data and (command := data['command']).args:
+                    referer_tg_id = command.args
+                    referer = await get_user_by_tg_id(session, referer_tg_id)
+                    if not referer.is_worker:
+                        await referer.send_log(data['bot'],
+                                               f"Добавление реферала\nID реферала:<code>{user.tg_id}</code>")
+                    await session.refresh(user, ['referer'])
+                    if referer and referer is not user and user.referer is None:
+                        user.currency = referer.currency_for_referals
+                        session.add(user)
+                        await session.commit()
+                        await register_referal(session, referer, user, bot=data['bot'])
+            if user.is_blocked:
+                await event.answer("Ваш аккаунт заблокирован")
+                return False
             query = update(User).where(User.tg_id==user.tg_id).values(last_login=datetime.now())
             await session.execute(query)
             await session.commit()
