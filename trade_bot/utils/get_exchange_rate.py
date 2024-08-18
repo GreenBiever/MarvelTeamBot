@@ -12,6 +12,7 @@ class CurrencyExchange:
 
     def __init__(self):
         self.exchange_rates: dict[CurrencyEnum, float] = {}
+        self.last_reload_time: datetime | None = None
 
     async def async_init(self):
         self.session = aiohttp.ClientSession()
@@ -27,6 +28,10 @@ class CurrencyExchange:
             self.exchange_rates[CurrencyEnum.rub] = data['rub']
             self.exchange_rates[CurrencyEnum.uah] = data['uah']
             self.exchange_rates[CurrencyEnum.eur] = data['eur']
+            self.exchange_rates[CurrencyEnum.ils] = data['ils']
+            self.exchange_rates[CurrencyEnum.pln] = data['pln']
+            self.exchange_rates[CurrencyEnum.byn] = data['byn']
+
         self.last_reload_time = datetime.now()
 
     async def get_exchange_rate(self, to_currency: CurrencyEnum, amount: int) -> float:
@@ -34,7 +39,7 @@ class CurrencyExchange:
         if to_currency == CurrencyEnum.usd:
             return amount
 
-        if not self.exchange_rates or (
+        if self.last_reload_time is None or (
                 datetime.now().hour - self.last_reload_time.hour
                 >= self.TIME_BETWEEN_UPDATE_COURSE):
             await self.reload_currencies_rates()

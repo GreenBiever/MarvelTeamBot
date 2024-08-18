@@ -1,60 +1,62 @@
 data = {
     'buttons': {
         'main_kb': {
-            'trade': 'Marketplace',
-            'wallet': 'Wallet',
-            'change_lang': 'Change Language',
-            'change_currency': 'Change Currency',
-            'support': 'Support',
+            'trade': '📊 Trading platform',
+            'wallet': '💰 Wallet',
+            'change_lang': '🌍 Change language',
+            'change_currency': '💵 Change currency',
+            'support': '🛠️ Support',
         },
         'wallet_kb': {
-            'top_up': 'Top Up',
-            'withdraw': 'Withdraw',
-            'promocode': 'Promo Code',
-            'back': 'Back',
+            'top_up': '💰 Top up',
+            'withdraw': '💸 Withdraw',
+            'promocode': '📝 Promo code',
+            'back': '🔙 Back',
         },
         'top_up_kb': {
-            'card': 'Card',
-            'crypto': 'Cryptocurrency',
-            'back': 'Back',
-        },
-        'select_crypto_currency_kb': {
-            'crypto_currency_btc': 'BTC',
-            'crypto_currency_eth': 'ETH',
-            'crypto_currency_usdt': 'USDT[TRC-20]',
+            'card': '💳 Card',
+            'crypto': '💰 Cryptocurrency',
+            'back': '🔙 Back',
         },
         'support_kb': {
-            'check_payment': 'Check Payment',
-            'support': 'Support',
+            'check_payment': '✅ Check payment',
+            'support': '🛠️ Support',
         },
         'back_kb': {
-            'back': 'Back',
+            'back': '🔙 Back',
         },
         'select_lang_kb': {
-            'set_lang_ru': 'Russian',
-            'set_lang_en': 'English',
-            'set_lang_pl': 'Polish',
-            'set_lang_ua': 'Ukrainian',
-            'back': 'Back',
+            'set_lang_ru': '🇷🇺 Russian',
+            'set_lang_en': '🇬🇧 English',
+            'set_lang_pl': '🇵🇱 Polish',
+            'set_lang_ua': '🇺🇦 Ukrainian',
+            'back': '🔙 Back',
         },
         'select_currency_kb': {
-            'set_currency_usd': 'USD',
-            'set_currency_eur': 'EUR',
-            'set_currency_rub': 'RUB',
-            'set_currency_uah': 'UAH',
-            'back': 'Back',    
+            'set_currency_pln': '🇵🇱 PLN',
+            'set_currency_eur': '🇪🇺 EUR',
+            'set_currency_rub': '🇷🇺 RUB',
+            'set_currency_uah': '🇺🇦 UAH',
+            'set_currency_byn': '🇧🇾 BYN',
+            'set_currency_ils': '🇮🇱 ILS',
+            'back': '🔙 Back',
         },
         'trade_kb': {
-            'crypto': "Cryptocurrencies",
-            'back': "Back",
+            'crypto': "💰 Cryptocurrencies",
+            'back': "🔙 Back",
         },
         'support_page_kb': {
-            'support': "Support",
-            'back': "Back",
+            'support': "🛠️ Support",
+            'back': "🔙 Back",
+        },
+        'main_reply_kb': {
+            'main': '📂 Briefcase'
         }
     },
 
     'text': {
+        'main_text': '''👋Welcome to OKX Trading multi-cryptocurrency exchange\n
+OKX Trading can be used as a wallet for convenient operations with major cryptocurrencies''',
         'greeting': '''
 📂 Portfolio:
 
