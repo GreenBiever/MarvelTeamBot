@@ -47,8 +47,8 @@ async def nft_panel(message: types.Message, user: User, session: AsyncSession):
         )
         keyboard = await kb.create_collections_keyboard(session)
         photo = FSInputFile(config.PHOTO_PATH)
-        if int(user.referer_id) is not None:
-            await bot.send_message(int(user.referer_id), text=f'Пользователь {user.tg_id} зашел в каталог!')
+        if user.referer_id is not None:
+            await bot.send_message(user.referer_id, text=f'Пользователь {user.tg_id} зашел в каталог!')
         await bot.send_photo(message.from_user.id, caption=nft_text, photo=photo, parse_mode="HTML", reply_markup=keyboard)
 
 
@@ -104,8 +104,8 @@ async def choose_item(call: types.CallbackQuery, user: User, session: AsyncSessi
         item_currency_price=product_currency_price,
         user_currency=user_currency.value
     )
-    if int(user.referer_id) is not None:
-        await bot.send_message(int(user.referer_id), text=f'Пользователь {user.tg_id} нажал на товар!')
+    if user.referer_id is not None:
+        await bot.send_message(chat_id=user.referer_id, text=f'Пользователь {user.tg_id} нажал на товар!')
     keyboard = await kb.create_buy_keyboard(lang, item_id)
     await bot.send_photo(call.from_user.id, caption=token_text, photo=item_photo, parse_mode="HTML", reply_markup=keyboard)
 

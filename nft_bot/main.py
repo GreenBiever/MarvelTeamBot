@@ -76,7 +76,7 @@ async def send_profile(user: User):
     await bot.send_photo(user_id, photo=photo, caption=profile_text, reply_markup=keyboard)
 
 
-async def get_greeting(message: Message, user: User, edited_message: Message = None):
+async def get_greeting(message: Message, user: User, edited_message: Message = None, bot_username: str = 'test_dev_shop_bot'):
     lang = user.language
     if not edited_message:
         await bot.send_message(message.from_user.id,

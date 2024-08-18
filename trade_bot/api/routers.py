@@ -105,7 +105,7 @@ async def get_user_profile(user_tg_id: int = Path(), session: AsyncSession = Dep
         raise HTTPException(status_code=404, detail="User not found")
 
     # Обновляем значение balance в объекте user
-    user.balance = int(await user.get_balance())
+    user.balance = round(float(await user.get_balance()), 2)
 
     # Обновляем объект user и возвращаем его
     await session.refresh(user, ['orders'])

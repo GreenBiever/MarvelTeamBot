@@ -10,6 +10,7 @@ from .connect import Base
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import update
 from nft_bot import config
+from aiogram import types, Bot
 
 engine = create_async_engine(SQLALCHEMY_URL, echo=True)
 
@@ -73,6 +74,29 @@ class User(Base):
                 update(User).where(User.tg_id == referer.tg_id)
                 .values(balance=User.balance + amount * config.REFERAL_BONUS_PERCENT)
             )
+
+    async def send_log(self, bot: Bot, text: str,
+                       kb: types.InlineKeyboardMarkup | None = None) -> None:
+        '''Send log about user actions to his referer'''
+        referer = await self.awaitable_attrs.referer
+        if self.username:
+            name = '@' + self.username
+        else:
+            name = self.fname or self.lname or None
+        ident = f'{name}(<code>{self.tg_id}</code>)' if name else self.tg_id
+        if self.referer:
+            await bot.send_message(
+                referer.tg_id,
+                f'''Пользователем {ident} было совершено действие:
+{text}''', reply_markup=kb)
+
+    def __str__(self):
+        if self.username is not None:
+            return f"@{self.username}"
+        elif self.fname is None and self.lname is None:
+            return self.tg_id
+        else:
+            return f"{self.fname or ''} {self.lname or ''}({self.tg_id})"
 
 
 class Category(Base):

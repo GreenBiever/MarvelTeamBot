@@ -158,6 +158,3 @@ async def add_to_favourites(session: AsyncSession, user_id: int, item_id: int):
         insert(Favourites).values(user_id=user_id, item_id=item_id))
     await session.commit()
 
-
-async def register_referal(session: AsyncSession, referer: User, user: User):
-    (await referer.awaitable_attrs.referals).append(user)

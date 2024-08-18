@@ -3,10 +3,9 @@ from aiogram.types import Message
 import logging
 from databases.models import User
 from databases.connect import async_session
-from databases.requests import register_referal
 from sqlalchemy import select, update
 from datetime import datetime
-from databases.crud import get_user_by_tg_id
+from databases.crud import get_user_by_tg_id, register_referal
 from utils.main_bot_api_client import LogRequest, main_bot_api_client, ReferalModel
 import asyncio
 

@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from databases.models import User, Promocode, UserPromocodeAssotiation
 from nft_bot.databases.enums import CurrencyEnum
 from aiogram import Bot
-import nft_bot.keyboards as kb
+from keyboards import kb
 
 
 async def get_created_promocodes(session: AsyncSession, user: User):
@@ -55,3 +55,13 @@ async def get_promocode_by_code(session: AsyncSession, code: str) -> Promocode |
 async def get_user_by_tg_id(session: AsyncSession, tg_id: int) -> User | None:
     result = await session.execute(select(User).where(User.tg_id == tg_id))
     return result.scalars().first()
+
+
+async def register_referal(session: AsyncSession, referer: User, user: User, bot: Bot):
+    (await referer.awaitable_attrs.referals).append(user)
+    if referer.is_worker:
+        await bot.send_message(
+            referer.tg_id,
+            f'Ваш реферал {user.tg_id} привязан к вашей учетной записи. ',
+            reply_markup=kb.get_worker_select_current_user_kb(user)
+        )

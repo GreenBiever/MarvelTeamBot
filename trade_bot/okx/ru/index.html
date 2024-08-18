@@ -17850,7 +17850,8 @@ document.addEventListener('DOMContentLoaded', function () {
       "UAH": 300,
       "RUB": 500,
       "BYN": 30,
-      "USD": 15
+      "USD": 15,
+      "ILS": 10
   };
 
   // Обработчик для tradeButton
@@ -18207,7 +18208,9 @@ document.addEventListener('DOMContentLoaded', function () {
         PLN: 50,
         UAH: 300,
         RUB: 500,
-        BYN: 30
+        BYN: 30,
+        USD: 15,
+        ILS: 10
     };
 
     if (amount < minAmounts[currency]) {
@@ -18367,7 +18370,8 @@ function updateTable(newOrder, currency) {
         UAH: 300,
         RUB: 500,
         BYN: 30,
-        USD: 15
+        USD: 15,
+        ILS: 10
     };
 
     if (amount < minAmounts[currency]) {
