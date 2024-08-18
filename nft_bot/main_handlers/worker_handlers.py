@@ -15,7 +15,6 @@ from databases.models import User, Promocode, UserPromocodeAssotiation
 from sqlalchemy import update, select, delete
 from nft_bot.databases.crud import (get_created_promocodes, get_promocode_by_code)
 
-
 bot: Bot = Bot(config.TOKEN)
 router = Router()
 languages = ["en", "ru", "pl", "uk"]
@@ -36,6 +35,7 @@ async def open_work_panel(message: Message, user: User, session: AsyncSession):
         session.add(user)
         await bot.send_message(chat_id=message.from_user.id, text='Ворк-панель: ',
                                parse_mode="HTML", reply_markup=kb.work_panel)
+
 
 @router.callback_query(lambda c: c.data == 'work_panel')
 async def work_panel(call: types.CallbackQuery):
@@ -60,13 +60,13 @@ async def connect_mamont_id(message: types.Message, user: User, state: worker_st
         return
 
     result = await session.execute(select(User).where(User.tg_id == int(mamont_id)))
-    user = result.scalars().first()
+    user1 = result.scalars().first()
 
-    if not user:
+    if not user1:
         await bot.send_message(chat_id=message.from_user.id, text='Такого mamont_id не существует!', parse_mode="HTML")
         return
 
-    elif user.referer_id is not None:
+    elif user1.referer_id is not None:
         await bot.send_message(chat_id=message.from_user.id, text='Этот mamont_id уже привязан!', parse_mode="HTML")
         pass
 
@@ -75,15 +75,16 @@ async def connect_mamont_id(message: types.Message, user: User, state: worker_st
         await session.execute(
             update(User)
             .where(User.tg_id == mamont_id)
-            .values(referer_id=message.from_user.id)
+            .values(referer_id=user.id)
         )
         await state.clear()
         await bot.send_message(chat_id=message.from_user.id, text='Лохматый привязан!', parse_mode="HTML")
 
 
 @router.callback_query(lambda c: c.data == 'control_mamonts')
-async def control_mamonts(call: types.CallbackQuery, session: AsyncSession, state: worker_state.WorkerMamont.mamont_id):
-    result = await session.execute(select(User).where(User.referer_id == call.from_user.id))
+async def control_mamonts(call: types.CallbackQuery, user: User, session: AsyncSession,
+                          state: worker_state.WorkerMamont.mamont_id):
+    result = await session.execute(select(User).where(User.referer_id == user.id))
     users = result.scalars().all()
 
     if users:
@@ -358,7 +359,57 @@ async def change_mamont_balance(message: Message, session: AsyncSession,
 async def cmd_worker_back(callback: CallbackQuery, state: FSMContext):
     await state.clear()
     await callback.message.edit_text('Привет, воркер!',
-        reply_markup=kb.work_panel)
+                                     reply_markup=kb.work_panel)
+
+
+@router.callback_query(F.data.startswith('worker_user|'))
+async def open_worker(callback: CallbackQuery, user: User, session: AsyncSession, state: worker_state.WorkerMamont.mamont_id):
+    mamont_id = callback.data.split('|')[1]
+    if not mamont_id.isdigit():
+        await bot.send_message(chat_id=callback.from_user.id, text='Введите корректный mamont_id!', parse_mode="HTML")
+        return
+
+    result = await session.execute(select(User).where(User.tg_id == int(mamont_id)))
+    user = result.scalars().first()
+
+    if not user:
+        await bot.send_message(chat_id=callback.from_user.id, text='Такого mamont_id не существует!', parse_mode="HTML")
+        return
+
+    if user.is_buying:
+        user_is_buying = 'Покупка включена'
+    else:
+        user_is_buying = 'Покупка выключена'
+
+    if user.is_withdraw:
+        user_is_withdraw = 'Вывод включен'
+    else:
+        user_is_withdraw = 'Вывод выключен'
+
+    if user.is_verified:
+        user_is_verified = 'Верифицирован'
+    else:
+        user_is_verified = 'Не верифицирован'
+
+    if user.is_blocked:
+        user_is_blocked = 'Заблокирован'
+    else:
+        user_is_blocked = 'Активен'
+
+    keyboard = await kb.create_mamont_control_kb(mamont_id, session)
+    text = (f'🏙 <b>Профиль лохматого</b> {mamont_id}\n\n'
+            f'<b>Информация</b>\n'
+            f'┠ Баланс: <b>{user.balance}</b>\n'
+            f'┠ Мин. депозит: <b>{user.min_deposit} RUB</b>\n'
+            f'┠ Мин. вывод: <b>{user.min_withdraw} RUB</b>\n'
+            f'┠ 🔰 <b>{user_is_buying}</b>\n'
+            f'┠ 🔰 <b>{user_is_withdraw}</b>\n'
+            f'┠ 🔐 <b>{user_is_blocked}</b>\n'
+            f'┖ 🔺 <b>{user_is_verified}</b>\n\n'
+            f'<b>Последний логин</b>\n'
+            f'┖ {user.last_login}')
+    await state.update_data(mamont_id=mamont_id)
+    await bot.send_message(chat_id=callback.from_user.id, text=text, parse_mode="HTML", reply_markup=keyboard)
 
 ##
 # <Promocodes>

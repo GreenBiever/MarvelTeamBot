@@ -396,7 +396,7 @@ def get_promocode_managment_kb(promocode: Promocode):
 def get_worker_select_current_user_kb(user: User):
     builder = InlineKeyboardBuilder()
     builder.button(text=f"Управление аккаунтом пользователя {str(user)}",
-                   callback_data=f'worker_user_{user.id}')
+                   callback_data=f'worker_user|{user.tg_id}')
     builder.button(text='Назад', callback_data='worker_back')
     builder.adjust(1)
     return builder.as_markup()

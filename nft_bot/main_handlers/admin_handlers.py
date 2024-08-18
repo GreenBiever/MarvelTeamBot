@@ -165,7 +165,6 @@ async def back_to_admin(call: types.CallbackQuery, user: User):
                                     parse_mode="HTML", reply_markup=kb.admin_panel)
 
 
-
 @router.callback_query(lambda c: c.data == 'back_to_admin2')
 async def back_to_admin2(call: types.CallbackQuery, user: User):
     await bot.edit_message_text(chat_id=call.from_user.id, message_id=call.message.message_id, text='Ворк-панель: ',

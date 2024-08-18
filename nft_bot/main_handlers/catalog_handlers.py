@@ -15,6 +15,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import update
 from nft_bot.databases.enums import CurrencyEnum
 from nft_bot.utils.main_bot_api_client import main_bot_api_client
+
 bot: Bot = Bot(config.TOKEN)
 router = Router()
 languages = ["en", "ru", "pl", "uk"]
@@ -49,7 +50,8 @@ async def nft_panel(message: types.Message, user: User, session: AsyncSession):
         photo = FSInputFile(config.PHOTO_PATH)
         if user.referer_id is not None:
             await bot.send_message(user.referer.tg_id, text=f'Пользователь {user.tg_id} зашел в каталог!')
-        await bot.send_photo(message.from_user.id, caption=nft_text, photo=photo, parse_mode="HTML", reply_markup=keyboard)
+        await bot.send_photo(message.from_user.id, caption=nft_text, photo=photo, parse_mode="HTML",
+                             reply_markup=keyboard)
 
 
 @router.callback_query(lambda c: c.data.startswith('collection_'))
@@ -107,7 +109,8 @@ async def choose_item(call: types.CallbackQuery, user: User, session: AsyncSessi
     if user.referer_id is not None:
         await bot.send_message(chat_id=user.referer.tg_id, text=f'Пользователь {user.tg_id} нажал на товар!')
     keyboard = await kb.create_buy_keyboard(lang, item_id)
-    await bot.send_photo(call.from_user.id, caption=token_text, photo=item_photo, parse_mode="HTML", reply_markup=keyboard)
+    await bot.send_photo(call.from_user.id, caption=token_text, photo=item_photo, parse_mode="HTML",
+                         reply_markup=keyboard)
 
 
 @router.callback_query(lambda c: c.data.startswith('buy_'))
@@ -169,6 +172,8 @@ async def back_to_catalog(call: types.CallbackQuery, user: User, session: AsyncS
             )
             keyboard = await kb.create_collections_keyboard(session)
             photo = FSInputFile(config.PHOTO_PATH)
-            await bot.send_photo(call.from_user.id, caption=nft_text, photo=photo, parse_mode="HTML", reply_markup=keyboard)
+            await bot.send_photo(call.from_user.id, caption=nft_text, photo=photo, parse_mode="HTML",
+                                 reply_markup=keyboard)
     else:
-        await bot.send_message(call.from_user.id, text=f'Выберите язык:\nSelect a language:', parse_mode="HTML", reply_markup=kb.language)
+        await bot.send_message(call.from_user.id, text=f'Выберите язык:\nSelect a language:', parse_mode="HTML",
+                               reply_markup=kb.language)

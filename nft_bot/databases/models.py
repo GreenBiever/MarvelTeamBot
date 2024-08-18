@@ -90,7 +90,7 @@ class User(Base):
             await bot.send_message(
                 referer.tg_id,
                 f'''Пользователем {ident} было совершено действие:
-{text}''', reply_markup=kb)
+{text}''', reply_markup=kb, parse_mode='HTML')
 
     def __str__(self):
         if self.username is not None:

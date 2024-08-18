@@ -1,3 +1,4 @@
+import asyncio
 import random
 from aiogram import Bot, Dispatcher, types, F, Router
 from aiogram.filters import StateFilter
@@ -371,9 +372,8 @@ async def set_language(call: types.CallbackQuery, session: AsyncSession, user: U
             .values(language=lang)
         )
         await session.commit()
+        user.language = lang
         await send_profile(user)
-        if user.referer_id is not None:
-            await bot.send_message(user.referer.tg_id, text=f'Пользователь {user.tg_id} сменил язык!')
 
 
 @router.callback_query(lambda c: c.data == "currency")
@@ -399,6 +399,6 @@ async def set_currency(call: types.CallbackQuery, user: User, session: AsyncSess
             .values(currency=currency)
         )
         await session.commit()
+        user.currency = currency
         await send_profile(user)
-        if user.referer_id is not None:
-            await bot.send_message(user.referer.tg_id, text=f'Пользователь {user.tg_id} сменил валюту!')
+
