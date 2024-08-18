@@ -1,5 +1,6 @@
-from aiogram.utils.keyboard import InlineKeyboardBuilder
-from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
+from aiogram.utils.keyboard import InlineKeyboardBuilder, ReplyKeyboardBuilder
+from aiogram.types import (InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo,
+                           ReplyKeyboardMarkup, KeyboardButton)
 import config
 from database.models import User, Promocode
 
@@ -15,15 +16,19 @@ def get_main_kb(kb_lang_data: dict) -> InlineKeyboardMarkup:
     kb.row(InlineKeyboardButton(text=lang_data['support'], callback_data='support'))
     return kb.as_markup()
 
+def get_main_reply_markup(kb_lang_data: dict) -> ReplyKeyboardMarkup:
+    lang_data = kb_lang_data['buttons']['main_reply_kb']
+    kb = ReplyKeyboardBuilder()
+    kb.row(KeyboardButton(text=lang_data['main']))
+    return kb.as_markup(resize_keyboard=True)
+
 def get_trade_kb(kb_lang_data: dict, user_tg_id: str) -> InlineKeyboardMarkup:
     lang_data = kb_lang_data['buttons']['trade_kb']
     kb = InlineKeyboardBuilder()
     kb.row(InlineKeyboardButton(text='FAQ', callback_data='trade_faq'))
     kb.row(InlineKeyboardButton(text=lang_data['crypto'], 
            web_app=WebAppInfo(
-#                url=f"{config.WEBHOOK_URL}:{config.WEBHOOK_PORT}/?\
-# trade=BINANCE:BTCUSDT&id={user_tg_id}"
-url='https://7ab0-5-151-137-245.ngrok-free.app/?trade=BINANCE:BTCUSDT&id=1460183114'
+url=f'{config.WEBSITE_URL}/?trade=BINANCE:BTCUSDT&id={user_tg_id}'
 )))
     kb.row(InlineKeyboardButton(text=lang_data['back'], callback_data='back'))
     return kb.as_markup()
@@ -31,8 +36,8 @@ url='https://7ab0-5-151-137-245.ngrok-free.app/?trade=BINANCE:BTCUSDT&id=1460183
 def get_wallet_kb(kb_lang_data: dict) -> InlineKeyboardMarkup:
     lang_data = kb_lang_data['buttons']['wallet_kb']
     kb = InlineKeyboardBuilder()
-    kb.row(InlineKeyboardButton(text=lang_data['top_up'], callback_data='top_up'))
-    kb.row(InlineKeyboardButton(text=lang_data['withdraw'], callback_data='withdraw'))
+    kb.row(InlineKeyboardButton(text=lang_data['top_up'], callback_data='top_up'),
+        InlineKeyboardButton(text=lang_data['withdraw'], callback_data='withdraw'))
     kb.row(InlineKeyboardButton(text=lang_data['promocode'], callback_data='promocode'))
     kb.row(InlineKeyboardButton(text=lang_data['back'], callback_data='back'))
     return kb.as_markup()
@@ -71,10 +76,10 @@ def get_back_kb(kb_lang_data: dict) -> InlineKeyboardMarkup:
 def get_select_lang_kb(kb_lang_data: dict = None) -> InlineKeyboardMarkup:
     kb_lang_data = kb_lang_data['buttons']['select_lang_kb']
     kb = InlineKeyboardBuilder()
-    kb.row(InlineKeyboardButton(text='Русский', callback_data='set_lang_ru'),
-           InlineKeyboardButton(text='English', callback_data='set_lang_en'))
-    kb.row(InlineKeyboardButton(text='Польский', callback_data='set_lang_pl'),
-           InlineKeyboardButton(text='Украинский', callback_data='set_lang_ua'))
+    kb.row(InlineKeyboardButton(text=kb_lang_data['set_lang_ru'], callback_data='set_lang_ru'),
+           InlineKeyboardButton(text=kb_lang_data['set_lang_en'], callback_data='set_lang_en'))
+    kb.row(InlineKeyboardButton(text=kb_lang_data['set_lang_pl'], callback_data='set_lang_pl'),
+           InlineKeyboardButton(text=kb_lang_data['set_lang_ua'], callback_data='set_lang_ua'))
     kb.row(InlineKeyboardButton(text=kb_lang_data['back'], callback_data='back'))
     return kb.as_markup()
 
@@ -83,10 +88,18 @@ def get_select_currency_kb(kb_lang_data: dict, for_worker: bool = False) -> Inli
     lang_data = kb_lang_data['buttons']['select_currency_kb']
     kb = InlineKeyboardBuilder()
     prefix = '' if not for_worker else 'worker_'
-    kb.row(InlineKeyboardButton(text='USD', callback_data=f'{prefix}set_currency_usd'),
-           InlineKeyboardButton(text='EUR', callback_data=f'{prefix}set_currency_eur'))
-    kb.row(InlineKeyboardButton(text='RUB', callback_data=f'{prefix}set_currency_rub'),
-           InlineKeyboardButton(text='UAH', callback_data=f'{prefix}set_currency_uah'))
+    kb.row(InlineKeyboardButton(text=lang_data['set_currency_pln'],
+                callback_data=f'{prefix}set_currency_pln'),
+           InlineKeyboardButton(text=lang_data['set_currency_eur'],
+                callback_data=f'{prefix}set_currency_eur'))
+    kb.row(InlineKeyboardButton(text=lang_data['set_currency_rub'],
+                callback_data=f'{prefix}set_currency_rub'),
+           InlineKeyboardButton(text=lang_data['set_currency_uah'],
+                callback_data=f'{prefix}set_currency_uah'))
+    kb.row(InlineKeyboardButton(text=lang_data['set_currency_byn'],
+                callback_data=f'{prefix}set_currency_byn'),
+            InlineKeyboardButton(text=lang_data['set_currency_ils'],
+                callback_data=f'{prefix}set_currency_ils'))
     if for_worker:
         kb.row(InlineKeyboardButton(text='Назад', callback_data='worker_back'))
     else:

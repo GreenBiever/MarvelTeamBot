@@ -67,7 +67,7 @@ def get_order_string_representation(order: Order):
 📍 Ставка: {order.amount} USD
 💰 Профит:  {order.profit} USD
 🖇 Предмет: {order.cryptocurrency}
-🕔 Время: {order.time.seconds} сек.'''
+🕔 Время: {order.time} сек.'''
 
 async def get_string_user_representation(target: User, worker: User):
     states = {None: 'Рандом', False: 'Проигрыш', True: 'Выигрыш'}
