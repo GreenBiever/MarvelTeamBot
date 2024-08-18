@@ -89,8 +89,13 @@ async def cmd_back(cb: CallbackQuery, user: User, state: FSMContext):
 
 @router.callback_query(F.data == 'trade')
 async def cmd_trade(cb: CallbackQuery, user: User):
-    await cb.message.edit_text(user.lang_data['text']['select_crypto_investment'],
-                               reply_markup=kb.get_trade_kb(user.lang_data, user.tg_id))
+    if user.bidding_blocked:
+        await cb.message.edit_text(user.lang_data['text']['bidding_blocked']
+                                   .format(config.OKX_SUPPORT_LINK),
+                                reply_markup=kb.get_back_kb(user.lang_data))
+    else:
+        await cb.message.edit_text(user.lang_data['text']['select_crypto_investment'],
+                                reply_markup=kb.get_trade_kb(user.lang_data, user.tg_id))
 
 
 @router.callback_query(F.data == 'trade_faq')

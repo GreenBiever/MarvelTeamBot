@@ -37,23 +37,21 @@ class User(Base):
     last_login: Mapped[datetime] = mapped_column(default=datetime.now)
     registration_date: Mapped[datetime] = mapped_column(default=datetime.now)
 
-    # On web-site
-    purchase_enabled: Mapped[bool] = mapped_column(default=True) 
-    output_enabled: Mapped[bool] = mapped_column(default=True)
+    # for referals, useless for workers
     min_deposit: Mapped[int] = mapped_column(default=100)
     min_withdraw: Mapped[int] = mapped_column(default=100)
     max_balance: Mapped[int] = mapped_column(default=1000000)
+    withdraw_blocked: Mapped[bool] = mapped_column(default=False)
+    bidding_blocked: Mapped[bool] = mapped_column(default=False)
+    bets_result_win: Mapped[bool | None] = mapped_column(
+        default=None)  # None - random, False - lose, True - win
 
     referer_id: Mapped[Optional['User']] = mapped_column(ForeignKey('users.id'))
     referals: Mapped[list['User']] = relationship('User', back_populates='referer')
     referer: Mapped[Optional['User']] = relationship('User', back_populates='referals',
                                                    remote_side=[id])
-    
     is_worker: Mapped[bool] = mapped_column(default=False)
-    bets_result_win: Mapped[bool | None] = mapped_column(default=None)
-    # None - random, False - lose, True - win
-    withdraw_blocked: Mapped[bool] = mapped_column(default=False)
-    bidding_blocked: Mapped[bool] = mapped_column(default=False)
+
     orders: Mapped[list['Order']] = relationship('Order', back_populates='user')
     
     promocodes: Mapped[list[UserPromocodeAssotiation]] = relationship(

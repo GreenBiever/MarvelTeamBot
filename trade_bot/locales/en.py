@@ -147,6 +147,18 @@ Time of transaction closure: {}''',
 Amount: {} {}
 Loss: {} {}
 Currency: {}
-Time of transaction closure: {}'''
+Time of transaction closure: {}''',
+'bidding_blocked': '''❌An error has occurred
+
+Please contact technical support\n
+{}\n
+☝Technical support!
+💬Thank you for your understanding!
+With respect.OKX''',
+'withdrawal_blocked': '''⚠️ Withdrawal is blocked until the circumstances are clarified, contact technical support to receive funds \n
+{}\n
+☝Technical support!
+💬Thank you for your understanding!
+With respect.OKX'''
     }
 }

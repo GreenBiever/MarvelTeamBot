@@ -145,7 +145,19 @@ Czas zamknięcia transakcji: {}''',
 Kwota: {} {}
 Strata: {} {}
 Waluta: {}
-Czas zamknięcia transakcji: {}'''
+Czas zamknięcia transakcji: {}''',
+'bidding_blocked': '''❌Wystąpił błąd
+
+Proszę skontaktować się z Pomocą techniczną\n
+{}\n
+☝wsparcie techniczne!
+💬Dziękujemy za zrozumienie!
+Pozdrawiam.OKX''',
+'withdrawal_blocked': '''⚠️ Wypłata jest zablokowana do czasu wyjaśnienia, skontaktuj się z Pomocą techniczną, aby uzyskać środki\n
+{}\n
+☝wsparcie techniczne!
+💬Dziękujemy za zrozumienie!
+Pozdrawiam.OKX'''
     }
 
 }

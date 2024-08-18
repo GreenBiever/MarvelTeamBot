@@ -121,14 +121,14 @@ def get_support_page_kb(kb_lang_data: dict) -> InlineKeyboardMarkup:
 
 def get_main_worker_kb():
     kb = InlineKeyboardBuilder()
-    kb.button(text='Список пользователей', callback_data='worker_list')
-    kb.button(text='Рассылка', callback_data='worker_mailing')
-    kb.button(text='Привязать мамонта', callback_data='worker_bind')
-    kb.button(text='Мин.пополнение всем', callback_data='worker_min_deposit')
-    kb.button(text='Промокод', callback_data='worker_promocode')
-    kb.button(text='Задать валюту', callback_data='worker_set_currency')
-    kb.button(text='Мин.вывод', callback_data='worker_min_withdraw')
-    kb.button(text='Удалить всех', callback_data='worker_delete_all')
+    kb.button(text='🗂 Список пользователей', callback_data='worker_list')
+    kb.button(text='✉ Рассылка', callback_data='worker_mailing')
+    kb.button(text='🦣 Привязать реферала', callback_data='worker_bind')
+    kb.button(text='💸 Мин.пополнение всем', callback_data='worker_min_deposit')
+    kb.button(text='💸 Промокод', callback_data='worker_promocode')
+    kb.button(text='💲 Задать валюту', callback_data='worker_set_currency')
+    kb.button(text='💲 Мин.вывод', callback_data='worker_min_withdraw')
+    kb.button(text='🗑 Удалить всех', callback_data='worker_delete_all')
     kb.adjust(1)
     return kb.as_markup()
 
@@ -136,8 +136,8 @@ def get_worker_select_user_kb(users: list[User]):
     kb = InlineKeyboardBuilder()
     for user in users:
         kb.button(text=user.tg_id, callback_data=f'worker_user_{user.id}')
-    kb.button(text='Поиск', callback_data='worker_search')
-    kb.button(text='Назад', callback_data='worker_back')
+    kb.button(text='🔍 Поиск', callback_data='worker_search')
+    kb.button(text='🔙 Назад', callback_data='worker_back')
     kb.adjust(1)
     return kb.as_markup()
 
@@ -148,53 +148,53 @@ def get_worker_user_managment_kb(user: User):
     is_lose_enabled = '✅' if user.bets_result_win == False else ''
 
     builder = InlineKeyboardBuilder()
-    builder.button(text='Обновить', callback_data=f'worker_user_{user_id}')
-    builder.button(text=f'{is_win_enabled}Выигрыш', callback_data=f'worker_win_{user_id}')
-    builder.button(text=f'{is_lose_enabled}Прогрыш', callback_data=f'worker_lose_{user_id}')
-    builder.button(text=f'{is_random_ebabled}Рандом',
+    builder.button(text='🔄 Обновить', callback_data=f'worker_user_{user_id}')
+    builder.button(text=f'👑 Выигрыш{is_win_enabled}', callback_data=f'worker_win_{user_id}')
+    builder.button(text=f'🏁 Прогрыш{is_lose_enabled}', callback_data=f'worker_lose_{user_id}')
+    builder.button(text=f'🎲 Рандом{is_random_ebabled}',
                     callback_data=f'worker_random_{user_id}')
     if not user.is_verified:
-        builder.button(text='Выдать верификацию', callback_data=f'worker_verif_{user_id}')
+        builder.button(text='❌ Выдать верификацию', callback_data=f'worker_verif_{user_id}')
     else:
-        builder.button(text='Снять верификацию', callback_data=f'worker_verif_{user_id}')
+        builder.button(text='✅ Снять верификацию', callback_data=f'worker_verif_{user_id}')
     if not user.bidding_blocked:
-        builder.button(text='Блокировать торги',
+        builder.button(text='✅ Блокировать торги',
             callback_data=f'worker_blockbidding_{user_id}')
     else:
-        builder.button(text='Разблокировать торги',
+        builder.button(text='❌ Разблокировать торги',
             callback_data=f'worker_blockbidding_{user_id}')
     if not user.withdraw_blocked:
-        builder.button(text='Блокировать вывод',
+        builder.button(text='✅ Блокировать вывод',
                         callback_data=f'worker_block_withdraw_{user_id}')
     else:
-        builder.button(text='Разблокировать вывод',
+        builder.button(text='❌ Разблокировать вывод',
                         callback_data=f'worker_block_withdraw_{user_id}')
-    builder.button(text='Изменить баланс', callback_data=f'worker_change_balance_{user_id}')
-    builder.button(text='Добавить к балансу', callback_data=f'worker_add_balance_{user_id}')
-    builder.button(text='Максимальный баланс', callback_data=f'worker_max_balance_{user_id}')
-    builder.button(text='Минимальное пополнение', callback_data=f'worker_min_deposit_{user_id}')
-    builder.button(text='Написать', callback_data=f'worker_send_message_{user_id}')
-    builder.button(text='Мин.вывод', callback_data=f'worker_min_withdraw_{user_id}')
-    builder.button(text='Удалить мамонта', callback_data=f'worker_unbind_{user_id}')
+    builder.button(text='💰 Изменить баланс', callback_data=f'worker_change_balance_{user_id}')
+    builder.button(text='💰 Добавить к балансу', callback_data=f'worker_add_balance_{user_id}')
+    builder.button(text='🔝 Максимальный баланс', callback_data=f'worker_max_balance_{user_id}')
+    builder.button(text='💸 Минимальное пополнение', callback_data=f'worker_min_deposit_{user_id}')
+    builder.button(text='✉ Написать', callback_data=f'worker_send_message_{user_id}')
+    builder.button(text='💳 Мин.вывод', callback_data=f'worker_min_withdraw_{user_id}')
+    builder.button(text='🗑 Удалить мамонта', callback_data=f'worker_unbind_{user_id}')
     if not user.is_blocked:
-        builder.button(text='Заблокировать', callback_data=f'worker_block_{user_id}')
+        builder.button(text='🔒 Заблокировать', callback_data=f'worker_block_{user_id}')
     else:
-        builder.button(text='Разблокировать', callback_data=f'worker_block_{user_id}')
-    builder.button(text='Назад', callback_data='worker_back')
+        builder.button(text='🔒 Разблокировать', callback_data=f'worker_block_{user_id}')
+    builder.button(text='🔙 Назад', callback_data='worker_back')
     builder.adjust(1, 3, 1, 2, 2, 2, 1)
     return builder.as_markup()
 
 
 def get_worker_menu_back_kb():
     kb = InlineKeyboardBuilder()
-    kb.button(text='Назад', callback_data='worker_back')
+    kb.button(text='🔙 Назад', callback_data='worker_back')
     return kb.as_markup()
 
 def get_promocode_menu_kb():
     builder = InlineKeyboardBuilder()
     builder.button(text='Создать промокод', callback_data='create_promocode')
     builder.button(text='Список промокодов', callback_data='get_promocode_list')
-    builder.button(text='Назад', callback_data='worker_back')
+    builder.button(text='🔙 Назад', callback_data='worker_back')
     builder.adjust(2,1)
     return builder.as_markup()
 
@@ -203,21 +203,21 @@ def get_promocode_list_kb(promocodes: list[Promocode]):
     for promocode in promocodes:
         builder.button(text=promocode.code,callback_data=f'manage_promocode_{promocode.id}')
 
-    builder.button(text='Назад', callback_data='worker_back')
+    builder.button(text='🔙 Назад', callback_data='worker_back')
     builder.adjust(1)
     return builder.as_markup()
 
 def get_promocode_managment_kb(promocode: Promocode):
     builder = InlineKeyboardBuilder()
-    builder.button(text='Удалить', callback_data=f'delete_promocode_{promocode.id}')
-    builder.button(text='Назад', callback_data='worker_back')
+    builder.button(text='🗑 Удалить', callback_data=f'delete_promocode_{promocode.id}')
+    builder.button(text='🔙 Назад', callback_data='worker_back')
     builder.adjust(1)
     return builder.as_markup()
 
 def get_confirm_all_referals_deletion_kb():
     builder = InlineKeyboardBuilder()
-    builder.button(text='Подтвердить', callback_data='confirm_all_referals_deletion')
-    builder.button(text='Назад', callback_data='worker_back')
+    builder.button(text='✅ Подтвердить', callback_data='confirm_all_referals_deletion')
+    builder.button(text='🔙 Назад', callback_data='worker_back')
     builder.adjust(1)
     return builder.as_markup()
 
@@ -225,14 +225,14 @@ def get_worker_select_current_user_kb(user: User):
     builder = InlineKeyboardBuilder()
     builder.button(text=f"Управление аккаунтом пользователя {str(user)}",
                    callback_data=f'worker_user_{user.id}')
-    builder.button(text='Назад', callback_data='worker_back')
+    builder.button(text='🔙 Назад', callback_data='worker_back')
     builder.adjust(1)
     return builder.as_markup()
 
 
 def get_confirm_referal_deposit_kb(referal_id: str, amount: int):
     builder = InlineKeyboardBuilder()
-    builder.button(text='Подтвердить', 
+    builder.button(text='✅ Подтвердить', 
                    callback_data=f'confirm_referal_deposit_{amount}_{referal_id}')
 
     builder.adjust(1)
@@ -246,7 +246,7 @@ def get_confirm_referal_withdraw_kb(referal_id: str):
     builder.button(text='❌',
                    callback_data=f'referal_withdraw_decline_{referal_id}')
     builder.button(text='⚙️ В тех.поддержку',
-                   callback_data=f'referal_support_withdraw_{referal_id}')
+                   callback_data=f'referal_withdraw_support_{referal_id}')
     builder.adjust(2,1)
     return builder.as_markup()
 

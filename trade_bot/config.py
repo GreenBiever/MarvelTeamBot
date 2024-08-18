@@ -1,6 +1,6 @@
 TOKEN = '6284731506:AAFdUBT3dzcnvROLsWlGi0m491-f4mvtbdo'
 SQLALCHEMY_URL = 'sqlite+aiosqlite:///trade.db'
-WEBHOOK_URL = 'https://2ed1ba83-3b5d-4318-aeeb-78eb627dd983.tunnel4.com'
+WEBHOOK_URL = 'https://3cf45396-a8b3-4bed-88c5-93e103230fb9.tunnel4.com'
 WEBHOOK_PORT = 8081
 TELEGRAM_WEBHOOK_PATH = '/telegram_webhook/'
 WEBSITE_URL = 'https://2ed1ba83-3b5d-4318-aeeb-78eb627dd983.tunnel4.com' # Without last slash('/') !

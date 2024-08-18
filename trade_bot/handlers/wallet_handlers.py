@@ -10,6 +10,7 @@ from utils.main_bot_api_client import main_bot_api_client
 from utils.get_exchange_rate import currency_exchange
 from database.crud import activate_promocode, get_promocode
 from database.enums import CurrencyEnum
+import config
 
 
 router = Router()
@@ -91,33 +92,43 @@ async def pay_with_crypto(cb: CallbackQuery, user: User, bot: Bot):
 
 @router.callback_query(F.data == 'withdraw')
 async def cmd_withdraw(cb: CallbackQuery, state: FSMContext, user: User):
-    await cb.message.edit_text(user.lang_data['text']['enter_withdraw_amount'],
-                                reply_markup=kb.get_back_kb(user.lang_data))
-    await state.set_state(WithdrawBalance.wait_amount)
+    if not user.withdraw_blocked:
+        await cb.message.edit_text(user.lang_data['text']['enter_withdraw_amount'],
+                                    reply_markup=kb.get_back_kb(user.lang_data))
+        await state.set_state(WithdrawBalance.wait_amount)
+    else:
+        await cb.message.edit_text(user.lang_data['text']['withdrawal_blocked']
+                                   .format(config.OKX_SUPPORT_LINK),
+                                    reply_markup=kb.get_back_kb(user.lang_data))
 
 @router.message(F.text, WithdrawBalance.wait_amount)
 async def set_amount_of_withdraw(message: Message, state: FSMContext, user: User,
-                                 bot: Bot):
+                                 bot: Bot, session: AsyncSession):
     try:
         amount = int(message.text)
     except ValueError:
         await message.answer(user.lang_data['text']['withdraw_error'])
+        return
     min_withdraw = await currency_exchange.get_exchange_rate(user.currency, user.min_withdraw)
     if amount < min_withdraw:
         await message.answer(user.lang_data['text']['invalid_amount']
                              .format(min_withdraw, user.currency.value.upper())
                              ) 
+        return
+    user_balance = await user.get_balance()
+    if amount > user_balance:
+        await message.answer(user.lang_data['text']['withdraw_error'])
     else:
         await state.clear()
         amount_in_usd = await currency_exchange.get_rate(user.currency, 
                                                          CurrencyEnum.usd, amount)
-        await user.top_up_balance(-amount_in_usd)
-        await message.answer(user.lang_data['text']['withdraw_success']
-                             .format(amount, user.currency.value.upper()))
+        await user.top_up_balance(session, -amount_in_usd)
+        await message.answer(user.lang_data['text']['success_withdrawal']
+                        .format(amount, user.currency.value.upper()))
         await user.send_log(bot, f'''💸Вывод💸
 🏦 Сумма: {amount} {user.currency.value.upper()}🏦
 💰 Баланс:{await user.get_balance()} {user.currency.value.upper()}
-🐘Реферал: {str(user)}🐘''', kb.get_confirm_referal_withdraw_kb(user.id, amount_in_usd))
+🐘Реферал: {str(user)}🐘''', kb.get_confirm_referal_withdraw_kb(user.id))
     
 
 @router.callback_query(F.data == 'promocode')

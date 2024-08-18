@@ -476,7 +476,7 @@ async def cmd_confirm_referal_withdraw(cb: CallbackQuery, bot: Bot,
     data = cb.data.split('_')
     status, target_id = data[-2], data[-1]
     target = await session.get(User, target_id)
-    if status == 'acccept':
+    if status == 'confirm':
         log_status = '✅Успешно приняли вывод\n'
         text = target.lang_data['text']['withdraw_accept']
     elif status == 'decline':
