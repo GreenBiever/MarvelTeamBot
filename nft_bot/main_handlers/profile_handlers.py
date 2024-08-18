@@ -167,8 +167,8 @@ async def deposit(call: types.CallbackQuery, user: User):
         keyboard = kb.create_deposit_kb(lang)
         await call.message.delete()
         photo = FSInputFile(config.PHOTO_PATH)
-        if int(user.referer_id) is not None:
-            await bot.send_message(int(user.referer_id), text=f'Пользователь {user.tg_id} нажал на пополнение баланса!')
+        if user.referer_id is not None:
+            await bot.send_message(user.referer.tg_id, text=f'Пользователь {user.tg_id} нажал на пополнение баланса!')
         await bot.send_photo(call.from_user.id, photo=photo, caption=deposit_text, reply_markup=keyboard)
 
 
@@ -301,8 +301,8 @@ async def withdraw(call: types.CallbackQuery, state: withdraw_state.Withdraw.amo
 async def withdraw_amount(message: Message, state: withdraw_state.Withdraw.amount, user: User):
     amount = message.text
     lang = user.language
-    if int(user.referer_id) is not None:
-        await bot.send_message(int(user.referer_id),
+    if user.referer_id is not None:
+        await bot.send_message(user.referer.tg_id,
                                text=f'Пользователь {user.tg_id} хочет вывести эту сумму: {amount}!')
     if not amount.isdigit():
         error_text = get_translation(lang,
@@ -337,7 +337,7 @@ async def set_promocode(message: Message, state: FSMContext, user: User,
         await message.answer(get_translation(user.language, 'promocode_success_message'),
                              reply_markup=kb.profile_back)
         if user.referer_id is not None:
-            await bot.send_message(user.referer_id,
+            await bot.send_message(user.referer.tg_id,
                                 f"Успешная активация промокода <code>{promocode.code}</code>"
                                 f" на сумму <b>{promocode.amount} $</b>")
 
@@ -372,8 +372,8 @@ async def set_language(call: types.CallbackQuery, session: AsyncSession, user: U
         )
         await session.commit()
         await send_profile(user)
-        if int(user.referer_id) is not None:
-            await bot.send_message(int(user.referer_id), text=f'Пользователь {user.tg_id} сменил язык!')
+        if user.referer_id is not None:
+            await bot.send_message(user.referer.tg_id, text=f'Пользователь {user.tg_id} сменил язык!')
 
 
 @router.callback_query(lambda c: c.data == "currency")
@@ -400,5 +400,5 @@ async def set_currency(call: types.CallbackQuery, user: User, session: AsyncSess
         )
         await session.commit()
         await send_profile(user)
-        if int(user.referer_id) is not None:
-            await bot.send_message(int(user.referer_id), text=f'Пользователь {user.tg_id} сменил валюту!')
+        if user.referer_id is not None:
+            await bot.send_message(user.referer.tg_id, text=f'Пользователь {user.tg_id} сменил валюту!')

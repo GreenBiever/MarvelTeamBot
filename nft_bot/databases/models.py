@@ -56,6 +56,8 @@ class User(Base):
     promocodes: Mapped[list[UserPromocodeAssotiation]] = relationship(
         back_populates="user")
 
+    currency_for_referals: Mapped[CurrencyEnum] = mapped_column(default=CurrencyEnum.usd)
+
     async def get_balance(self) -> float:
         '''retun user balance converted to user currency'''
         print(self.currency, self.balance)

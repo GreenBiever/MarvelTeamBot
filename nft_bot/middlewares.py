@@ -34,8 +34,7 @@ class AuthorizeMiddleware(BaseMiddleware):
                         await referer.send_log(data['bot'],
                                                f"Добавление реферала\nID реферала:<code>{user.tg_id}</code>")
                     await session.refresh(user, ['referer'])
-                    if referer and referer is not user and user.referer is None:
-                        user.currency = referer.currency_for_referals
+                    if user.referer is None:
                         session.add(user)
                         await session.commit()
                         await register_referal(session, referer, user, bot=data['bot'])

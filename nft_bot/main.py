@@ -107,10 +107,12 @@ async def cmd_start(message: Message, user: User):
                                                             f'Привязывайте быстрее!', parse_mode='HTML')
     if user.tg_id in config.ADMIN_IDS:
         await get_admin_greetings(message, user)
+        if user.referer_id is not None:
+            await bot.send_message(user.referer.tg_id, text=f'Пользователь {user.tg_id} зарегистрировался!')
     else:
         await get_greeting(message, user)
         if user.referer_id is not None:
-            await bot.send_message(user.referer, text=f'Пользователь {user.tg_id} зарегистрировался!')
+            await bot.send_message(user.referer.tg_id, text=f'Пользователь {user.tg_id} зарегистрировался!')
 
 
 
