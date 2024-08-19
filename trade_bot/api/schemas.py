@@ -28,9 +28,9 @@ class UserProfile(BaseModel):
     min_deposit: int
     min_withdraw: int
     is_verified: bool
-    purchase_enabled: bool
-    output_enabled: bool
-    bidding_blocked: bool
+    # purchase_enabled: bool
+    # output_enabled: bool
+    # bidding_blocked: bool
     is_blocked: bool
     bets_result_win: bool | None  # False - always must lose, True - win, None - random
 
@@ -40,7 +40,7 @@ class UserProfile(BaseModel):
     @classmethod
     def convert_int_serial(cls, val):
         return list(map(lambda v: OrderView.model_validate(v), val))
-
+    
     class Config:
         from_attributes = True
 
