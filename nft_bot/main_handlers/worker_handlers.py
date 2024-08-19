@@ -317,42 +317,9 @@ async def change_mamont_balance(message: Message, session: AsyncSession,
     await session.execute(update(User).where(User.tg_id == int(mamont_id)).values(balance=int(balance_amount)))
     await session.commit()
     await bot.send_message(chat_id=message.from_user.id, text='Баланс изменен!')
-    result = await session.execute(select(User).where(User.tg_id == int(mamont_id)))
-    user = result.scalars().first()
-
-    if user.is_buying:
-        user_is_buying = 'Покупка включена'
-    else:
-        user_is_buying = 'Покупка выключена'
-
-    if user.is_withdraw:
-        user_is_withdraw = 'Вывод включен'
-    else:
-        user_is_withdraw = 'Вывод выключен'
-
-    if user.is_verified:
-        user_is_verified = 'Верифицирован'
-    else:
-        user_is_verified = 'Не верифицирован'
-
-    if user.is_blocked:
-        user_is_blocked = 'Заблокирован'
-    else:
-        user_is_blocked = 'Активен'
-
-    keyboard = await kb.create_mamont_control_kb(mamont_id, session)
-    text = (f'🏙 <b>Профиль лохматого</b> {mamont_id}\n\n'
-            f'<b>Информация</b>\n'
-            f'┠ Баланс: <b>{user.balance}</b>\n'
-            f'┠ Мин. депозит: <b>{user.min_deposit} RUB</b>\n'
-            f'┠ Мин. вывод: <b>{user.min_withdraw} RUB</b>\n'
-            f'┠ 🔰 <b>{user_is_buying}</b>\n'
-            f'┠ 🔰 <b>{user_is_withdraw}</b>\n'
-            f'┠ 🔐 <b>{user_is_blocked}</b>\n'
-            f'┖ 🔺 <b>{user_is_verified}</b>\n\n'
-            f'<b>Последний логин</b>\n'
-            f'┖ {user.last_login}')
-    await bot.send_message(chat_id=message.from_user.id, text=text, parse_mode="HTML", reply_markup=keyboard)
+    await state.clear()
+    await message.message.edit_text('Привет, воркер!',
+                                     reply_markup=kb.work_panel)
 
 
 @router.callback_query(F.data == 'worker_back')

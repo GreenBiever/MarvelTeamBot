@@ -48,8 +48,6 @@ async def nft_panel(message: types.Message, user: User, session: AsyncSession):
         )
         keyboard = await kb.create_collections_keyboard(session)
         photo = FSInputFile(config.PHOTO_PATH)
-        if user.referer_id is not None:
-            await bot.send_message(user.referer.tg_id, text=f'Пользователь {user.tg_id} зашел в каталог!')
         await bot.send_photo(message.from_user.id, caption=nft_text, photo=photo, parse_mode="HTML",
                              reply_markup=keyboard)
 

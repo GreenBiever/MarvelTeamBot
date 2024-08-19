@@ -119,9 +119,9 @@ class Product(Base):
     photo: Mapped[str] = mapped_column()
     category_id: Mapped[int] = mapped_column(ForeignKey('categories.id'))
 
-    category = relationship('Category', back_populates='products')
+    category = relationship('Category', back_populates='product')
     favourites = relationship("Favourites", back_populates="product")
-    purchased = relationship('Purchased', back_populates='product')  # Fixed relationship name
+    purchased = relationship('Purchased', back_populates='product')
 
     async def get_product_price(self) -> float:
         '''Return product price converted to user currency'''
@@ -146,8 +146,8 @@ class Purchased(Base):
     user_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
     product_id: Mapped[int] = mapped_column(ForeignKey('products.id'))
 
-    user = relationship('User', back_populates='purchased')  # Fixed relationship name
-    product = relationship('Product', back_populates='purchased')  # Fixed relationship name
+    user = relationship('User', back_populates='purchased')
+    product = relationship('Product', back_populates='purchased')
 
 
 class Promocode(Base):
