@@ -4,65 +4,66 @@
     "select_language": "Wybierz język:",
     "profile": "\uD83D\uDCBC Profil\n\n📌 ID: {user_id}\n\uD83D\uDD2E Status: {status} 🎉 \n\n💰 Saldo: {balance} {currency}\n📑 Weryfikacja: {verification}\n\uD83D\uDEB8 {ref}",
     "statuses": {
-            "stat_blocked": "Zablokowany",
-            "stat_unblocked": "Aktywny"
-        },
+        "stat_blocked": "Zablokowany",
+        "stat_unblocked": "Aktywny"
+    },
     "verifications": {
-            "verify_yes": "Zweryfikowany",
-            "verify_no": "Niezweryfikowany"
+        "verify_yes": "Zweryfikowany",
+        "verify_no": "Niezweryfikowany"
     },
     "buttons": {
-            "main_kb": {
-              "profile_main": "\uD83D\uDCBC Profil",
-              "information_main": "ℹ️ Informacja",
-              "support_main": "\uD83D\uDEE0 Wsparcie"
-            },
-            "profile_kb": {
-                "wallet": "💰 Portfel",
-                "verification": "📑 Weryfikacja",
-                "favorites": "❤️ Ulubione",
-                "statistics": "📈 Statystyka",
-                "settings": "⚙️ Ustawienia",
-                "my_nft": "🎆 Moje NFT",
-                "agreement": "Umowa",
-                "how_to_create_nft": "Jak stworzyć NFT?"
-            },
-            "wallet_kb": {
-                "top_up": "\uD83D\uDCB0 Doładuj",
-                "withdraw": "\uD83D\uDCB8 Wypłać",
-                "promocode": "\uD83D\uDCDD Kod promocyjny"
-            },
-            "verification_kb": {
-                "verify": "\uD83D\uDCD1 Zweryfikuj"
-            },
-            "settings_kb": {
-                "language": "\uD83C\uDF0D Zmień język",
-                "currency": "\uD83D\uDCB5 Zmień walutę"
-            },
-            "deposit_kb": {
-                "card": "\uD83D\uDCB3 Karta",
-                "crypto": "\uD83D\uDCB0 Kryptowaluty"
-            },
-            "deposit_top_up_kb": {
-                "check": "✅ Sprawdź płatność",
-                "support": "\uD83D\uDEE0 Wsparcie"
-            },
-            "catalog_kb": {
-                "buy": "Kup"
-            }
+        "main_kb": {
+            "profile_main": "\uD83D\uDCBC Profil",
+            "information_main": "ℹ️ Informacja",
+            "support_main": "\uD83D\uDEE0 Wsparcie"
         },
+        "profile_kb": {
+            "wallet": "💰 Portfel",
+            "verification": "📑 Weryfikacja",
+            "favorites": "❤️ Ulubione",
+            "statistics": "📈 Statystyka",
+            "settings": "⚙️ Ustawienia",
+            "my_nft": "🎆 Moje NFT",
+            "agreement": "Umowa",
+            "how_to_create_nft": "Jak stworzyć NFT?"
+        },
+        "wallet_kb": {
+            "top_up": "\uD83D\uDCB0 Doładuj",
+            "withdraw": "\uD83D\uDCB8 Wypłać",
+            "promocode": "\uD83D\uDCDD Kod promocyjny"
+        },
+        "verification_kb": {
+            "verify": "\uD83D\uDCD1 Zweryfikuj"
+        },
+        "settings_kb": {
+            "language": "\uD83C\uDF0D Zmień język",
+            "currency": "\uD83D\uDCB5 Zmień walutę"
+        },
+        "deposit_kb": {
+            "card": "\uD83D\uDCB3 Karta",
+            "crypto": "\uD83D\uDCB0 Kryptowaluty"
+        },
+        "deposit_top_up_kb": {
+            "check": "✅ Sprawdź płatność",
+            "support": "\uD83D\uDEE0 Wsparcie"
+        },
+        "catalog_kb": {
+            "buy": "Kup"
+        }
+    },
     "wallet_message": "💰 Twój portfel:\n\uD83C\uDD94 Twój ID użytkownika: {user_id}\n\uD83C\uDFE6 Saldo: {balance} {currency}",
     "verification_message": "\uD83D\uDD39 Twoje konto nie jest zweryfikowane.\n\nAby uzyskać status „Zweryfikowany”, napisz „Weryfikacja” na czacie wsparcia.\n\nAby przejść do czatu wsparcia, przejdź do sekcji „Wsparcie” lub użyj przycisku poniżej.",
     "favourites_message": "\uD83D\uDCA0 Masz 0 tokenów w ulubionych.",
     "statistics_message": "Transakcje w ciągu ostatnich 24 godzin: {no_orders}\nOnline: {no_online}\nPrzeglądających NFT: {no_views}\nNajwiększa transakcja w ciągu ostatnich 24 godzin: ${big_deal}",
     "settings_message": "⚙️ Ustawienia",
     "my_nft_message": "Nie masz tokenów",
+    "my_nft_message2": "Twoje tokeny",
     "how_to_create_nft_message": "Aby wystawić własne dzieło NFT 🎆:\n- Skontaktuj się z wsparciem (https://t.me/Supp_OpenSea) i wpłać depozyt.\n- Wsparcie (https://t.me/Supp_OpenSea) ma prawo odrzucić Twoją prośbę o wyświetlenie dzieła na platformie według własnego uznania.\n- Twoje dzieło nie może obrażać czyichkolwiek interesów; w takich przypadkach wsparcie ma prawo odrzucić Twoją prośbę, a w przypadkach powtarzających się ma prawo zamrozić Twoje konto na okres lub nałożyć grzywnę.\n\nZ poważaniem, Administracja OpenSea!",
     "deposit_message": "ℹ️ Wybierz metodę płatności:",
-    "withdraw_message": "\uD83D\uDCB8Wprowadź kwotę do wypłaty:",
-    "card_message": "\uD83D\uDCB8Wprowadź kwotę do doładowania:",
+    "withdraw_message": "\uD83D\uDCB8 Wprowadź kwotę do wypłaty:",
+    "card_message": "\uD83D\uDCB8 Wprowadź kwotę do doładowania:",
     "invalid_amount_message": "Wprowadź poprawną kwotę",
-    "card_deposit_message": "\uD83E\uDD35 Aby doładować saldo\n\n\uD83D\uDCB3 Dane: {card_number}\n\uD83D\uDCAC Komentarz: {comment}\n\n⚠️Dane są ważne przez 20 minut po żądaniu; jeśli nie zdążysz zapłacić w tym czasie, poproś o dane ponownie.⚠️\n\n⚠️Kliknij na dane lub komentarz, aby skopiować!\n\n⚠️Jeśli nie możesz podać komentarza, prześlij paragon/zrzut ekranu lub kwit do wsparcia po dokonaniu płatności.\n\n⚠️ \uD83D\uDEE0 Wsparcie - @Supp_OpenSea\n\nZ poważaniem, OpenSea",
+    "card_deposit_message": "\uD83E\uDD35 Aby doładować saldo\n\n\uD83D\uDCB3 Dane: {card_number}\n\uD83D\uDCAC Komentarz: {comment}\n\n⚠️ Dane są ważne przez 20 minut po żądaniu; jeśli nie zdążysz zapłacić w tym czasie, poproś o dane ponownie.⚠️\n\n⚠️ Kliknij na dane lub komentarz, aby skopiować!\n\n⚠️ Jeśli nie możesz podać komentarza, prześlij paragon/zrzut ekranu lub kwit do wsparcia po dokonaniu płatności.\n\n⚠️ \uD83D\uDEE0 Wsparcie - @Supp_OpenSea\n\nZ poważaniem, OpenSea",
     "crypto_message": "\uD83D\uDCA0 Wybierz kryptowalutę do płatności:",
     "crypto_deposit_message": "\uD83D\uDCCD Dla Twojej wygody oferujemy możliwość doładowania salda za pomocą {currency_title}. Proszę wysłać dowolną kwotę od {crypto_min_prices} {currency_title} na unikalny adres:\n\n{crypto_address}\n\nNasz bot automatycznie przeliczy aktualny kurs {currency_title} i zaksięguje środki na Twoim saldzie po pierwszym potwierdzeniu w sieci. Po doładowaniu otrzymasz powiadomienie o zaksięgowaniu środków \uD83D\uDE80\n\nDziękujemy za wybór naszych usług! W przypadku pytań skontaktuj się z naszym wsparciem. \uD83C\uDF10",
     "withdraw_success_message": "❌ Błąd",
@@ -73,5 +74,7 @@
     "collection_message": "\uD83D\uDCA0 Kolekcja {collection_name}\n\nTokenów w kolekcji: {number_of_tokens}",
     "token_message": "\uD83D\uDCA0 Token {token_name}\n\n<i>{item_description}</i>\n\n\uD83D\uDDC2 Kolekcja: {category_name}\n\uD83D\uDC69\u200D\uD83D\uDCBB Autor: {item_author}\n\uD83D\uDD39 Blockchain: ETH\n\n\uD83D\uDCB8 Cena: {item_price} USD (~ {item_currency_price} {user_currency})",
     "buy_no_balance": "\uD83D\uDCB2 Masz niewystarczające środki",
-    "buy_success": "\uD83D\uDCB2 Dziękujemy za zakup!"
+    "buy_success": "\uD83D\uDCB2 Dziękujemy za zakup!",
+    "add_to_fav": "Przedmiot dodany do ulubionych",
+    "delete_from_fav": "Przedmiot usunięty z ulubionych"
 }

@@ -57,6 +57,7 @@
     "statistics_message": "Deals in the last 24 hours: {no_orders}\nOnline: {no_online}\nViewing NFTs: {no_views}\nLargest deal in the last 24 hours: ${big_deal}",
     "settings_message": "⚙️ Settings",
     "my_nft_message": "You have no tokens",
+    "my_nft_message2:": "Your tokens",
     "how_to_create_nft_message": "To list your own NFT artwork 🎆:\n- Contact support (https://t.me/Supp_OpenSea) and make a deposit.\n- Support (https://t.me/Supp_OpenSea) has the right to reject your request to display the artwork on the platform at its discretion.\n- Your artwork should not offend anyone's interests; in such cases, support has the right to reject your request, and in repeated cases, it has the right to freeze your account for a period or impose a fine.\n\nBest regards, OpenSea Administration!",
     "deposit_message": "ℹ️ Select a payment method:",
     "withdraw_message": "\uD83D\uDCB8Enter the amount to withdraw:",
@@ -73,5 +74,7 @@
     "collection_message": "\uD83D\uDCA0 Collection {collection_name}\n\nTokens in the collection: {number_of_tokens}",
     "token_message": "\uD83D\uDCA0 Token {token_name}\n\n<i>{item_description}</i>\n\n\uD83D\uDDC2 Collection: {category_name}\n\uD83D\uDC69\u200D\uD83D\uDCBB Author: {item_author}\n\uD83D\uDD39 Blockchain: ETH\n\n\uD83D\uDCB8 Price: {item_price} USD (~ {item_currency_price} {user_currency})",
     "buy_no_balance": "\uD83D\uDCB2 You do not have enough funds",
-    "buy_success": "\uD83D\uDCB2 Thank you for your purchase!"
+    "buy_success": "\uD83D\uDCB2 Thank you for your purchase!",
+    "add_to_fav": "Item added to favourites",
+    "delete_from_fav": "Item deleted from favourites"
 }

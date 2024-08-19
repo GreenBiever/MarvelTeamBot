@@ -12,11 +12,11 @@ from nft_bot.main import translations, get_translation, send_profile
 from nft_bot.databases import requests
 from nft_bot.states import deposit_state, withdraw_state
 from nft_bot import config
-from databases.models import User, Promocode
+from databases.models import User, Promocode, Purchased
 from nft_bot.middlewares import AuthorizeMiddleware
 from nft_bot.utils.main_bot_api_client import main_bot_api_client
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import update
+from sqlalchemy import update, select
 from nft_bot.databases.enums import CurrencyEnum
 
 bot: Bot = Bot(config.TOKEN)
@@ -71,17 +71,18 @@ async def verification(call: types.CallbackQuery, user: User):
 
 
 @router.callback_query(lambda c: c.data == "favorites")
-async def favourites(call: types.CallbackQuery, user: User):
-    if call.data == 'favorites':
+async def favourites(call: types.CallbackQuery, user: User, session: AsyncSession):
+    try:
         await call.message.delete()
         lang = user.language
-        keyboard = kb.create_favourites_kb()
-        favourites_text = get_translation(
-            lang,
-            'favourites_message'
-        )
+        keyboard = await kb.create_favourites_kb(session, user.id)
+        favourites_text = get_translation(lang, 'favourites_message')
         photo = FSInputFile(config.PHOTO_PATH)
         await bot.send_photo(call.from_user.id, photo=photo, caption=favourites_text, reply_markup=keyboard)
+    except Exception as e:
+        # Log or handle the error as needed
+        print(f"Error handling favourites: {e}")
+
 
 
 @router.callback_query(lambda c: c.data == "statistics")
@@ -121,14 +122,31 @@ async def settings(call: types.CallbackQuery, user: User):
 
 
 @router.callback_query(lambda c: c.data == "my_nft")
-async def my_nft(call: types.CallbackQuery, user: User):
+async def my_nft(call: types.CallbackQuery, user: User, session: AsyncSession):
     if call.data == 'my_nft':
         lang = user.language
-        my_nft_text = get_translation(
-            lang,
-            'my_nft_message'
+        # Check if there are any purchased NFTs for the user
+        result = await session.execute(
+            select(Purchased).where(Purchased.user_id == user.id)
         )
-        await call.answer(my_nft_text, show_alert=False)
+        purchased_items = result.scalars().all()
+
+        if not purchased_items:
+            # No purchased items found, send the alert message
+            my_nft_text = get_translation(
+                lang,
+                'my_nft_message'
+            )
+            await call.answer(my_nft_text, show_alert=False)
+        else:
+            # Purchased items found, create and send the NFT keyboard
+            keyboard = await kb.create_my_nft_kb(session, user.id)
+            photo = FSInputFile(config.PHOTO_PATH)
+            my_nft_text = get_translation(
+                lang,
+                'my_nft_message2'
+            )
+            await bot.send_photo(call.from_user.id, photo=photo, caption=my_nft_text, reply_markup=keyboard)
 
 
 @router.callback_query(lambda c: c.data == "how_to_create_nft")

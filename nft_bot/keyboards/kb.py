@@ -7,7 +7,7 @@ from nft_bot import config
 from nft_bot.databases import requests
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from nft_bot.databases.models import User, Promocode, UserPromocodeAssotiation
+from nft_bot.databases.models import User, Promocode, UserPromocodeAssotiation, Favourites, Product, Purchased
 
 languages = ["en", "ru", "pl", "uk"]
 translations = {}
@@ -128,16 +128,31 @@ def create_verification_kb(lang):
     return verification
 
 
-def create_favourites_kb():
-    favourites_kb = [
-        [InlineKeyboardButton(text="⬅️", callback_data='left'),
-         InlineKeyboardButton(text="0/0", callback_data='zero'),
-         InlineKeyboardButton(text='➡️️', callback_data='right')],
-        [InlineKeyboardButton(text='⬅️', callback_data='back')]
+async def create_buy_keyboard(lang, item_id, user_id, session):
+    buttons = translations[lang]["buttons"].get('catalog_kb', {})
+
+    # Query to check if the item is in the user's favorites
+    result = await session.execute(
+        select(Favourites).where(Favourites.user_id == user_id and Favourites.product_id == item_id)
+    )
+    favourite_item = result.scalars().first()
+
+    # Determine the correct label and callback data for the favourites button
+    if favourite_item:
+        favourites_button_text = '💔'  # Fallback text if translation is missing
+        favourites_callback_data = f'delete_from_favourites_{item_id}'
+    else:
+        favourites_button_text = '🤍️'  # Fallback text if translation is missing
+        favourites_callback_data = f'add_to_favourites_{item_id}'
+
+    buy_kb = [
+        [InlineKeyboardButton(text=buttons['buy'], callback_data=f'buy_{item_id}')],
+        [InlineKeyboardButton(text=favourites_button_text, callback_data=favourites_callback_data)],
+        [InlineKeyboardButton(text='⬅️', callback_data='back_to_catalog')]
     ]
 
-    favourites = InlineKeyboardMarkup(inline_keyboard=favourites_kb)
-    return favourites
+    buy = InlineKeyboardMarkup(inline_keyboard=buy_kb)
+    return buy
 
 
 def create_statistics_kb():
@@ -306,18 +321,6 @@ async def create_items_keyboard(category_id, session: AsyncSession):
     return items_markup
 
 
-async def create_buy_keyboard(lang, item_id):
-    buttons = translations[lang]["buttons"].get('catalog_kb', {})
-
-    buy_kb = [
-        [InlineKeyboardButton(text=buttons['buy'], callback_data=f'buy_{item_id}')],
-        [InlineKeyboardButton(text='🤍️', callback_data='add_to_favourites')],
-        [InlineKeyboardButton(text='⬅️', callback_data='back_to_catalog')]
-    ]
-
-    buy = InlineKeyboardMarkup(inline_keyboard=buy_kb)
-    return buy
-
 
 async def create_mamont_control_kb(mamont_id, session):
     result = await session.execute(select(User).where(User.tg_id == int(mamont_id)))
@@ -400,3 +403,68 @@ def get_worker_select_current_user_kb(user: User):
     builder.button(text='Назад', callback_data='worker_back')
     builder.adjust(1)
     return builder.as_markup()
+
+
+async def create_favourites_kb(session: AsyncSession, user_id: int):
+    # Fetch the list of user's favourite items
+    result = await session.execute(
+        select(Favourites).where(Favourites.user_id == user_id)
+    )
+    favourite_items = result.scalars().all()
+
+    favourites_kb = []
+
+    # Dynamically add product buttons to the keyboard
+    for fav in favourite_items:
+        # Load the associated product for the favourite item
+        product_result = await session.execute(
+            select(Product).where(Product.id == fav.product_id)
+        )
+        product = product_result.scalar_one_or_none()
+
+        if product:
+            # Create button text and callback data
+            button_text = f"{product.name} - {product.price}"
+            callback_data = f"token_{product.id}"
+            favourites_kb.append([InlineKeyboardButton(text=button_text, callback_data=callback_data)])
+
+    # You can add navigation buttons or any additional buttons as needed
+    navigation_kb = [
+        InlineKeyboardButton(text="⬅️", callback_data='left'),
+        InlineKeyboardButton(text=f"{len(favourite_items)}", callback_data='page_count'),
+        InlineKeyboardButton(text='➡️️', callback_data='right')
+    ]
+
+    back_button = [InlineKeyboardButton(text='⬅️', callback_data='back')]
+
+    # Combine the favourites, navigation, and back buttons into one keyboard
+    favourites_kb.append(navigation_kb)
+    favourites_kb.append(back_button)
+
+    return InlineKeyboardMarkup(inline_keyboard=favourites_kb)
+
+
+async def create_my_nft_kb(session: AsyncSession, user_id: int):
+    result = await session.execute(
+        select(Purchased).where(Purchased.user_id == user_id)
+    )
+    purchased_items = result.scalars().all()
+
+    purchased_kb = []
+
+    for item in purchased_items:
+        product_result = await session.execute(
+            select(Product).where(Product.id == item.product_id)
+        )
+        product = product_result.scalar_one_or_none()
+
+        if product:
+            # Create button text and callback data
+            button_text = f"{product.name} - {product.price}"
+            callback_data = f"my_token_{product.id}"
+            purchased_kb.append([InlineKeyboardButton(text=button_text, callback_data=callback_data)])
+
+        back_button = [InlineKeyboardButton(text='⬅️', callback_data='back')]
+        purchased_kb.append(back_button)
+
+        return InlineKeyboardMarkup(inline_keyboard=purchased_kb)

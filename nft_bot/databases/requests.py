@@ -153,8 +153,3 @@ async def get_item_info(session: AsyncSession, item_id: int):
     return product_info
 
 
-async def add_to_favourites(session: AsyncSession, user_id: int, item_id: int):
-    await session.execute(
-        insert(Favourites).values(user_id=user_id, item_id=item_id))
-    await session.commit()
-

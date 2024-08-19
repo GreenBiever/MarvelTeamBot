@@ -49,9 +49,10 @@ class User(Base):
 
     referer_id: Mapped[Optional['User']] = mapped_column(ForeignKey('users.id'))
     referals: Mapped[list['User']] = relationship('User', back_populates='referer')
-    referer: Mapped[Optional['User']] = relationship('User', back_populates='referals',
-                                                     remote_side=[id])
+    referer: Mapped[Optional['User']] = relationship('User', back_populates='referals', remote_side=[id])
+
     favourites: Mapped[list['Favourites']] = relationship('Favourites', back_populates='user')
+    purchased: Mapped[list['Purchased']] = relationship('Purchased', back_populates='user')
 
     promocodes: Mapped[list[UserPromocodeAssotiation]] = relationship(
         back_populates="user")
@@ -59,14 +60,11 @@ class User(Base):
     currency_for_referals: Mapped[CurrencyEnum] = mapped_column(default=CurrencyEnum.usd)
 
     async def get_balance(self) -> float:
-        '''retun user balance converted to user currency'''
-        print(self.currency, self.balance)
+        '''Return user balance converted to user currency'''
         return await currency_exchange.get_exchange_rate(self.currency, self.balance)
 
     async def top_up_balance(self, session: AsyncSession, amount: int):
-        """
-        Asynchronously tops up the balance of the user by the specified amount.
-        """
+        """Asynchronously tops up the balance of the user by the specified amount."""
         await session.execute(
             update(User).where(User.tg_id == self.tg_id)
             .values(balance=User.balance + amount)
@@ -86,7 +84,7 @@ class User(Base):
         else:
             name = self.fname or self.lname or None
         ident = f'{name}(<code>{self.tg_id}</code>)' if name else self.tg_id
-        if self.referer:
+        if referer:
             await bot.send_message(
                 referer.tg_id,
                 f'''Пользователем {ident} было совершено действие:
@@ -123,9 +121,10 @@ class Product(Base):
 
     category = relationship('Category', back_populates='products')
     favourites = relationship("Favourites", back_populates="product")
+    purchased = relationship('Purchased', back_populates='product')  # Fixed relationship name
 
     async def get_product_price(self) -> float:
-        '''retun user balance converted to user currency'''
+        '''Return product price converted to user currency'''
         return await currency_exchange.get_exchange_rate(User.currency, self.price)
 
 
@@ -138,6 +137,17 @@ class Favourites(Base):
 
     user = relationship('User', back_populates='favourites')
     product = relationship('Product', back_populates='favourites')
+
+
+class Purchased(Base):
+    __tablename__ = 'purchased'
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
+    product_id: Mapped[int] = mapped_column(ForeignKey('products.id'))
+
+    user = relationship('User', back_populates='purchased')  # Fixed relationship name
+    product = relationship('Product', back_populates='purchased')  # Fixed relationship name
 
 
 class Promocode(Base):

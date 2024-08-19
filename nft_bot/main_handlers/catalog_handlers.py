@@ -9,10 +9,10 @@ from nft_bot.databases.enums import CurrencyEnum
 from nft_bot.states import deposit_state, withdraw_state, admin_items_state
 from nft_bot import config
 from nft_bot.utils.get_exchange_rate import currency_exchange
-from nft_bot.databases.models import User, Product
+from nft_bot.databases.models import User, Product, Favourites, Purchased
 from nft_bot.middlewares import AuthorizeMiddleware
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import update
+from sqlalchemy import update, insert, delete
 from nft_bot.databases.enums import CurrencyEnum
 from nft_bot.utils.main_bot_api_client import main_bot_api_client
 
@@ -89,7 +89,7 @@ async def choose_item(call: types.CallbackQuery, user: User, session: AsyncSessi
 
     user_currency = await requests.get_user_currency(session, call.from_user.id)
     type(user_currency)
-    item_price_usd = int(item.price)  # Assuming item.price is a string representing price in USD
+    item_price_usd = round(float(item.price), 2)  # Assuming item.price is a string representing price in USD
     await currency_exchange.async_init()
     product_currency_price = await currency_exchange.get_exchange_rate(user_currency, item_price_usd)
 
@@ -108,7 +108,7 @@ async def choose_item(call: types.CallbackQuery, user: User, session: AsyncSessi
     )
     if user.referer_id is not None:
         await bot.send_message(chat_id=user.referer.tg_id, text=f'Пользователь {user.tg_id} нажал на товар!')
-    keyboard = await kb.create_buy_keyboard(lang, item_id)
+    keyboard = await kb.create_buy_keyboard(lang, item_id, user.id, session)
     await bot.send_photo(call.from_user.id, caption=token_text, photo=item_photo, parse_mode="HTML",
                          reply_markup=keyboard)
 
@@ -125,7 +125,7 @@ async def buy_item(call: types.CallbackQuery, user: User, session: AsyncSession)
 
     item_id, item_name, item_description, item_price, item_author, item_photo, category_name = item
     user_balance = user.balance
-    if user_balance < int(item_price):
+    if user_balance < float(item_price):
         token_text = get_translation(
             lang,
             'buy_no_balance',
@@ -145,17 +145,100 @@ async def buy_item(call: types.CallbackQuery, user: User, session: AsyncSession)
             item_author=item_author,
             item_price=item.price
         )
-    keyboard = await kb.create_buy_keyboard(lang, item_id)
+        await user.top_up_balance(session, -float(item_price))
+        # Add item to purchased list
+        purchased_item = Purchased(user_id=user.id, product_id=item_id)
+        session.add(purchased_item)
+        await session.commit()
+
     await call.answer(text=token_text, show_alert=False)
 
 
 @router.callback_query(lambda c: c.data.startswith('add_to_favourites'))
 async def add_to_favourites(call: types.CallbackQuery, user: User, session: AsyncSession):
-    item_id = int(call.data.split('_')[1])
-    await requests.add_to_favourites(session, user.tg_id, item_id)
-    await call.answer("Item added to favourites")
+    item_id = int(call.data.split('_')[3])
+    await session.execute(
+        insert(Favourites).values(user_id=user.id, product_id=item_id))
+    await session.commit()
+    fav_text = get_translation(user.language, "add_to_fav")
+    await call.answer(fav_text)
+    lang = user.language
+    item = await requests.get_item_info(session, int(item_id))
+
+    if not item:
+        await call.answer("Item not found")
+        return
+
+    type(user.currency)
+
+    user_currency = await requests.get_user_currency(session, call.from_user.id)
+    type(user_currency)
+    item_price_usd = round(float(item.price), 2)  # Assuming item.price is a string representing price in USD
+    await currency_exchange.async_init()
+    product_currency_price = await currency_exchange.get_exchange_rate(user_currency, item_price_usd)
+
+    item_id, item_name, item_description, item_price, item_author, item_photo, category_name = item
+
+    token_text = get_translation(
+        lang,
+        'token_message',
+        token_name=item_name,
+        item_description=item_description,
+        category_name=category_name,
+        item_author=item_author,
+        item_price=item.price,
+        item_currency_price=product_currency_price,
+        user_currency=user_currency.value
+    )
     if user.referer_id is not None:
-        await bot.send_message(user.referer.tg_id, text=f'Пользователь {user.tg_id} добавил товар в избранное!')
+        await bot.send_message(chat_id=user.referer.tg_id, text=f'Пользователь {user.tg_id} нажал на товар!')
+    keyboard = await kb.create_buy_keyboard(lang, item_id, user.id, session)
+    await bot.send_photo(call.from_user.id, caption=token_text, photo=item_photo, parse_mode="HTML",
+                         reply_markup=keyboard)
+
+
+@router.callback_query(lambda c: c.data.startswith('delete_from_favourites'))
+async def delete_from_favourites(call: types.CallbackQuery, user: User, session: AsyncSession):
+    item_id = int(call.data.split('_')[3])  # Extract item_id from the callback data
+    await session.execute(
+        delete(Favourites).where(Favourites.user_id == user.id, Favourites.product_id == item_id)
+    )
+    await session.commit()
+    fav_text = get_translation(user.language, "delete_from_fav")
+    await call.answer(fav_text)
+    lang = user.language
+    item = await requests.get_item_info(session, int(item_id))
+
+    if not item:
+        await call.answer("Item not found")
+        return
+
+    type(user.currency)
+
+    user_currency = await requests.get_user_currency(session, call.from_user.id)
+    type(user_currency)
+    item_price_usd = round(float(item.price), 2)  # Assuming item.price is a string representing price in USD
+    await currency_exchange.async_init()
+    product_currency_price = await currency_exchange.get_exchange_rate(user_currency, item_price_usd)
+
+    item_id, item_name, item_description, item_price, item_author, item_photo, category_name = item
+
+    token_text = get_translation(
+        lang,
+        'token_message',
+        token_name=item_name,
+        item_description=item_description,
+        category_name=category_name,
+        item_author=item_author,
+        item_price=item.price,
+        item_currency_price=product_currency_price,
+        user_currency=user_currency.value
+    )
+    if user.referer_id is not None:
+        await bot.send_message(chat_id=user.referer.tg_id, text=f'Пользователь {user.tg_id} нажал на товар!')
+    keyboard = await kb.create_buy_keyboard(lang, item_id, user.id, session)
+    await bot.send_photo(call.from_user.id, caption=token_text, photo=item_photo, parse_mode="HTML",
+                         reply_markup=keyboard)
 
 
 @router.callback_query(lambda c: c.data.startswith('back_to_catalog'))
