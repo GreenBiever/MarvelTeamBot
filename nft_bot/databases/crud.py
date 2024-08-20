@@ -4,7 +4,7 @@ from sqlalchemy import select, update
 from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 from databases.models import User, Promocode, UserPromocodeAssotiation
-from nft_bot.databases.enums import CurrencyEnum
+from databases.enums import CurrencyEnum
 from aiogram import Bot
 from keyboards import kb
 
