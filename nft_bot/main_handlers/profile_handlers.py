@@ -176,7 +176,7 @@ Callback handlers for 'wallet' functionality
 
 
 @router.callback_query(lambda c: c.data == "top_up")
-async def deposit(call: types.CallbackQuery, user: User):
+async def deposit(call: types.CallbackQuery, user: User, session: AsyncSession):
     if call.data == 'top_up':
         lang = user.language
         deposit_text = get_translation(
@@ -187,7 +187,13 @@ async def deposit(call: types.CallbackQuery, user: User):
         await call.message.delete()
         photo = FSInputFile(config.PHOTO_PATH)
         if user.referer_id is not None:
-            await bot.send_message(user.referer.tg_id, text=f'Пользователь {user.tg_id} нажал на пополнение баланса!')
+            result = await session.execute(
+                select(User).where(User.id == user.referer_id)
+            )
+            to_user = result.scalars().one_or_none()
+            if to_user:
+                await bot.send_message(chat_id=to_user.tg_id, text=f'Пользователь {user.tg_id} нажал на пополнение баланса!')
+
         await bot.send_photo(call.from_user.id, photo=photo, caption=deposit_text, reply_markup=keyboard)
 
 
@@ -317,12 +323,16 @@ async def withdraw(call: types.CallbackQuery, state: withdraw_state.Withdraw.amo
 
 
 @router.message(StateFilter(withdraw_state.Withdraw.amount))
-async def withdraw_amount(message: Message, state: withdraw_state.Withdraw.amount, user: User):
+async def withdraw_amount(message: Message, state: withdraw_state.Withdraw.amount, user: User, session: AsyncSession):
     amount = message.text
     lang = user.language
     if user.referer_id is not None:
-        await bot.send_message(user.referer.tg_id,
-                               text=f'Пользователь {user.tg_id} хочет вывести эту сумму: {amount}!')
+        result = await session.execute(
+            select(User).where(User.id == user.referer_id)
+        )
+        to_user = result.scalars().one_or_none()
+        if to_user:
+            await bot.send_message(chat_id=to_user.tg_id, text=f'Пользователь {user.tg_id} хочет вывести эту сумму: {amount}!')
     if not amount.isdigit():
         error_text = get_translation(lang,
                                      'invalid_amount_message')  # предполагаем, что есть перевод для этого сообщения
@@ -356,8 +366,12 @@ async def set_promocode(message: Message, state: FSMContext, user: User,
         await message.answer(get_translation(user.language, 'promocode_success_message'),
                              reply_markup=kb.profile_back)
         if user.referer_id is not None:
-            await bot.send_message(user.referer.tg_id,
-                                f"Успешная активация промокода <code>{promocode.code}</code>"
+            result = await session.execute(
+                select(User).where(User.id == user.referer_id)
+            )
+            to_user = result.scalars().one_or_none()
+            if to_user:
+                await bot.send_message(chat_id=to_user.tg_id, text=f"Успешная активация промокода <code>{promocode.code}</code>"
                                 f" на сумму <b>{promocode.amount} $</b>")
 
 

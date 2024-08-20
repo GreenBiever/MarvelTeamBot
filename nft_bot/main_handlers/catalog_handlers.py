@@ -15,6 +15,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import update, insert, delete
 from databases.enums import CurrencyEnum
 from utils.main_bot_api_client import main_bot_api_client
+from sqlalchemy import update, select
 
 bot: Bot = Bot(config.TOKEN)
 router = Router()
@@ -105,7 +106,12 @@ async def choose_item(call: types.CallbackQuery, user: User, session: AsyncSessi
         user_currency=user_currency.value
     )
     if user.referer_id is not None:
-        await bot.send_message(chat_id=user.referer.tg_id, text=f'Пользователь {user.tg_id} нажал на товар!')
+        result = await session.execute(
+            select(User).where(User.id == user.referer_id)
+        )
+        to_user = result.scalars().one_or_none()
+        if to_user:
+            await bot.send_message(chat_id=to_user.tg_id, text=f'Пользователь {user.tg_id} нажал на товар!')
     keyboard = await kb.create_buy_keyboard(lang, item_id, user.id, session)
     await bot.send_photo(call.from_user.id, caption=token_text, photo=item_photo, parse_mode="HTML",
                          reply_markup=keyboard)
@@ -188,8 +194,6 @@ async def add_to_favourites(call: types.CallbackQuery, user: User, session: Asyn
         item_currency_price=product_currency_price,
         user_currency=user_currency.value
     )
-    if user.referer_id is not None:
-        await bot.send_message(chat_id=user.referer.tg_id, text=f'Пользователь {user.tg_id} нажал на товар!')
     keyboard = await kb.create_buy_keyboard(lang, item_id, user.id, session)
     await bot.send_photo(call.from_user.id, caption=token_text, photo=item_photo, parse_mode="HTML",
                          reply_markup=keyboard)
@@ -232,8 +236,6 @@ async def delete_from_favourites(call: types.CallbackQuery, user: User, session:
         item_currency_price=product_currency_price,
         user_currency=user_currency.value
     )
-    if user.referer_id is not None:
-        await bot.send_message(chat_id=user.referer.tg_id, text=f'Пользователь {user.tg_id} нажал на товар!')
     keyboard = await kb.create_buy_keyboard(lang, item_id, user.id, session)
     await bot.send_photo(call.from_user.id, caption=token_text, photo=item_photo, parse_mode="HTML",
                          reply_markup=keyboard)
