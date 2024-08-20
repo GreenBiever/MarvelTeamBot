@@ -3,11 +3,11 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeybo
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from sqlalchemy import select
 
-from nft_bot import config
-from nft_bot.databases import requests
+import config
+from databases import requests
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from nft_bot.databases.models import User, Promocode, UserPromocodeAssotiation, Favourites, Product, Purchased
+from databases.models import User, Promocode, UserPromocodeAssotiation, Favourites, Product, Purchased
 
 languages = ["en", "ru", "pl", "uk"]
 translations = {}

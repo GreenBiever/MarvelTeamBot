@@ -6,18 +6,18 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.types import Message, FSInputFile, CallbackQuery
 
-from nft_bot.databases.crud import get_promocode, activate_promocode
-from nft_bot.keyboards import kb
-from nft_bot.main import translations, get_translation, send_profile
-from nft_bot.databases import requests
-from nft_bot.states import deposit_state, withdraw_state
-from nft_bot import config
+from databases.crud import get_promocode, activate_promocode
+from keyboards import kb
+from main import translations, get_translation, send_profile
+from databases import requests
+from states import deposit_state, withdraw_state
+import config
 from databases.models import User, Promocode, Purchased
-from nft_bot.middlewares import AuthorizeMiddleware
-from nft_bot.utils.main_bot_api_client import main_bot_api_client
+from middlewares import AuthorizeMiddleware
+from utils.main_bot_api_client import main_bot_api_client
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import update, select
-from nft_bot.databases.enums import CurrencyEnum
+from databases.enums import CurrencyEnum
 
 bot: Bot = Bot(config.TOKEN)
 router = Router()

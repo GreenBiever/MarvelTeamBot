@@ -1,6 +1,6 @@
 import aiohttp
 from pydantic import BaseModel
-from nft_bot import config
+import config
 
 
 class LogRequest(BaseModel):

@@ -3,18 +3,18 @@ import random
 from aiogram import Bot, Dispatcher, types, F, Router
 from aiogram.filters import StateFilter
 from aiogram.types import Message, FSInputFile
-from nft_bot.keyboards import kb
-from nft_bot.databases import requests
-from nft_bot.databases.enums import CurrencyEnum
-from nft_bot.states import deposit_state, withdraw_state, admin_items_state
-from nft_bot import config
-from nft_bot.utils.get_exchange_rate import currency_exchange
-from nft_bot.databases.models import User, Product, Favourites, Purchased
-from nft_bot.middlewares import AuthorizeMiddleware
+from keyboards import kb
+from databases import requests
+from databases.enums import CurrencyEnum
+from states import deposit_state, withdraw_state, admin_items_state
+import config
+from utils.get_exchange_rate import currency_exchange
+from databases.models import User, Product, Favourites, Purchased
+from middlewares import AuthorizeMiddleware
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import update, insert, delete
-from nft_bot.databases.enums import CurrencyEnum
-from nft_bot.utils.main_bot_api_client import main_bot_api_client
+from databases.enums import CurrencyEnum
+from utils.main_bot_api_client import main_bot_api_client
 
 bot: Bot = Bot(config.TOKEN)
 router = Router()

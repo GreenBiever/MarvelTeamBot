@@ -5,15 +5,15 @@ from aiogram import Bot, Dispatcher, types, F, Router
 from aiogram.filters import StateFilter, Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, FSInputFile, CallbackQuery
-from nft_bot.keyboards import kb
-from nft_bot.databases import requests
-from nft_bot.main_handlers.promocode_handlers import CreatePromocode
-from nft_bot.states import deposit_state, withdraw_state, admin_items_state, worker_state
-from nft_bot import config
+from keyboards import kb
+from databases import requests
+from main_handlers.promocode_handlers import CreatePromocode
+from states import deposit_state, withdraw_state, admin_items_state, worker_state
+import config
 from sqlalchemy.ext.asyncio import AsyncSession
 from databases.models import User, Promocode, UserPromocodeAssotiation
 from sqlalchemy import update, select, delete
-from nft_bot.databases.crud import (get_created_promocodes, get_promocode_by_code)
+from databases.crud import (get_created_promocodes, get_promocode_by_code)
 
 bot: Bot = Bot(config.TOKEN)
 router = Router()

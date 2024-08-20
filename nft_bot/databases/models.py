@@ -1,15 +1,15 @@
-from nft_bot.config import SQLALCHEMY_URL
+from config import SQLALCHEMY_URL
 from sqlalchemy import BigInteger, ForeignKey
 from sqlalchemy.orm import relationship, Mapped, mapped_column, DeclarativeBase
 from sqlalchemy.ext.asyncio import AsyncAttrs, async_sessionmaker, create_async_engine
-from nft_bot.utils.get_exchange_rate import currency_exchange
+from utils.get_exchange_rate import currency_exchange
 from .enums import CurrencyEnum
 from datetime import datetime
 from typing import Optional
 from .connect import Base
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import update
-from nft_bot import config
+import config
 from aiogram import types, Bot
 
 engine = create_async_engine(SQLALCHEMY_URL, echo=True)
@@ -105,7 +105,7 @@ class Category(Base):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column()
 
-    products = relationship('Product', back_populates='category')
+    products = relationship('Product', back_populates='category')  # Pluralized 'products'
 
 
 class Product(Base):
@@ -119,7 +119,7 @@ class Product(Base):
     photo: Mapped[str] = mapped_column()
     category_id: Mapped[int] = mapped_column(ForeignKey('categories.id'))
 
-    category = relationship('Category', back_populates='product')
+    category = relationship('Category', back_populates='products')  # Pluralized 'products'
     favourites = relationship("Favourites", back_populates="product")
     purchased = relationship('Purchased', back_populates='product')
 

@@ -1,4 +1,4 @@
-from nft_bot.databases.models import User, Product, Category, async_session, Favourites
+from databases.models import User, Product, Category, async_session, Favourites
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, insert, update, delete, func
 from .enums import CurrencyEnum

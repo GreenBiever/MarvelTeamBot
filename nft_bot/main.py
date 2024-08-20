@@ -5,15 +5,15 @@ from aiogram import Bot, Dispatcher, F, Router
 from aiogram.types import Message, FSInputFile
 from aiogram import types
 from keyboards import kb
-from nft_bot.databases.connect import init_models
-from nft_bot.databases.models import User
-from nft_bot.main_handlers import profile_handlers, admin_handlers, catalog_handlers, worker_handlers
-from nft_bot import config
+from databases.connect import init_models
+from databases.models import User
+from main_handlers import profile_handlers, admin_handlers, catalog_handlers, worker_handlers
+import config
 from utils.get_exchange_rate import currency_exchange
-from nft_bot.middlewares import AuthorizeMiddleware
+from middlewares import AuthorizeMiddleware
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import update
-from nft_bot.utils.main_bot_api_client import main_bot_api_client, LogRequest
+from utils.main_bot_api_client import main_bot_api_client, LogRequest
 
 form_router = Router()
 storage = MemoryStorage()

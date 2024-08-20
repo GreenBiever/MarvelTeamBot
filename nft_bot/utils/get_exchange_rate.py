@@ -1,6 +1,6 @@
 import aiohttp
 from datetime import datetime
-from nft_bot.databases.enums import CurrencyEnum
+from databases.enums import CurrencyEnum
 import logging
 
 logger = logging.getLogger(__name__)

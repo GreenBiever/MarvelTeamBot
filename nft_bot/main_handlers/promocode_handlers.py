@@ -10,7 +10,7 @@ from aiogram_dialog import (
 from aiogram_dialog.widgets.kbd import Button, SwitchTo, Cancel, Start, Checkbox
 from aiogram_dialog.widgets.input import TextInput
 from aiogram_dialog.widgets.text import Const, Multi
-from nft_bot.databases.crud import get_promocode_by_code
+from databases.crud import get_promocode_by_code
 from databases.models import Promocode, UserPromocodeAssotiation
 
 

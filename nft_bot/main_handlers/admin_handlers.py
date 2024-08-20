@@ -3,12 +3,12 @@ import random
 from aiogram import Bot, Dispatcher, types, F, Router
 from aiogram.filters import StateFilter, Command
 from aiogram.types import Message, FSInputFile
-from nft_bot.keyboards import kb
-from nft_bot.databases import requests
-from nft_bot.states import deposit_state, withdraw_state, admin_items_state, worker_state
-from nft_bot import config
+from keyboards import kb
+from databases import requests
+from states import deposit_state, withdraw_state, admin_items_state, worker_state
+import config
 from sqlalchemy.ext.asyncio import AsyncSession
-from nft_bot.databases.models import User
+from databases.models import User
 from sqlalchemy import update, select, delete
 
 bot: Bot = Bot(config.TOKEN)
