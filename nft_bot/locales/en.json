@@ -2,6 +2,7 @@
     "welcome": "👋Welcome, {first_name}, select a service below:",
     "blocked": "You are blocked!",
     "select_language": "Select language:",
+    "select_currency": "Select currency: ",
     "profile": "\uD83D\uDCBC Profile\n\n📌 ID: {user_id}\n\uD83D\uDD2E Status: {status} 🎉 \n\n💰 Balance: {balance} {currency}\n📑 Verification: {verification}\n\uD83D\uDEB8 {ref}",
     "statuses": {
             "stat_blocked": "Blocked",

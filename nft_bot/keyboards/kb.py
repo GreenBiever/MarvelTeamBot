@@ -246,7 +246,7 @@ settings_language = InlineKeyboardMarkup(inline_keyboard=settings_language_kb)
 
 
 settings_currency_kb = [
-    [InlineKeyboardButton(text='🇺🇦 UAH', callback_data='usd'),
+    [InlineKeyboardButton(text='🇺🇦 UAH', callback_data='uah'),
      InlineKeyboardButton(text='🇪🇺 EUR', callback_data='eur')],
     [InlineKeyboardButton(text='🇵🇱 PLN', callback_data='pln'),
      InlineKeyboardButton(text='🇷🇺 RUB', callback_data='rub')],

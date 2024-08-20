@@ -386,7 +386,7 @@ async def language(call: types.CallbackQuery, user: User):
         lang = user.language
         language_text = get_translation(
             lang,
-            'language_message'
+            'select_language'
         )
         await call.message.delete()
         photo = FSInputFile(config.PHOTO_PATH)
@@ -414,7 +414,7 @@ async def currency(call: types.CallbackQuery, user: User):
         lang = user.language
         currency_text = get_translation(
             lang,
-            'currency_message'
+            'select_currency'
         )
         await call.message.delete()
         photo = FSInputFile(config.PHOTO_PATH)
@@ -424,13 +424,8 @@ async def currency(call: types.CallbackQuery, user: User):
 @router.callback_query(lambda c: c.data in ["usd", "eur", "pln", "uah", "rub", "byn"])
 async def set_currency(call: types.CallbackQuery, user: User, session: AsyncSession):
     if call.data in ["usd", "eur", "pln", "uah", "rub", "byn"]:
-        currency = call.data
-        await session.execute(
-            update(User)
-            .where(User.tg_id == call.from_user.id)
-            .values(currency=currency)
-        )
-        await session.commit()
-        user.currency = currency
+        currency1 = call.data
+        user.currency = CurrencyEnum[currency1]
+        session.add(user)
         await send_profile(user)
 
