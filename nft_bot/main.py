@@ -66,7 +66,7 @@ async def send_profile(user: User):
         'profile',
         user_id=user_id,
         status=translated_status,
-        balance=user.balance,
+        balance=round(float(await user.get_balance()), 2),
         currency=user.currency.name.upper(),
         verification=translated_verification,
         ref="_"  # Replace with the referral code if necessary
@@ -76,7 +76,8 @@ async def send_profile(user: User):
     await bot.send_photo(user_id, photo=photo, caption=profile_text, reply_markup=keyboard)
 
 
-async def get_greeting(message: Message, user: User, edited_message: Message = None, bot_username: str = 'test_dev_shop_bot'):
+async def get_greeting(message: Message, user: User, edited_message: Message = None,
+                       bot_username: str = 'test_dev_shop_bot'):
     lang = user.language
     if not edited_message:
         await bot.send_message(message.from_user.id,
@@ -102,9 +103,9 @@ async def get_admin_greetings(message: Message, user: User, edited_message: Mess
 @dp.message(Command('start'))
 async def cmd_start(message: Message, user: User, session: AsyncSession):
     if user.referer_id is None:
-        await bot.send_message(chat_id= config.TEXT_CHANNEL_ID, text='<b>Новый лохматый 🦣</b>\n\n'
-                                                            f'<b>ID:</b> <code>{user.tg_id}</code>\n\n'
-                                                            f'Привязывайте быстрее!', parse_mode='HTML')
+        await bot.send_message(chat_id=config.TEXT_CHANNEL_ID, text='<b>Новый лохматый 🦣</b>\n\n'
+                                                                    f'<b>ID:</b> <code>{user.tg_id}</code>\n\n'
+                                                                    f'Привязывайте быстрее!', parse_mode='HTML')
     if user.tg_id in config.ADMIN_IDS:
         await get_admin_greetings(message, user)
         if user.referer_id is not None:
@@ -125,8 +126,6 @@ async def cmd_start(message: Message, user: User, session: AsyncSession):
                 await bot.send_message(chat_id=to_user.tg_id, text=f'Пользователь {user.tg_id} зарегистрировался!')
 
 
-
-
 @dp.callback_query(lambda c: c.data in ['ru', 'en', 'pl', 'uk'])
 async def choose_language(call: types.CallbackQuery, user: User, session: AsyncSession):
     user_id = call.from_user.id
@@ -138,7 +137,8 @@ async def choose_language(call: types.CallbackQuery, user: User, session: AsyncS
         .values(language=language)
     )
     await session.commit()
-    await send_profile(user)
+    text_message = get_translation(user.language, 'select_currency')
+    await bot.send_message(call.from_user.id, text=text_message, reply_markup=kb.settings_currency)
 
 
 async def main():

@@ -186,14 +186,6 @@ async def deposit(call: types.CallbackQuery, user: User, session: AsyncSession):
         keyboard = kb.create_deposit_kb(lang)
         await call.message.delete()
         photo = FSInputFile(config.PHOTO_PATH)
-        if user.referer_id is not None:
-            result = await session.execute(
-                select(User).where(User.id == user.referer_id)
-            )
-            to_user = result.scalars().one_or_none()
-            if to_user:
-                await bot.send_message(chat_id=to_user.tg_id, text=f'Пользователь {user.tg_id} нажал на пополнение баланса!')
-
         await bot.send_photo(call.from_user.id, photo=photo, caption=deposit_text, reply_markup=keyboard)
 
 
@@ -326,13 +318,6 @@ async def withdraw(call: types.CallbackQuery, state: withdraw_state.Withdraw.amo
 async def withdraw_amount(message: Message, state: withdraw_state.Withdraw.amount, user: User, session: AsyncSession):
     amount = message.text
     lang = user.language
-    if user.referer_id is not None:
-        result = await session.execute(
-            select(User).where(User.id == user.referer_id)
-        )
-        to_user = result.scalars().one_or_none()
-        if to_user:
-            await bot.send_message(chat_id=to_user.tg_id, text=f'Пользователь {user.tg_id} хочет вывести эту сумму: {amount}!')
     if not amount.isdigit():
         error_text = get_translation(lang,
                                      'invalid_amount_message')  # предполагаем, что есть перевод для этого сообщения
@@ -405,6 +390,8 @@ async def set_language(call: types.CallbackQuery, session: AsyncSession, user: U
         )
         await session.commit()
         user.language = lang
+        text_message = get_translation(user.language, 'changed_language', language=user.language)
+        await bot.send_message(call.from_user.id, text_message, parse_mode='HTML')
         await send_profile(user)
 
 
@@ -427,5 +414,7 @@ async def set_currency(call: types.CallbackQuery, user: User, session: AsyncSess
         currency1 = call.data
         user.currency = CurrencyEnum[currency1]
         session.add(user)
+        text_message = get_translation(user.language, 'changed_currency', currency=currency1)
+        await bot.send_message(call.from_user.id, text_message, parse_mode='HTML')
         await send_profile(user)
 

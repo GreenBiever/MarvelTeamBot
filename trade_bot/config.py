@@ -1,10 +1,10 @@
 TOKEN = '6284731506:AAFdUBT3dzcnvROLsWlGi0m491-f4mvtbdo'
 SQLALCHEMY_URL = 'sqlite+aiosqlite:///trade.db'
-WEBHOOK_URL = 'https://dbe87dcd-619e-48e6-857d-8be91ada9c2f.tunnel4.com'
+WEBHOOK_URL = 'https://df055017-d5b4-4565-bf48-8de000d1f769.tunnel4.com'
 WEBHOOK_PORT = 8081
 TELEGRAM_WEBHOOK_PATH = '/telegram_webhook/'
-WEBSITE_URL = 'https://dbe87dcd-619e-48e6-857d-8be91ada9c2f.tunnel4.com' # Without last slash('/') !
-MAIN_BOT_URL = 'https://dbe87dcd-619e-48e6-857d-8be91ada9c2f.tunnel4.com'
+WEBSITE_URL = 'https://df055017-d5b4-4565-bf48-8de000d1f769.tunnel4.com' # Without last slash('/') !
+MAIN_BOT_URL = 'https://df055017-d5b4-4565-bf48-8de000d1f769.tunnel4.com'
 TEXT_CHANNEL_ID = '-1002212671394'
 REFERAL_BONUS_PERCENT = 0.1
 OKX_SUPPORT_LINK = 'https://t.me/OKXsupport_official'

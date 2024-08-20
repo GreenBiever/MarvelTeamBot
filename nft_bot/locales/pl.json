@@ -77,5 +77,7 @@
     "buy_no_balance": "\uD83D\uDCB2 Masz niewystarczające środki",
     "buy_success": "\uD83D\uDCB2 Dziękujemy za zakup!",
     "add_to_fav": "Przedmiot dodany do ulubionych",
-    "delete_from_fav": "Przedmiot usunięty z ulubionych"
+    "delete_from_fav": "Przedmiot usunięty z ulubionych",
+    "changed_currency": "Twoja waluta została zmieniona na <b>{currency}</b>",
+    "changed_language": "Twój język został zmieniony na <b>{language}</b>"
 }

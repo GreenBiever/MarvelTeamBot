@@ -90,9 +90,10 @@ async def control_mamonts(call: types.CallbackQuery, user: User, session: AsyncS
     if users:
         text = 'Лохматые:\n\n'
         for user in users:
-            text += f'ID: {user.tg_id}\n'
-        text += '\n<b>Всего лохматых:</b> ' + str(len(users))
-        text += '\nВведите ID лохматого ниже для управления: '
+            user_balance = round(float(await user.get_balance()), 2)
+            text += f'/r_{user.tg_id} | {user.username} | {user_balance} {user.currency.name.upper()}\n'
+        text += f'\n<b>Всего лохматых:</b> {len(users)}'
+        text += '\nНажмите на ID лохматого для управления: '
     else:
         text = 'У вас нет лохматых.'
 
@@ -103,8 +104,11 @@ async def control_mamonts(call: types.CallbackQuery, user: User, session: AsyncS
 
 @router.message(StateFilter(worker_state.WorkerMamont.mamont_id))
 async def mamont_control_panel(message: Message, session: AsyncSession, state: worker_state.WorkerMamont.mamont_id):
-    mamont_id = message.text
-    mamont_id = message.text
+    mamont_id = message.text.strip()
+
+    # Extract mamont_id if the message is in the format "/r_{mamont_id}"
+    if mamont_id.startswith("/r_"):
+        mamont_id = mamont_id[3:]  # Remove "/r_"
 
     if not mamont_id.isdigit():
         await bot.send_message(chat_id=message.from_user.id, text='Введите корректный mamont_id!', parse_mode="HTML")
@@ -117,6 +121,7 @@ async def mamont_control_panel(message: Message, session: AsyncSession, state: w
         await bot.send_message(chat_id=message.from_user.id, text='Такого mamont_id не существует!', parse_mode="HTML")
         return
 
+    # Rest of your code to handle user control panel
     if user.is_buying:
         user_is_buying = 'Покупка включена'
     else:
@@ -137,12 +142,13 @@ async def mamont_control_panel(message: Message, session: AsyncSession, state: w
     else:
         user_is_blocked = 'Активен'
 
+    user_balance_in_currency = round(float(await user.get_balance()), 2)
     keyboard = await kb.create_mamont_control_kb(mamont_id, session)
     text = (f'🏙 <b>Профиль лохматого</b> {mamont_id}\n\n'
             f'<b>Информация</b>\n'
-            f'┠ Баланс: <b>{user.balance}</b>\n'
-            f'┠ Мин. депозит: <b>{user.min_deposit} RUB</b>\n'
-            f'┠ Мин. вывод: <b>{user.min_withdraw} RUB</b>\n'
+            f'┠ Баланс в валюте: <b>{user_balance_in_currency} {user.currency.name.upper()}</b>\n'
+            f'┠ Мин. депозит: <b>{user.min_deposit}</b>\n'
+            f'┠ Мин. вывод: <b>{user.min_withdraw}</b>\n'
             f'┠ 🔰 <b>{user_is_buying}</b>\n'
             f'┠ 🔰 <b>{user_is_withdraw}</b>\n'
             f'┠ 🔐 <b>{user_is_blocked}</b>\n'
@@ -168,33 +174,14 @@ async def mamont_control_handler(call: types.CallbackQuery, state: worker_state.
         await state.set_state(worker_state.WorkerMamont.balance_amount)
         return
     elif callback == 'min_deposit':
-        min_mamont_deposit = user.min_deposit
-        if min_mamont_deposit == 5000:
-            new_mamont_deposit = 8000
-        elif min_mamont_deposit == 8000:
-            new_mamont_deposit = 10000
-        elif min_mamont_deposit == 10000:
-            new_mamont_deposit = 20000
-        elif min_mamont_deposit == 20000:
-            new_mamont_deposit = 50000
-        elif min_mamont_deposit == 50000:
-            new_mamont_deposit = 5000
-        await session.execute(update(User).where(User.tg_id == int(mamont_id)).values(min_deposit=new_mamont_deposit))
-        await session.commit()
+        await bot.edit_message_text(message_id=call.message.message_id, chat_id=call.from_user.id,
+                                    text='Введите сумму для изменения минимального депозита: ')
+        await state.set_state(worker_state.WorkerMamont.min_deposit)
+        return
     elif callback == 'min_withdraw':
-        min_mamont_withdraw = user.min_withdraw
-        if min_mamont_withdraw == 5000:
-            new_mamont_withdraw = 8000
-        elif min_mamont_withdraw == 8000:
-            new_mamont_withdraw = 10000
-        elif min_mamont_withdraw == 10000:
-            new_mamont_withdraw = 20000
-        elif min_mamont_withdraw == 20000:
-            new_mamont_withdraw = 50000
-        elif min_mamont_withdraw == 50000:
-            new_mamont_withdraw = 5000
-        await session.execute(update(User).where(User.tg_id == int(mamont_id)).values(min_withdraw=new_mamont_withdraw))
-        await session.commit()
+        await bot.edit_message_text(message_id=call.message.message_id, chat_id=call.from_user.id,
+                                    text='Введите сумму для изменения минимального вывода: ')
+        await state.set_state(worker_state.WorkerMamont.min_deposit)
     elif callback == 'unverify':
         await session.execute(update(User).where(User.tg_id == int(mamont_id)).values(is_verified=False))
         await session.commit()
@@ -248,12 +235,13 @@ async def mamont_control_handler(call: types.CallbackQuery, state: worker_state.
         else:
             user_is_blocked = 'Активен'
 
+        user_balance_in_currency = round(float(await user.get_balance()), 2)
         keyboard = await kb.create_mamont_control_kb(mamont_id, session)
         text = (f'🏙 <b>Профиль лохматого</b> {mamont_id}\n\n'
                 f'<b>Информация</b>\n'
-                f'┠ Баланс: <b>{user.balance}</b>\n'
-                f'┠ Мин. депозит: <b>{user.min_deposit} RUB</b>\n'
-                f'┠ Мин. вывод: <b>{user.min_withdraw} RUB</b>\n'
+                f'┠ Баланс в валюте: <b>{user_balance_in_currency} {user.currency.name.upper()}</b>\n'
+                f'┠ Мин. депозит: <b>{user.min_deposit}</b>\n'
+                f'┠ Мин. вывод: <b>{user.min_withdraw}</b>\n'
                 f'┠ 🔰 <b>{user_is_buying}</b>\n'
                 f'┠ 🔰 <b>{user_is_withdraw}</b>\n'
                 f'┠ 🔐 <b>{user_is_blocked}</b>\n'
@@ -288,10 +276,11 @@ async def mamont_control_handler(call: types.CallbackQuery, state: worker_state.
     else:
         user_is_blocked = 'Активен'
 
+    user_balance_in_currency = round(float(await user2.get_balance()), 2)
     keyboard = await kb.create_mamont_control_kb(mamont_id, session)
     text = (f'🏙 <b>Профиль лохматого</b> {mamont_id}\n\n'
             f'<b>Информация</b>\n'
-            f'┠ Баланс: <b>{user2.balance}</b>\n'
+            f'┠ Баланс в валюте: <b>{user_balance_in_currency} {user2.currency.name.upper()}</b>\n'
             f'┠ Мин. депозит: <b>{user2.min_deposit} RUB</b>\n'
             f'┠ Мин. вывод: <b>{user2.min_withdraw} RUB</b>\n'
             f'┠ 🔰 <b>{user_is_buying}</b>\n'
@@ -302,6 +291,35 @@ async def mamont_control_handler(call: types.CallbackQuery, state: worker_state.
             f'┖ {user2.last_login}')
     await bot.edit_message_text(chat_id=call.from_user.id, message_id=call.message.message_id, text=text,
                                 parse_mode="HTML", reply_markup=keyboard)
+
+@router.message(StateFilter(worker_state.WorkerMamont.min_deposit))
+async def change_min_deposit(message: Message, session: AsyncSession, state: worker_state.WorkerMamont.min_deposit):
+    await message.delete()
+    min_deposit = message.text
+    if not min_deposit.isdigit():
+        await bot.send_message(chat_id=message.from_user.id, text='Введите корректную сумму!', parse_mode="HTML")
+        return
+    state_info = await state.get_data()
+    mamont_id = state_info['mamont_id']
+    await session.execute(update(User).where(User.tg_id == int(mamont_id)).values(min_deposit=int(min_deposit)))
+    await session.commit()
+    await bot.send_message(chat_id=message.from_user.id, text=f'Минимальный депозит изменен на {min_deposit}!')
+    await state.clear()
+
+
+@router.message(StateFilter(worker_state.WorkerMamont.min_withdraw))
+async def change_min_withdraw(message: Message, session: AsyncSession, state: worker_state.WorkerMamont.min_withdraw):
+    await message.delete()
+    min_withdraw = message.text
+    if not min_withdraw.isdigit():
+        await bot.send_message(chat_id=message.from_user.id, text='Введите корректную сумму!', parse_mode="HTML")
+        return
+    state_info = await state.get_data()
+    mamont_id = state_info['mamont_id']
+    await session.execute(update(User).where(User.tg_id == int(mamont_id)).values(min_withdraw=int(min_withdraw)))
+    await session.commit()
+    await bot.send_message(chat_id=message.from_user.id, text=f'Минимальный вывод изменен на {min_withdraw}!')
+    await state.clear()
 
 
 @router.message(StateFilter(worker_state.WorkerMamont.balance_amount))
@@ -318,7 +336,7 @@ async def change_mamont_balance(message: Message, session: AsyncSession,
     await session.commit()
     await bot.send_message(chat_id=message.from_user.id, text='Баланс изменен!')
     await state.clear()
-    await message.message.edit_text('Привет, воркер!',
+    await message.edit_text('Привет, воркер!',
                                      reply_markup=kb.work_panel)
 
 
@@ -363,12 +381,13 @@ async def open_worker(callback: CallbackQuery, user: User, session: AsyncSession
     else:
         user_is_blocked = 'Активен'
 
+    user_balance_in_currency = round(float(await user.get_balance()), 2)
     keyboard = await kb.create_mamont_control_kb(mamont_id, session)
     text = (f'🏙 <b>Профиль лохматого</b> {mamont_id}\n\n'
             f'<b>Информация</b>\n'
-            f'┠ Баланс: <b>{user.balance}</b>\n'
-            f'┠ Мин. депозит: <b>{user.min_deposit} RUB</b>\n'
-            f'┠ Мин. вывод: <b>{user.min_withdraw} RUB</b>\n'
+            f'┠ Баланс в валюте: <b>{user_balance_in_currency} {user.currency.name.upper()}</b>\n'
+            f'┠ Мин. депозит: <b>{user.min_deposit}</b>\n'
+            f'┠ Мин. вывод: <b>{user.min_withdraw}</b>\n'
             f'┠ 🔰 <b>{user_is_buying}</b>\n'
             f'┠ 🔰 <b>{user_is_withdraw}</b>\n'
             f'┠ 🔐 <b>{user_is_blocked}</b>\n'

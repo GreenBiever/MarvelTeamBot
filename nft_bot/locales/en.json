@@ -77,5 +77,7 @@
     "buy_no_balance": "\uD83D\uDCB2 You do not have enough funds",
     "buy_success": "\uD83D\uDCB2 Thank you for your purchase!",
     "add_to_fav": "Item added to favourites",
-    "delete_from_fav": "Item deleted from favourites"
+    "delete_from_fav": "Item deleted from favourites",
+    "changed_currency": "Your currency has been changed to <b>{currency}</b>",
+    "changed_language": "Your language has been changed to <b>{language}</b>"
 }

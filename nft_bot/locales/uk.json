@@ -77,5 +77,7 @@
     "buy_no_balance": "\uD83D\uDCB2 На вашому балансі недостатньо коштів",
     "buy_success": "\uD83D\uDCB2 Дякуємо за покупку!",
     "add_to_fav": "Предмет додано до улюблених",
-    "delete_from_fav": "Предмет видалено з улюблених"
+    "delete_from_fav": "Предмет видалено з улюблених",
+    "changed_currency": "Ваша валюта була змінена на <b>{currency}</b>",
+    "changed_language": "Ваша мова була змінена на <b>{language}</b>"
 }
