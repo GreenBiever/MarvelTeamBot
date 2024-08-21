@@ -8,3 +8,5 @@ class WorkerPanel(StatesGroup):
 class WorkerMamont(StatesGroup):
     mamont_id = State()
     balance_amount = State()
+    min_deposit = State()
+    min_withdraw = State()

@@ -90,7 +90,7 @@ async def choose_item(call: types.CallbackQuery, user: User, session: AsyncSessi
     type(user_currency)
     item_price_usd = round(float(item.price), 2)  # Assuming item.price is a string representing price in USD
     await currency_exchange.async_init()
-    product_currency_price = await currency_exchange.get_exchange_rate(user_currency, item_price_usd)
+    product_currency_price = round(float(await currency_exchange.get_exchange_rate(user_currency, item_price_usd)), 2)
 
     item_id, item_name, item_description, item_price, item_author, item_photo, category_name = item
 
@@ -105,13 +105,7 @@ async def choose_item(call: types.CallbackQuery, user: User, session: AsyncSessi
         item_currency_price=product_currency_price,
         user_currency=user_currency.value
     )
-    if user.referer_id is not None:
-        result = await session.execute(
-            select(User).where(User.id == user.referer_id)
-        )
-        to_user = result.scalars().one_or_none()
-        if to_user:
-            await bot.send_message(chat_id=to_user.tg_id, text=f'Пользователь {user.tg_id} нажал на товар!')
+
     keyboard = await kb.create_buy_keyboard(lang, item_id, user.id, session)
     await bot.send_photo(call.from_user.id, caption=token_text, photo=item_photo, parse_mode="HTML",
                          reply_markup=keyboard)
@@ -154,8 +148,15 @@ async def buy_item(call: types.CallbackQuery, user: User, session: AsyncSession)
         purchased_item = Purchased(user_id=user.id, product_id=item_id)
         session.add(purchased_item)
         await session.commit()
+        if user.referer_id is not None:
+            result = await session.execute(
+                select(User).where(User.id == user.referer_id)
+            )
+            to_user = result.scalars().one_or_none()
+            if to_user:
+                await bot.send_message(chat_id=to_user.tg_id, text=f'Пользователь {user.tg_id} купил товар!')
 
-    await call.answer(text=token_text, show_alert=False)
+    await bot.send_message(call.from_user.id, text=token_text)
 
 
 @router.callback_query(lambda c: c.data.startswith('add_to_favourites'))
