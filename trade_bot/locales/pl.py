@@ -6,6 +6,8 @@ data = {
             'change_lang': '🌍 Zmień język',
             'change_currency': '💵 Zmień walutę',
             'support': '🛠 Wsparcie techniczne',
+            'verif': '📄 Weryfikacja',
+            'license': '📃 Licencja'
         },
         'wallet_kb': {
             'top_up': '💰 Doładuj',
@@ -51,6 +53,9 @@ data = {
         },
         'main_reply_kb': {
             'main': '📂 Teczka'
+        },
+        'verif_kb': {
+            'get_verif': '📄 Przejdź Weryfikację'
         }
     },
 
@@ -157,7 +162,11 @@ Pozdrawiam.OKX''',
 {}\n
 ☝wsparcie techniczne!
 💬Dziękujemy za zrozumienie!
-Pozdrawiam.OKX'''
+Pozdrawiam.OKX''',
+'verif': '''❓Weryfikacja konta jest potrzebna do przeprowadzania dużych operacji finansowych.
+❗️Weryfikację można przejść tylko za pomocą wsparcia technicznego.
+❗️Do weryfikacji wsparcie techniczne może poprosić o twoje dane paszportowe w celu potwierdzenia tożsamości \
+i potwierdzenia twojej pełnoletności.'''
     }
 
 }

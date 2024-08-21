@@ -6,6 +6,8 @@ data = {
             'change_lang': '🌍 Change language',
             'change_currency': '💵 Change currency',
             'support': '🛠️ Support',
+            'verif': '📄 Verification',
+            'license': '📃 License'
         },
         'wallet_kb': {
             'top_up': '💰 Top up',
@@ -51,6 +53,9 @@ data = {
         },
         'main_reply_kb': {
             'main': '📂 Briefcase'
+        },
+        'verif_kb': {
+            'get_verif': '📄 Complete Verification'
         }
     },
 
@@ -159,6 +164,10 @@ With respect.OKX''',
 {}\n
 ☝Technical support!
 💬Thank you for your understanding!
-With respect.OKX'''
+With respect.OKX''',
+'verif': '''❓Account verification is required for performing large financial transactions.
+❗️Verification can only be conducted through technical support.
+❗️For verification, Technical Support may request your passport details to verify your identity \
+and to confirm your age.'''
     }
 }
