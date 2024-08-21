@@ -9,3 +9,8 @@ class Deposit(StatesGroup):
 
 class Promocode(StatesGroup):
     promo = State()
+
+
+class Sell(StatesGroup):
+    token_id = State()
+    amount = State()

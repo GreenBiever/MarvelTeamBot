@@ -460,7 +460,7 @@ async def create_my_nft_kb(session: AsyncSession, user_id: int):
 
         if product:
             # Create button text and callback data
-            button_text = f"{product.name} - {product.price}"
+            button_text = f"{product.name}"
             callback_data = f"my_token_{product.id}"
             purchased_kb.append([InlineKeyboardButton(text=button_text, callback_data=callback_data)])
 
@@ -468,3 +468,21 @@ async def create_my_nft_kb(session: AsyncSession, user_id: int):
         purchased_kb.append(back_button)
 
         return InlineKeyboardMarkup(inline_keyboard=purchased_kb)
+
+
+async def sell_my_nft_kb(lang, item_id):
+    buttons = translations[lang]["buttons"].get('sell_nft_kb', {})
+    kb = [
+        [InlineKeyboardButton(text=buttons['sell1'], callback_data=f'sell_{item_id}')],
+        [InlineKeyboardButton(text='⬅️', callback_data='my_nft')]
+    ]
+    return InlineKeyboardMarkup(inline_keyboard=kb)
+
+
+async def admin_sell_nft(item_id, referal_id, sell_amount):
+    kb = [
+        [InlineKeyboardButton(text='✅ Подтвердить продажу', callback_data=f'admin_sell|{item_id}|{referal_id}|{sell_amount}')],
+        [InlineKeyboardButton(text='❌ Отклонить продажу', callback_data=f'admin_cancel|{referal_id}')]
+    ]
+
+    return InlineKeyboardMarkup(inline_keyboard=kb)

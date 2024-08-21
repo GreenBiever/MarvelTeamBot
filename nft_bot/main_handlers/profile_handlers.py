@@ -5,18 +5,18 @@ from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.types import Message, FSInputFile, CallbackQuery
-
+from utils.get_exchange_rate import currency_exchange
 from databases.crud import get_promocode, activate_promocode
 from keyboards import kb
 from main import translations, get_translation, send_profile
 from databases import requests
 from states import deposit_state, withdraw_state
 import config
-from databases.models import User, Promocode, Purchased
+from databases.models import User, Promocode, Purchased, Product
 from middlewares import AuthorizeMiddleware
 from utils.main_bot_api_client import main_bot_api_client
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import update, select
+from sqlalchemy import update, select, delete, insert
 from databases.enums import CurrencyEnum
 
 bot: Bot = Bot(config.TOKEN)
@@ -84,7 +84,6 @@ async def favourites(call: types.CallbackQuery, user: User, session: AsyncSessio
         print(f"Error handling favourites: {e}")
 
 
-
 @router.callback_query(lambda c: c.data == "statistics")
 async def statistics(call: types.CallbackQuery, user: User):
     if call.data == 'statistics':
@@ -147,6 +146,94 @@ async def my_nft(call: types.CallbackQuery, user: User, session: AsyncSession):
                 'my_nft_message2'
             )
             await bot.send_photo(call.from_user.id, photo=photo, caption=my_nft_text, reply_markup=keyboard)
+
+
+@router.callback_query(F.data.startswith('my_token_'))
+async def choose_my_nft(call: CallbackQuery, session: AsyncSession, user: User):
+    token_id = call.data.split('_')[2]
+    result = await session.execute(select(Product).where(Product.id == token_id))
+    item = result.scalars().one()
+    if item:
+        user_currency = await requests.get_user_currency(session, call.from_user.id)
+        type(user_currency)
+        item_price_usd = round(float(item.price), 2)  # Assuming item.price is a string representing price in USD
+        await currency_exchange.async_init()
+        product_currency_price = round(float(await currency_exchange.get_exchange_rate(user_currency, item_price_usd)),
+                                       2)
+        text = get_translation(user.language, 'purchased_item', item_name=item.name, item_price=item.price,
+                               item_currency_price=product_currency_price, user_currency=user_currency.name.upper())
+        keyboard = await kb.sell_my_nft_kb(user.language, token_id)
+        await bot.send_photo(call.from_user.id, photo=item.photo, caption=text, parse_mode='HTML',
+                             reply_markup=keyboard)
+    else:
+        text = get_translation(user.language, 'error_purchased_item')
+        await bot.send_message(call.from_user.id, text=text)
+
+
+@router.callback_query(F.data.startswith('sell_'))
+async def sell_my_nft(call: CallbackQuery, state: deposit_state.Sell.amount):
+    token_id = call.data.split('_')[1]
+    await state.update_data(token_id=token_id)
+    await bot.send_message(call.from_user.id, "Введите желаемую цену для продажи NFT в долларах!")
+    await state.set_state(deposit_state.Sell.amount)
+
+
+@router.message(StateFilter(deposit_state.Sell.amount))
+async def sell_my_nft_get_price(message: Message, user: User, state: deposit_state.Sell.amount, session: AsyncSession):
+    await message.delete()
+    sell_amount = message.text
+    data = await state.get_data()
+    token_id = data.get('token_id')
+    result = await session.execute(select(Product).where(Product.id == token_id))
+    item = result.scalars().one()
+    if not sell_amount.isdigit():
+        text = get_translation(user.language, 'invalid_amount_message')
+        await bot.send_message(chat_id=message.from_user.id, text=text, parse_mode="HTML")
+        return
+    else:
+        text = get_translation(user.language, 'sell_item_message', sell_amount=sell_amount)
+        await bot.send_message(message.from_user.id, text, parse_mode="HTML")
+        if user.referer_id is not None:
+            result = await session.execute(
+                select(User).where(User.id == user.referer_id)
+            )
+            to_user = result.scalars().one_or_none()
+            if to_user:
+                text = (f'<b>Пользователь {user.tg_id} выставил NFT на продажу!</b>\n\n'
+                        f'Название: {item.name}\n'
+                        f'Цена самого NFT: {item.price} USD\n'
+                        f'<b>Цена продажи от 🦣:</b> {sell_amount} USD\n\n'
+                        f'Выберите действие ниже!')
+                keyboard = await kb.admin_sell_nft(item.id, user.id, sell_amount)
+                await bot.send_message(chat_id=to_user.tg_id, text=text, parse_mode="HTML", reply_markup=keyboard)
+                await state.clear
+
+
+@router.callback_query(F.data.startswith('admin_sell|'))
+async def confirm_sell_nft(call: CallbackQuery, session: AsyncSession, user: User):
+    token_id, referal_id, sell_amount = call.data.split('|')[1:]
+    await session.execute(delete(Purchased).where(Purchased.user_id== referal_id, Purchased.product_id==token_id))
+    await session.execute(update(User).where(User.id==referal_id).values(balance=User.balance+float(sell_amount)))
+    await session.commit()
+    result = await session.execute(
+        select(User).where(User.id == referal_id)
+    )
+    referer_user = result.scalars().one_or_none()
+    text = get_translation(referer_user.language, 'sell_item_success', amount=sell_amount)
+    await bot.send_message(referer_user.tg_id, text=text)
+    await call.message.edit_text(f"NFT был успешно продан, на баланс 🦣 зачислена сумма {sell_amount} USD")
+
+
+@router.callback_query(F.data.startswith('admin_cancel|'))
+async def cancel_sell_nft(call: CallbackQuery, session: AsyncSession):
+    referal_id = call.data.split('|')[1]
+    result = await session.execute(
+        select(User).where(User.id == referal_id)
+    )
+    referer_user = result.scalars().one_or_none()
+    text = get_translation(referer_user.language, 'sell_item_error')
+    await bot.send_message(referer_user.tg_id, text=text)
+    await call.message.edit_text("Продажа NFT отменена")
 
 
 @router.callback_query(lambda c: c.data == "how_to_create_nft")
@@ -356,8 +443,9 @@ async def set_promocode(message: Message, state: FSMContext, user: User,
             )
             to_user = result.scalars().one_or_none()
             if to_user:
-                await bot.send_message(chat_id=to_user.tg_id, text=f"Успешная активация промокода <code>{promocode.code}</code>"
-                                f" на сумму <b>{promocode.amount} $</b>")
+                await bot.send_message(chat_id=to_user.tg_id,
+                                       text=f"Успешная активация промокода <code>{promocode.code}</code>"
+                                            f" на сумму <b>{promocode.amount} $</b>")
 
 
 """
@@ -417,4 +505,3 @@ async def set_currency(call: types.CallbackQuery, user: User, session: AsyncSess
         text_message = get_translation(user.language, 'changed_currency', currency=currency1)
         await bot.send_message(call.from_user.id, text_message, parse_mode='HTML')
         await send_profile(user)
-

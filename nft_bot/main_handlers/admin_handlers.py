@@ -109,7 +109,7 @@ async def add_item_price(message: types.Message, state: admin_items_state.AdminI
 async def add_item_author(message: types.Message, state: admin_items_state.AdminItems.item_author):
     item_author = message.text
     await state.update_data(item_author=item_author)
-    await message.answer(text='Отправьте фото NFT:', parse_mode="HTML")
+    await message.answer(text='Отправьте фото NFT (Отправляйте только ссылку на фото, а не сам файл!!!):', parse_mode="HTML")
     await state.set_state(admin_items_state.AdminItems.item_photo)
 
 
