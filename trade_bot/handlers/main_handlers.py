@@ -108,3 +108,9 @@ async def cmd_trade_faq(cb: CallbackQuery, user: User):
 async def cmd_support(cb: CallbackQuery, user: User):
     await cb.message.edit_text(user.lang_data['text']['support'],
                                reply_markup=kb.get_support_page_kb(user.lang_data))
+
+
+@router.callback_query(F.data == 'get_verif')
+async def cmd_verification(cb: CallbackQuery, user: User):
+    await cb.message.edit_text(user.lang_data['text']['verif'],
+                               reply_markup=kb.get_verif_kb(user.lang_data))

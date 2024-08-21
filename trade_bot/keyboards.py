@@ -13,7 +13,11 @@ def get_main_kb(kb_lang_data: dict) -> InlineKeyboardMarkup:
     kb.row(InlineKeyboardButton(text=lang_data['change_lang'], callback_data='change_lang'),
            InlineKeyboardButton(text=lang_data['change_currency'], 
                                 callback_data='change_currency'))
-    kb.row(InlineKeyboardButton(text=lang_data['support'], callback_data='support'))
+    kb.row(InlineKeyboardButton(text=lang_data['verif'], 
+                                callback_data='get_verif'),
+        InlineKeyboardButton(text=lang_data['support'], callback_data='support'))
+    kb.row(InlineKeyboardButton(text=lang_data['license'], 
+                                url='https://www.okx.com/'))
     return kb.as_markup()
 
 def get_main_reply_markup(kb_lang_data: dict) -> ReplyKeyboardMarkup:
@@ -114,6 +118,15 @@ def get_support_page_kb(kb_lang_data: dict) -> InlineKeyboardMarkup:
     kb.row(InlineKeyboardButton(text=lang_data['back'], callback_data='back'))
     return kb.as_markup()
 
+
+def get_verif_kb(kb_lang_data: dict) -> InlineKeyboardMarkup:
+    lang_data = kb_lang_data['buttons']['verif_kb']
+    kb = InlineKeyboardBuilder()
+    kb.row(InlineKeyboardButton(text=lang_data['get_verif'],
+                                url=config.OKX_SUPPORT_LINK))
+    kb.row(InlineKeyboardButton(text=kb_lang_data['buttons']['back_kb']['back'],
+                                 callback_data='back'))
+    return kb.as_markup()
 
 ###
 # Worker keyboards
