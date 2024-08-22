@@ -15,6 +15,7 @@ from databases.models import User, Promocode, UserPromocodeAssotiation
 from sqlalchemy import update, select, delete
 from databases.crud import (get_created_promocodes, get_promocode_by_code)
 
+
 bot: Bot = Bot(config.TOKEN)
 router = Router()
 languages = ["en", "ru", "pl", "uk"]
