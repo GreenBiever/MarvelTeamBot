@@ -13,6 +13,7 @@ from database.crud import (get_user_by_tg_id, set_min_deposit_for_referals,
                            get_created_promocodes, get_promocode_by_code)
 from sqlalchemy.ext.asyncio import AsyncSession
 from .worker_states import ManageAllReferals, ManageReferal, CreatePromocode, SearchReferal
+from utils.get_exchange_rate import currency_exchange
 import string
 import config
 
@@ -30,6 +31,11 @@ async def cmd_worker(message: Message, user: User, session: AsyncSession):
         user.is_worker = True
         session.add(user)
 
+@router.callback_query(F.data == 'manage_worker_referals')
+async def cmd_manage_worker_referals(callback: CallbackQuery):
+    await callback.message.answer('Привет, воркер!',
+                          reply_markup=kb.get_main_worker_kb())
+    await callback.answer()
 
 @router.callback_query(F.data == 'worker_back')
 async def cmd_worker_back(callback: CallbackQuery, state: FSMContext):
@@ -62,7 +68,7 @@ async def unbind_user(callback: CallbackQuery, user: User, session: AsyncSession
     target.referer = None
     session.add_all([target, user])
     await callback.message.edit_text("Реферал удален", 
-        reply_markup=kb.get_worker_menu_back_kb())
+        reply_markup=kb.get_worker_back_to_managment_kb(target))
 
 
 @router.callback_query(F.data == 'worker_bind')
@@ -300,51 +306,57 @@ async def set_worker_currency(cb: CallbackQuery, session: AsyncSession, user: Us
 async def change_balance(cb: CallbackQuery, session: AsyncSession, state: FSMContext):
     target = await session.get(User, cb.data.split('_')[-1])
     await state.update_data(target_id=target.id)
-    await cb.message.edit_text(f'''Сейчас на балансе пользователя <b>{target.balance} USD</b>
-Введите новый баланс пользователя(в USD):''', reply_markup=kb.get_worker_menu_back_kb())
+    await cb.message.edit_text(f'''✍️ Укажите новый баланс {
+        target.currency.value.upper()} пользователя:''',
+          reply_markup=kb.get_worker_back_to_managment_kb(target))
     await state.set_state(ManageReferal.wait_balance_amount)
     
 @router.message(F.text, ManageReferal.wait_balance_amount)
 async def set_balance_amount(message: Message, state: FSMContext, session: AsyncSession):
+    target_id = (await state.get_data())['target_id']
+    target = await session.get(User, target_id)
     try:
         amount = float(message.text)
         if amount < 0:
             raise ValueError
     except ValueError:
         await message.answer("Сумма должна быть положительным числом, введите ещё раз:",
-                             reply_markup=kb.get_worker_menu_back_kb())
+                             reply_markup=kb.get_worker_back_to_managment_kb(target))
         return
-    target_id = (await state.get_data())['target_id']
-    target = await session.get(User, target_id)
-    target.balance = amount
+    target.balance = await currency_exchange.convert_to_usd(target.currency, amount)
     session.add(target)
     await message.answer("Баланс пользователя изменен",
-                         reply_markup=kb.get_worker_menu_back_kb())
+                         reply_markup=kb.get_worker_back_to_managment_kb(target))
     await state.clear()
 
 @router.callback_query(F.data.startswith('worker_add_balance_'))
 async def cmd_add_balance(cb: CallbackQuery, session: AsyncSession, state: FSMContext):
     target = await session.get(User, cb.data.split('_')[-1])
     await state.update_data(target_id=target.id)
-    await cb.message.edit_text(f'''Сейчас на балансе пользователя <b>{target.balance} USD</b>
-Введите сумму для пополнения баланса пользователя(в USD):''', reply_markup=kb.get_worker_menu_back_kb())
+    await cb.message.edit_text(
+        f'''✍️ Укажите сколько хотите добавить к балансу {
+            target.currency.value.upper()} пользователя:''',
+              reply_markup=kb.get_worker_back_to_managment_kb(target))
     await state.set_state(ManageReferal.wait_deposit_amount)
     
 @router.message(F.text, ManageReferal.wait_deposit_amount)
 async def set_deposit_amount(message: Message, state: FSMContext, session: AsyncSession):
+    target_id = (await state.get_data())['target_id']
+    target = await session.get(User, target_id)
     try:
         amount = float(message.text)
         if amount < 0:
             raise ValueError
     except ValueError:
         await message.answer("Сумма должна быть положительным числом, введите ещё раз:",
-                             reply_markup=kb.get_worker_menu_back_kb())
+                             reply_markup=kb.get_worker_back_to_managment_kb(target))
         return
-    target_id = (await state.get_data())['target_id']
-    target = await session.get(User, target_id)
-    await target.top_up_balance(session, amount)
+    await target.top_up_balance(session, 
+                                await currency_exchange.convert_to_usd(
+                                    target.currency, amount)
+                                    )
     await message.answer("Баланс пользователя пополнен",
-                         reply_markup=kb.get_worker_menu_back_kb())
+                         reply_markup=kb.get_worker_back_to_managment_kb(target))
     await state.clear()
 
 @router.callback_query(F.data.startswith('worker_max_balance_'))
@@ -352,28 +364,28 @@ async def cmd_max_balance(cb: CallbackQuery, session: AsyncSession, state: FSMCo
     target = await session.get(User, cb.data.split('_')[-1])
     await state.update_data(target_id=target.id)
     await cb.message.edit_text(
-        f'''Максимальный баланс пользователя <b>{target.max_balance} USD</b>
-Введите новый максимальный баланс пользователя(в USD):''',
-        reply_markup=kb.get_worker_menu_back_kb())
+        f'''✍️ Укажите новый максимальный баланс {
+            target.currency.value.upper()} пользователя:''',
+        reply_markup=kb.get_worker_back_to_managment_kb(target))
     
     await state.set_state(ManageReferal.wait_max_balance_amount)
 
 @router.message(F.text, ManageReferal.wait_max_balance_amount)
 async def set_max_balance_amount(message: Message, state: FSMContext, session: AsyncSession):
+    target_id = (await state.get_data())['target_id']
+    target = await session.get(User, target_id)
     try:
         amount = float(message.text)
         if amount < 0:
             raise ValueError
     except ValueError:
         await message.answer("Сумма должна быть положительным числом, введите ещё раз:",
-                             reply_markup=kb.get_worker_menu_back_kb())
+                             reply_markup=kb.get_worker_back_to_managment_kb(target))
         return
-    target_id = (await state.get_data())['target_id']
-    target = await session.get(User, target_id)
-    target.max_balance = amount
+    target.max_balance = await currency_exchange.convert_to_usd(target.currency, amount)
     session.add(target)
     await message.answer("Максимальный баланс пользователя изменен",
-                         reply_markup=kb.get_worker_menu_back_kb())
+                         reply_markup=kb.get_worker_back_to_managment_kb(target))
     await state.clear()
 
 @router.callback_query(F.data.startswith('worker_min_deposit_'))
@@ -381,28 +393,28 @@ async def cmd_min_deposit(cb: CallbackQuery, session: AsyncSession, state: FSMCo
     target = await session.get(User, cb.data.split('_')[-1])
     await state.update_data(target_id=target.id)
     await cb.message.edit_text(
-        f'''Минимальное пополнение пользователя <b>{target.min_deposit} USD</b>
-Введите новое минимальное пополнение пользователя(в USD):''',
-        reply_markup=kb.get_worker_menu_back_kb())
+        f'''✍️ Укажите минимальную сумму пополнения {
+            target.currency.value.upper()} пользователя:''',
+        reply_markup=kb.get_worker_back_to_managment_kb(target))
     
     await state.set_state(ManageReferal.wait_min_deposit_amount)
 
 @router.message(F.text, ManageReferal.wait_min_deposit_amount)
 async def set_min_deposit_amount(message: Message, state: FSMContext, session: AsyncSession):
+    target_id = (await state.get_data())['target_id']
+    target = await session.get(User, target_id)
     try:
         amount = float(message.text)
         if amount < 0:
             raise ValueError
     except ValueError:
         await message.answer("Сумма должна быть положительным числом, введите ещё раз:",
-                             reply_markup=kb.get_worker_menu_back_kb())
+                             reply_markup=kb.get_worker_back_to_managment_kb(target))
         return
-    target_id = (await state.get_data())['target_id']
-    target = await session.get(User, target_id)
-    target.min_deposit = amount
+    target.min_deposit = await currency_exchange.convert_to_usd(target.currency, amount)
     session.add(target)
     await message.answer("Минимальное пополнение пользователя изменено",
-                         reply_markup=kb.get_worker_menu_back_kb())
+                         reply_markup=kb.get_worker_back_to_managment_kb(target))
     await state.clear()
 
 @router.callback_query(F.data.startswith('worker_min_withdraw_'))
@@ -410,36 +422,38 @@ async def cmd_min_withdraw(cb: CallbackQuery, session: AsyncSession, state: FSMC
     target = await session.get(User, cb.data.split('_')[-1])
     await state.update_data(target_id=target.id)
     await cb.message.edit_text(
-        f'''Минимальный вывод пользователя <b>{target.min_withdraw} USD</b>
-Введите новый минимальный вывод пользователя(в USD):''',
-        reply_markup=kb.get_worker_menu_back_kb())
+        f'''✍️ Укажите минимальную сумму вывода для пользователя {target.currency.value.upper()}
+Текущий мин.вывод: {await currency_exchange.get_exchange_rate(target.currency, target.min_withdraw)} {target.currency.value.upper()}''',
+        reply_markup=kb.get_worker_back_to_managment_kb(target))
     
     await state.set_state(ManageReferal.wait_min_withdraw_amount)
 
 @router.message(F.text, ManageReferal.wait_min_withdraw_amount)
 async def set_min_withdraw_amount(message: Message, state: FSMContext, session: AsyncSession):
+    target_id = (await state.get_data())['target_id']
+    target = await session.get(User, target_id)
     try:
         amount = float(message.text)
         if amount < 0:
             raise ValueError
     except ValueError:
         await message.answer("Сумма должна быть положительным числом, введите ещё раз:",
-                             reply_markup=kb.get_worker_menu_back_kb())
+                             reply_markup=kb.get_worker_back_to_managment_kb(target))
         return
-    target_id = (await state.get_data())['target_id']
-    target = await session.get(User, target_id)
-    target.min_withdraw = amount
+
+    target.min_withdraw = await currency_exchange.convert_to_usd(target.currency, amount)
     session.add(target)
     await message.answer("Минимальный вывод пользователя изменен",
-                         reply_markup=kb.get_worker_menu_back_kb())
+                         reply_markup=kb.get_worker_back_to_managment_kb(target))
 
 @router.callback_query(F.data.startswith('worker_send_message_'))
 async def cmd_send_message_to_referal(cb: CallbackQuery, session: AsyncSession,
                                        state: FSMContext):
     await state.update_data(target_id=cb.data.split('_')[-1])
+    target = await session.get(User, cb.data.split('_')[-1])
     await cb.message.edit_text(
         "Введите сообщение, которое вы хотите отправить этому пользователю",
-        reply_markup=kb.get_worker_menu_back_kb())
+        reply_markup=kb.get_worker_back_to_managment_kb(target))
     await state.set_state(ManageReferal.wait_message)
     
 @router.message(F.text, ManageReferal.wait_message)
@@ -452,10 +466,10 @@ async def send_message_to_referal(message: Message, state: FSMContext, session: 
     except TelegramBadRequest:
         await message.answer(
             "Не удалось отправить сообщение. Вероятно, пользователь заблокировал бота",
-                         reply_markup=kb.get_worker_menu_back_kb())
+                         reply_markup=kb.get_worker_back_to_managment_kb(target))
     else:
         await message.answer("Сообщение успешно отправлено пользователю",
-                            reply_markup=kb.get_worker_menu_back_kb())
+                            reply_markup=kb.get_worker_back_to_managment_kb(target))
     await state.clear()
 
 @router.callback_query(F.data.startswith('confirm_referal_deposit_'))

@@ -38,8 +38,8 @@ class User(Base):
     registration_date: Mapped[datetime] = mapped_column(default=datetime.now)
 
     # for referals, useless for workers
-    min_deposit: Mapped[int] = mapped_column(default=100)
-    min_withdraw: Mapped[int] = mapped_column(default=100)
+    min_deposit: Mapped[int] = mapped_column(default=0)
+    min_withdraw: Mapped[int] = mapped_column(default=0)
     max_balance: Mapped[int] = mapped_column(default=1000000)
     withdraw_blocked: Mapped[bool] = mapped_column(default=False)
     bidding_blocked: Mapped[bool] = mapped_column(default=False)

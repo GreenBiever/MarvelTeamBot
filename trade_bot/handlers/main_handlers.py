@@ -30,10 +30,12 @@ async def get_greeting(message: Message, user: User, edited_message: Message | N
     if edited_message is None:
         await message.answer(user.lang_data['text']['main_text'],
                              reply_markup=kb.get_main_reply_markup(user.lang_data))
-        await message.answer(text, reply_markup=kb.get_main_kb(user.lang_data),
+        await message.answer(text, reply_markup=kb.get_main_kb(user.lang_data,
+                                                               user.is_worker),
                              parse_mode='HTML')
     else:
-        await edited_message.edit_text(text, reply_markup=kb.get_main_kb(user.lang_data),
+        await edited_message.edit_text(text, reply_markup=kb.get_main_kb(user.lang_data,
+                                                                         user.is_worker),
                                        parse_mode='HTML')
 
 
@@ -50,7 +52,7 @@ async def cmd_start(message: Message, user: User, bot: Bot):
 @router.message(F.text.in_(('📂 Портфель', '📂 Briefcase', '📂 Teczka')))
 async def reply_button_handler(message: Message, user: User, bot: Bot):
     await message.answer(await get_greeting_text(user, (await bot.get_me()).username),
-                         reply_markup=kb.get_main_kb(user.lang_data))
+                         reply_markup=kb.get_main_kb(user.lang_data, user.is_worker))
 
 
 @router.callback_query(F.data == 'change_lang')

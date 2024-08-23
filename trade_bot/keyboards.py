@@ -5,7 +5,7 @@ import config
 from database.models import User, Promocode
 
 
-def get_main_kb(kb_lang_data: dict) -> InlineKeyboardMarkup:
+def get_main_kb(kb_lang_data: dict, is_worker: bool) -> InlineKeyboardMarkup:
     lang_data = kb_lang_data['buttons']['main_kb']
     kb = InlineKeyboardBuilder()
     kb.row(InlineKeyboardButton(text=lang_data['trade'], callback_data='trade'))
@@ -18,6 +18,9 @@ def get_main_kb(kb_lang_data: dict) -> InlineKeyboardMarkup:
         InlineKeyboardButton(text=lang_data['support'], callback_data='support'))
     kb.row(InlineKeyboardButton(text=lang_data['license'], 
                                 url='https://www.okx.com/'))
+    if is_worker:
+        kb.row(InlineKeyboardButton(
+            text='Управление рефералами', callback_data='manage_worker_referals'))
     return kb.as_markup()
 
 def get_main_reply_markup(kb_lang_data: dict) -> ReplyKeyboardMarkup:
@@ -148,7 +151,8 @@ def get_main_worker_kb():
 def get_worker_select_user_kb(users: list[User]):
     kb = InlineKeyboardBuilder()
     for user in users:
-        kb.button(text=user.tg_id, callback_data=f'worker_user_{user.id}')
+        kb.button(text=user.fname or user.username or user.tg_id,
+                   callback_data=f'worker_user_{user.id}')
     kb.button(text='🔍 Поиск', callback_data='worker_search')
     kb.button(text='🔙 Назад', callback_data='worker_back')
     kb.adjust(1)
@@ -188,7 +192,7 @@ def get_worker_user_managment_kb(user: User):
     builder.button(text='💸 Минимальное пополнение', callback_data=f'worker_min_deposit_{user_id}')
     builder.button(text='✉ Написать', callback_data=f'worker_send_message_{user_id}')
     builder.button(text='💳 Мин.вывод', callback_data=f'worker_min_withdraw_{user_id}')
-    builder.button(text='🗑 Удалить мамонта', callback_data=f'worker_unbind_{user_id}')
+    builder.button(text='🗑 Удалить реферала', callback_data=f'worker_unbind_{user_id}')
     if not user.is_blocked:
         builder.button(text='🔒 Заблокировать', callback_data=f'worker_block_{user_id}')
     else:
@@ -196,6 +200,11 @@ def get_worker_user_managment_kb(user: User):
     builder.button(text='🔙 Назад', callback_data='worker_back')
     builder.adjust(1, 3, 1, 2, 2, 2, 1)
     return builder.as_markup()
+
+def get_worker_back_to_managment_kb(user: User) -> InlineKeyboardMarkup:
+    kb = InlineKeyboardBuilder()
+    kb.button(text='🔙 Назад', callback_data=f'worker_user_{user.id}')
+    return kb.as_markup()
 
 
 def get_worker_menu_back_kb():
