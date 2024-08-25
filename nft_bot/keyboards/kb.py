@@ -25,7 +25,7 @@ def get_translation(lang, key, **kwargs):
     return translation.format(**kwargs)
 
 
-def create_main_kb(lang):
+def create_main_kb(lang, user):
     buttons = translations[lang]["buttons"].get('main_kb', {})
     main_kb = [
         [KeyboardButton(text='🎆 NFT')],
@@ -33,12 +33,14 @@ def create_main_kb(lang):
         [KeyboardButton(text=buttons['information_main']),
          KeyboardButton(text=buttons['support_main'])]
     ]
+    if user.is_worker:
+        main_kb.append([KeyboardButton(text='Воркер')])
     main = ReplyKeyboardMarkup(keyboard=main_kb, resize_keyboard=True)
 
     return main
 
 
-def create_admin_main_kb(lang):
+def create_admin_main_kb(lang, user):
     buttons = translations[lang]["buttons"].get('main_kb', {})
     admin_main_kb = [
         [KeyboardButton(text='🎆 NFT')],
@@ -47,6 +49,8 @@ def create_admin_main_kb(lang):
          KeyboardButton(text=buttons['support_main'])],
         [KeyboardButton(text='Админ-панель')]
     ]
+    if user.is_worker:
+        admin_main_kb.append([KeyboardButton(text='Воркер')])
     admin_main = ReplyKeyboardMarkup(keyboard=admin_main_kb, resize_keyboard=True)
 
     return admin_main
@@ -62,9 +66,9 @@ admin_panel_kb = [
 
 admin_panel = InlineKeyboardMarkup(inline_keyboard=admin_panel_kb)
 
-
 work_panel_kb = [
     [InlineKeyboardButton(text='Управление промокодами', callback_data='worker_promocode')],
+    [InlineKeyboardButton(text='Сообщение рефералам', callback_data='referral_message')],
     [InlineKeyboardButton(text='Привязать по ID', callback_data='connect_mamont')],
     [InlineKeyboardButton(text='Управление 🦣', callback_data='control_mamonts')],
     [InlineKeyboardButton(text='⬅️', callback_data='back_to_admin')]
@@ -113,8 +117,6 @@ def create_wallet_kb(lang):
 
     wallet = InlineKeyboardMarkup(inline_keyboard=wallet_kb)
     return wallet
-
-
 
 
 def create_verification_kb(lang):
@@ -216,12 +218,12 @@ deposit_crypto_kb = [
 
 deposit_crypto = InlineKeyboardMarkup(inline_keyboard=deposit_crypto_kb)
 
-
 profile_back_kb = [
     [InlineKeyboardButton(text='⬅️️', callback_data='back')]
 ]
 
 profile_back = InlineKeyboardMarkup(inline_keyboard=profile_back_kb)
+
 
 def create_card_crypto_kb(lang):
     buttons = translations[lang]["buttons"].get('deposit_top_up_kb', {})
@@ -243,7 +245,6 @@ settings_language_kb = [
 ]
 
 settings_language = InlineKeyboardMarkup(inline_keyboard=settings_language_kb)
-
 
 settings_currency_kb = [
     [InlineKeyboardButton(text='🇺🇦 UAH', callback_data='uah'),
@@ -270,7 +271,8 @@ async def get_categories_kb(session: AsyncSession):
 async def get_categories_kb2(session: AsyncSession):
     categories = await requests.get_categories(session)
     categories_kb = [
-        [InlineKeyboardButton(text=category.name, callback_data=f'delete_category_{category.id}')] for category in categories
+        [InlineKeyboardButton(text=category.name, callback_data=f'delete_category_{category.id}')] for category in
+        categories
     ]
 
     categories = InlineKeyboardMarkup(inline_keyboard=categories_kb)
@@ -308,7 +310,7 @@ async def create_collections_keyboard(session: AsyncSession):
 async def create_items_keyboard(category_id, session: AsyncSession):
     items = await requests.get_items_by_category_id(session, category_id)
     items_kb = [
-        [InlineKeyboardButton(text=item.name, callback_data=f'token_{item.id}')] for item in items
+        [InlineKeyboardButton(text=f'{item.name} (${round(float(item.price), 2)})', callback_data=f'token_{item.id}')] for item in items
     ]
     navigation_buttons = [
         InlineKeyboardButton(text="⬅️", callback_data='left'),
@@ -319,7 +321,6 @@ async def create_items_keyboard(category_id, session: AsyncSession):
 
     items_markup = InlineKeyboardMarkup(inline_keyboard=items_kb)
     return items_markup
-
 
 
 async def create_mamont_control_kb(mamont_id, session):
@@ -351,6 +352,7 @@ async def create_mamont_control_kb(mamont_id, session):
         call_is_blocked = 'block'
 
     keyboard = [
+        [InlineKeyboardButton(text='✉️ Отправить сообщение ', callback_data='mamont|send_message')],
         [InlineKeyboardButton(text='💵 Изм. баланса', callback_data='mamont|change_balance')],
         [InlineKeyboardButton(text='📥 Мин. депозит', callback_data='mamont|min_deposit'),
          InlineKeyboardButton(text='📤 Мин. вывод', callback_data='mamont|min_withdraw')],
@@ -366,27 +368,44 @@ async def create_mamont_control_kb(mamont_id, session):
 
     return keyboard_markup
 
+
 def get_worker_menu_back_kb():
     kb = InlineKeyboardBuilder()
     kb.button(text='Назад', callback_data='worker_back')
     return kb.as_markup()
+
+
+def get_promocode_currency_kb():
+    kb = InlineKeyboardBuilder()
+    kb.button(text='🇺🇦 UAH', callback_data='promo_uah')
+    kb.button(text='🇪🇺 EUR', callback_data='promo_eur')
+    kb.button(text='🇵🇱 PLN', callback_data='promo_pln')
+    kb.button(text='🇷🇺 RUB', callback_data='promo_rub')
+    kb.button(text='🇧🇾 BYN', callback_data='promo_byn')
+    kb.button(text='🇺🇸 USD', callback_data='promo_usd')
+    kb.button(text='Назад', callback_data='worker_back')
+    kb.adjust(3, 3, 1)
+    return kb.as_markup()
+
 
 def get_promocode_menu_kb():
     builder = InlineKeyboardBuilder()
     builder.button(text='Создать промокод', callback_data='create_promocode')
     builder.button(text='Список промокодов', callback_data='get_promocode_list')
     builder.button(text='Назад', callback_data='worker_back')
-    builder.adjust(2,1)
+    builder.adjust(2, 1)
     return builder.as_markup()
+
 
 def get_promocode_list_kb(promocodes: list[Promocode]):
     builder = InlineKeyboardBuilder()
     for promocode in promocodes:
-        builder.button(text=promocode.code,callback_data=f'manage_promocode_{promocode.id}')
+        builder.button(text=promocode.code, callback_data=f'manage_promocode_{promocode.id}')
 
     builder.button(text='Назад', callback_data='worker_back')
     builder.adjust(1)
     return builder.as_markup()
+
 
 def get_promocode_managment_kb(promocode: Promocode):
     builder = InlineKeyboardBuilder()
@@ -481,7 +500,8 @@ async def sell_my_nft_kb(lang, item_id):
 
 async def admin_sell_nft(item_id, referal_id, sell_amount):
     kb = [
-        [InlineKeyboardButton(text='✅ Подтвердить продажу', callback_data=f'admin_sell|{item_id}|{referal_id}|{sell_amount}')],
+        [InlineKeyboardButton(text='✅ Подтвердить продажу',
+                              callback_data=f'admin_sell|{item_id}|{referal_id}|{sell_amount}')],
         [InlineKeyboardButton(text='❌ Отклонить продажу', callback_data=f'admin_cancel|{referal_id}')]
     ]
 

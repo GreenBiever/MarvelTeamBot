@@ -7,6 +7,7 @@ class PromocodeMenu(StatesGroup):
 class CreatePromocode(StatesGroup):
     wait_code = State()
     wait_amount = State()
+    wait_currency = State()
     wait_type = State() # одноразовый или многоразовый
     delete_menu = State()
 

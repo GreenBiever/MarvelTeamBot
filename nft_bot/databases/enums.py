@@ -7,4 +7,5 @@ class CurrencyEnum(Enum):
     rub = "RUB"
     uah = "UAH"
     pln = "PLN"
+    ils = "ILS"
     byn = "BYN"

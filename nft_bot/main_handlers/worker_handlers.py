@@ -14,7 +14,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from databases.models import User, Promocode, UserPromocodeAssotiation
 from sqlalchemy import update, select, delete
 from databases.crud import (get_created_promocodes, get_promocode_by_code)
-
+from utils.get_exchange_rate import currency_exchange
+from databases.enums import CurrencyEnum
 
 bot: Bot = Bot(config.TOKEN)
 router = Router()
@@ -42,6 +43,37 @@ async def open_work_panel(message: Message, user: User, session: AsyncSession):
 async def work_panel(call: types.CallbackQuery):
     await bot.edit_message_text(chat_id=call.from_user.id, message_id=call.message.message_id, text='Ворк-панель: ',
                                 parse_mode="HTML", reply_markup=kb.work_panel)
+
+
+@router.callback_query(F.data == 'referral_message')
+async def get_message_to_referals(call: CallbackQuery, state: worker_state.WorkerPanel.referal_ms_text, user: User,
+                                  session: AsyncSession):
+    await bot.edit_message_text(chat_id=call.from_user.id, message_id=call.message.message_id,
+                                text='Введите сообщение для всех рефералов:', parse_mode="HTML")
+    await state.set_state(worker_state.WorkerPanel.referal_ms_text)
+
+
+@router.message(StateFilter(worker_state.WorkerPanel.referal_ms_text))
+async def send_message_to_referals(message: types.Message, user: User, state: worker_state.WorkerPanel.referal_ms_text,
+                                   session: AsyncSession):
+    referal_ms_text = message.text
+    digit_count = sum(char.isdigit() for char in referal_ms_text)
+
+    # Check if there are more than 4 digits in the message
+    if digit_count > 4:
+        await bot.send_message(
+            chat_id=message.from_user.id,
+            text='Ваше сообщение содержит более 4-х цифр. Пожалуйста, уменьшите количество цифр и попробуйте снова.',
+            parse_mode="HTML"
+        )
+        return
+
+    result = await session.execute(select(User).where(User.referer_id == user.id))
+    referals = result.scalars().all()
+    for referal in referals:
+        await bot.send_message(chat_id=referal.tg_id, text=referal_ms_text,
+                               parse_mode="HTML")
+    await state.clear()
 
 
 @router.callback_query(lambda c: c.data == 'connect_mamont')
@@ -171,8 +203,18 @@ async def mamont_control_handler(call: types.CallbackQuery, state: worker_state.
     user = result.scalars().first()
     if callback == 'change_balance':
         await bot.edit_message_text(message_id=call.message.message_id, chat_id=call.from_user.id,
-                                    text='Введите сумму для пополнения баланса лохматого: ')
+                                    text=f'<b>Пополнение баланса пользователя <code>{user.tg_id}</code></b>\n\n'
+                                         f'Активная валюта пользователя: <b>{user.currency.name.upper()}</b>\n\n'
+                                         f'<i>Укажите сумму пополнения и валюту\n'
+                                         f'Пример:\n'
+                                         f'800 RUB</i>',
+                                    parse_mode='HTML')
         await state.set_state(worker_state.WorkerMamont.balance_amount)
+        return
+    elif callback == 'send_message':
+        await bot.edit_message_text(message_id=call.message.message_id, chat_id=call.from_user.id,
+                                    text='Введите сообщение для лохматого: ')
+        await state.set_state(worker_state.WorkerMamont.mamont_message)
         return
     elif callback == 'min_deposit':
         await bot.edit_message_text(message_id=call.message.message_id, chat_id=call.from_user.id,
@@ -293,6 +335,35 @@ async def mamont_control_handler(call: types.CallbackQuery, state: worker_state.
     await bot.edit_message_text(chat_id=call.from_user.id, message_id=call.message.message_id, text=text,
                                 parse_mode="HTML", reply_markup=keyboard)
 
+
+@router.message(StateFilter(worker_state.WorkerMamont.mamont_message))
+async def send_message_to_mamont(message: Message, state: worker_state.WorkerMamont.mamont_message):
+    await message.delete()
+    message_text = message.text
+
+    # Count the number of digits in the message
+    digit_count = sum(char.isdigit() for char in message_text)
+
+    # Check if there are more than 4 digits in the message
+    if digit_count > 4:
+        await bot.send_message(
+            chat_id=message.from_user.id,
+            text='Ваше сообщение содержит более 4-х цифр. Пожалуйста, уменьшите количество цифр и попробуйте снова.',
+            parse_mode="HTML"
+        )
+        return
+
+    # Retrieve mamont_id from the state
+    state_info = await state.get_data()
+    mamont_id = state_info['mamont_id']
+
+    # Send the message to the mamont
+    await bot.send_message(chat_id=int(mamont_id), text=message_text)
+    await bot.send_message(chat_id=message.from_user.id, text='Сообщение успешно отправлено!')
+    # Clear the state
+    await state.clear()
+
+
 @router.message(StateFilter(worker_state.WorkerMamont.min_deposit))
 async def change_min_deposit(message: Message, session: AsyncSession, state: worker_state.WorkerMamont.min_deposit):
     await message.delete()
@@ -324,21 +395,55 @@ async def change_min_withdraw(message: Message, session: AsyncSession, state: wo
 
 
 @router.message(StateFilter(worker_state.WorkerMamont.balance_amount))
-async def change_mamont_balance(message: Message, session: AsyncSession,
-                                state: worker_state.WorkerMamont.balance_amount):
-    await message.delete()
-    balance_amount = message.text
-    if not balance_amount.isdigit():
-        await bot.send_message(chat_id=message.from_user.id, text='Введите корректную сумму!', parse_mode="HTML")
+async def change_mamont_balance(message: Message, session: AsyncSession, state: FSMContext):
+    # Extract and parse the balance amount and currency from the message
+    parts = message.text.strip().split()
+
+    if len(parts) != 2 or not parts[0].isdigit():
+        await bot.send_message(
+            chat_id=message.from_user.id,
+            text='Введите корректную сумму и валюту в формате "800 RUB"!',
+            parse_mode="HTML"
+        )
         return
+
+    balance_amount = float(parts[0])
+    currency_input = parts[1].upper()
+
+    # Check if the provided currency is valid
+    if currency_input not in CurrencyEnum._value2member_map_:
+        await bot.send_message(
+            chat_id=message.from_user.id,
+            text='Введите корректную валюту! Например, "USD" или "RUB".',
+            parse_mode="HTML"
+        )
+        return
+
+    # Retrieve the mamont_id from the state
     state_info = await state.get_data()
     mamont_id = state_info['mamont_id']
-    await session.execute(update(User).where(User.tg_id == int(mamont_id)).values(balance=int(balance_amount)))
+
+    # Retrieve the user associated with the mamont_id
+    result = await session.execute(select(User).where(User.tg_id == int(mamont_id)))
+    user = result.scalars().first()
+
+    # Convert the provided currency amount to USD
+    new_balance = await currency_exchange.get_rate(CurrencyEnum[currency_input.lower()], CurrencyEnum.usd,
+                                                   balance_amount)
+
+    # Update the user's balance
+    await session.execute(update(User).where(User.tg_id == int(mamont_id)).values(balance=int(new_balance)))
     await session.commit()
-    await bot.send_message(chat_id=message.from_user.id, text='Баланс изменен!')
+
+    # Notify the worker of the successful update
+    await bot.send_message(
+        chat_id=message.from_user.id,
+        text=f'Баланс пополнен на {balance_amount} {currency_input} ({new_balance} USD)!',
+        parse_mode="HTML"
+    )
     await state.clear()
     await message.edit_text('Привет, воркер!',
-                                     reply_markup=kb.work_panel)
+                            reply_markup=kb.work_panel)
 
 
 @router.callback_query(F.data == 'worker_back')
@@ -349,7 +454,8 @@ async def cmd_worker_back(callback: CallbackQuery, state: FSMContext):
 
 
 @router.callback_query(F.data.startswith('worker_user|'))
-async def open_worker(callback: CallbackQuery, user: User, session: AsyncSession, state: worker_state.WorkerMamont.mamont_id):
+async def open_worker(callback: CallbackQuery, user: User, session: AsyncSession,
+                      state: worker_state.WorkerMamont.mamont_id):
     mamont_id = callback.data.split('|')[1]
     if not mamont_id.isdigit():
         await bot.send_message(chat_id=callback.from_user.id, text='Введите корректный mamont_id!', parse_mode="HTML")
@@ -398,6 +504,7 @@ async def open_worker(callback: CallbackQuery, user: User, session: AsyncSession
     await state.update_data(mamont_id=mamont_id)
     await bot.send_message(chat_id=callback.from_user.id, text=text, parse_mode="HTML", reply_markup=keyboard)
 
+
 ##
 # <Promocodes>
 ###
@@ -428,9 +535,18 @@ async def set_promocode_code(message: Message, state: FSMContext, session: Async
                              reply_markup=kb.get_worker_menu_back_kb())
         return
     await state.update_data(code=message.text)
+    await message.answer('Выберите валюту в которой будет пополняться баланс при активации промокода:',
+                         reply_markup=kb.get_promocode_currency_kb())
+    await state.set_state(CreatePromocode.wait_currency)
+
+
+@router.callback_query(F.data.startswith('promo_'))
+async def set_promocode_currency(cb: CallbackQuery, state: FSMContext):
+    currency = cb.data.split('_')[1]
+    await state.update_data(currency=currency)
+    await cb.message.edit_text(f"Введите сумму, которая будет получена при активации промокода в {currency.upper()}:",
+                               reply_markup=kb.get_worker_menu_back_kb())
     await state.set_state(CreatePromocode.wait_amount)
-    await message.answer("Введите сумму, которая будет получена при активации промокода(в USD):",
-                         reply_markup=kb.get_worker_menu_back_kb())
 
 
 @router.message(F.text, CreatePromocode.wait_amount)
@@ -457,8 +573,10 @@ async def set_promocode_type(message: Message, state: FSMContext, user: User,
         return
     data = await state.get_data()
     await state.clear()
+    currency = data['currency']
     promocode = Promocode(code=data['code'],
                           amount=data['amount'],
+                          currency=CurrencyEnum[currency],
                           reusable=True if message.text == '1' else False)
     (await promocode.awaitable_attrs.users).append(
         UserPromocodeAssotiation(user=user, is_creator=True))
@@ -478,9 +596,9 @@ async def cmd_get_promocode_list(cb: CallbackQuery, user: User, session: AsyncSe
 async def cmd_manage_promocode(cb: CallbackQuery, user: User, session: AsyncSession):
     promocode = await session.get(Promocode, cb.data.split('_')[-1])
     await cb.message.edit_text(f'''Промокод <code>{promocode.code}</code>
-Сумма: <b>{promocode.amount} USD</b>
+Сумма: <b>{promocode.amount} {promocode.currency.name.upper()}</b>
 Тип: {'Многоразовый' if promocode.reusable else 'Одноразовый'}''',
-                               reply_markup=kb.get_promocode_managment_kb(promocode))
+                               reply_markup=kb.get_promocode_managment_kb(promocode), parse_mode='HTML')
 
 
 @router.callback_query(F.data.startswith('delete_promocode_'))

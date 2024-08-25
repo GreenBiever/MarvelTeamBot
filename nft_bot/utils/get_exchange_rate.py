@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 class CurrencyExchange:
     TIME_BETWEEN_UPDATE_COURSE = 1  # in hours
-
+    DECIMAL_PLACES = 2
     def __init__(self):
         self.exchange_rates: dict[CurrencyEnum, float] = {}
 
@@ -27,6 +27,7 @@ class CurrencyExchange:
             self.exchange_rates[CurrencyEnum.rub] = data['rub']
             self.exchange_rates[CurrencyEnum.uah] = data['uah']
             self.exchange_rates[CurrencyEnum.eur] = data['eur']
+            self.exchange_rates[CurrencyEnum.ils] = data['ils']
             self.exchange_rates[CurrencyEnum.pln] = data['pln']
             self.exchange_rates[CurrencyEnum.byn] = data['byn']
         self.last_reload_time = datetime.now()
@@ -41,6 +42,17 @@ class CurrencyExchange:
                 >= self.TIME_BETWEEN_UPDATE_COURSE):
             await self.reload_currencies_rates()
         return self.exchange_rates[to_currency] * amount
+
+    async def get_rate(self, from_currency: CurrencyEnum, to_currency: CurrencyEnum,
+                       amount: int) -> float:
+        if from_currency == CurrencyEnum.usd:
+            return await self.get_exchange_rate(to_currency, amount)
+        elif to_currency == CurrencyEnum.usd:
+            return round(amount / (await self.get_exchange_rate(from_currency, 1)),
+                         self.DECIMAL_PLACES)
+        else:
+            return round((amount / (await self.get_exchange_rate(from_currency, 1))
+                          * await self.get_exchange_rate(to_currency, 1)), self.DECIMAL_PLACES)
 
     async def close(self):
         await self.session.close()

@@ -155,8 +155,10 @@ class Promocode(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     code: Mapped[str]
+    currency: Mapped[CurrencyEnum] = mapped_column(default=CurrencyEnum.usd)
     amount: Mapped[int]
     reusable: Mapped[bool]
+
 
     users: Mapped[list[UserPromocodeAssotiation]] = relationship(
         back_populates="promocode", cascade='all, delete-orphan')

@@ -50,10 +50,10 @@ async def on_startup():
 async def send_profile(user: User):
     lang = user.language
     user_id = user.tg_id
-    keyboard2 = kb.create_main_kb(lang)
+    keyboard2 = kb.create_main_kb(lang, user)
     await bot.send_message(user_id, text='⚡️', reply_markup=keyboard2)
     if user_id in config.ADMIN_IDS:
-        keyboard3 = kb.create_admin_main_kb(lang)
+        keyboard3 = kb.create_admin_main_kb(lang, user)
         await bot.send_message(user_id, text='⚡️', reply_markup=keyboard3)
     photo = FSInputFile(config.PHOTO_PATH)
     status = 'stat_blocked' if user.is_blocked else 'stat_unblocked'
@@ -90,7 +90,7 @@ async def get_greeting(message: Message, user: User, edited_message: Message = N
 
 async def get_admin_greetings(message: Message, user: User, edited_message: Message = None):
     lang = user.language
-    keyboard = kb.create_admin_main_kb(lang)
+    keyboard = kb.create_admin_main_kb(lang, user)
     if not edited_message:
         await bot.send_message(message.from_user.id,
                                text=f'Добро пожаловать, админ!',
