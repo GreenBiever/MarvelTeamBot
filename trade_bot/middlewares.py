@@ -7,7 +7,7 @@ from database.connect import async_session
 from database.crud import register_referal, get_user_by_tg_id
 from sqlalchemy import select, update
 from datetime import datetime
-import asyncio
+from utils.get_exchange_rate import currency_exchange
 import keyboards as kb
 
 
@@ -83,10 +83,13 @@ async def get_string_user_representation(target: User, worker: User):
     return f'''🆔 Id: {target.tg_id} 
 {f'👦 Username: @{target.username}' if target.username else ''}
 👨‍💻 Воркер: {worker.tg_id}
-💰 Баланс: {target.balance} USD
- ∟Мин. вывод: {target.min_withdraw} USD
-🔝 Максимальный баланс: {target.max_balance} USD
-💸 Минимальная сумма пополнения: {target.min_deposit} USD
+💰 Баланс: {await target.get_balance()} {target.currency.value.upper()}
+ ∟Мин. вывод: {await currency_exchange.get_exchange_rate(target.currency,
+  target.min_withdraw)} {target.currency.value.upper()}
+🔝 Максимальный баланс: {await currency_exchange.get_exchange_rate(target.currency,
+ target.max_balance)} {target.currency.value.upper()}
+💸 Минимальная сумма пополнения: {await currency_exchange.get_exchange_rate(target.currency,
+ target.min_deposit)} {target.currency.value.upper()}
 📑 Верификация: {'✅' if target.is_verified else '❌'}
 📊 Статус торгов: {'✅' if not target.bidding_blocked else '❌'}
 💰 Статус вывода: {'✅' if not target.withdraw_blocked else '❌'}
