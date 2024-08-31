@@ -4,3 +4,4 @@ aiosqlite
 fastapi
 uvicorn
 forex-python
+jinja2

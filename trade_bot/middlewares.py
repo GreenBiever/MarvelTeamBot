@@ -80,8 +80,8 @@ def get_order_string_representation(order: Order):
 async def get_string_user_representation(target: User, worker: User):
     states = {None: 'Рандом', False: 'Проигрыш', True: 'Выигрыш'}
     orders = await target.awaitable_attrs.orders
-    return f'''🆔 Id: {target.tg_id} {f'\n👦 Username: @{target.username}'
-                                     if target.username else ''}
+    return f'''🆔 Id: {target.tg_id} 
+{f'👦 Username: @{target.username}' if target.username else ''}
 👨‍💻 Воркер: {worker.tg_id}
 💰 Баланс: {target.balance} USD
  ∟Мин. вывод: {target.min_withdraw} USD
