@@ -17768,6 +17768,110 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 
+
+<script>
+  function updateUserData() {
+    // Получаем текущий URL
+    const url = new URL(window.location.href);
+
+    // Извлекаем домен (протокол + домен)
+    const domain = url.origin;
+
+    // Извлекаем параметр 'id' из URL
+    const user_tg_id = url.searchParams.get("id");
+
+    // Проверка, что user_tg_id найден
+    if (!user_tg_id) {
+    } else {
+        // Формируем полный URL для API-запроса
+        const apiUrl = `${domain}/user/${user_tg_id}/`;
+
+    // Выполняем запрос к API
+        fetch(apiUrl)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+
+                // Проверяем наличие основных полей в ответе
+                if (!data || typeof data !== 'object') {
+                    throw new Error("Invalid data format received from API.");
+                }
+
+                // Извлечение данных из ответа API
+                const {
+                    tg_id,
+                    fname,
+                    balance,
+                    currency,
+                    registration_date,
+                    bets_result_win,
+                    orders
+                } = data;
+
+                // Подставляем данные в элементы страницы
+                if (tg_id) {
+                    document.getElementById("usertext2").textContent = tg_id;
+                } else {
+                    console.warn("tg_id is missing in API response.");
+                }
+
+                if (fname) {
+                    document.getElementById("nme2").textContent = fname;
+                } else {
+                    console.warn("fname is missing in API response.");
+                }
+
+                if (balance !== undefined) {
+                    document.getElementById("bal").textContent = balance;
+                    document.getElementById("bal2").textContent = balance;
+                } else {
+                    console.warn("balance is missing in API response.");
+                }
+
+                if (currency) {
+                    document.getElementById("curr").textContent = currency;
+                    document.getElementById("curr2").textContent = currency;
+                    document.getElementById("curr3").textContent = currency;
+                    document.getElementById("price1").textContent = currency;
+                    document.getElementById("price2").textContent = currency;
+                    document.getElementById("price3").textContent = currency;
+                    document.getElementById("price4").textContent = currency;
+
+                } else {
+                    console.warn("currency is missing in API response.");
+                }
+
+                if (registration_date) {
+                    const formattedDate = new Date(registration_date).toISOString().split('T')[0];
+                    document.getElementById("rgd2").textContent = formattedDate;
+                } else {
+                    console.warn("registration_date is missing in API response.");
+                }
+
+                if (bets_result_win !== undefined) {        // Сохраняем значение bets_result_win в localstorage                 
+                  localStorage.setItem('bets_result_win', bets_result_win);                    
+                } else {
+                    console.warn("bets_result_win is missing in API response.");
+                }
+
+                // Обработка ордеров
+                if (Array.isArray(orders)) {
+                updateTable2(orders, currency);
+                } else {
+                    console.warn("orders array is missing or not an array in API response.");
+                }
+            })
+            .catch(error => {
+                console.error("Error fetching user data:", error);
+            });
+    }
+  }
+</script>
+
 <script>
 
     // Получаем контейнер кнопок по ID
@@ -17815,6 +17919,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
   
   document.addEventListener('DOMContentLoaded', function () {
+  
   // Получаем элементы
   const buyPriceElement = document.getElementById('buyPrice-531c6e06-bf0a-424c-ba79-3ff053e8172b');
   const buyPriceElement2 = document.getElementById('buyPrice-7be5a7b6-d140-407c-a3d6-aae363cead39');
@@ -17831,6 +17936,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   const tradeButton = document.getElementById('trade-button');
   const tradeButton2 = document.getElementById('trade-button2');
+  updateUserData();
   const balanceElement = document.getElementById('bal');
   const buyAmountElement = document.getElementById('buyAmount-f9d6f2aa-89cf-47ad-8441-62484f920dca');
   const buyAmountElement2 = document.getElementById('buyAmount-d09bab65-b582-4f45-9e54-834f9b9560dc');
@@ -18532,6 +18638,7 @@ function updateTable(newOrder, currency) {
         if (response.ok) {
             const result = await response.json();
             console.log('Order submitted successfully:', result);
+            window.location.reload();
         } else {
             console.error('Failed to submit order:', response.statusText);
         }
