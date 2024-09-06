@@ -44,11 +44,12 @@ async def wallet(call: types.CallbackQuery, user: User):
     if call.data == 'wallet':
         await call.message.delete()
         lang = user.language
+        user_balance = round(float(await currency_exchange.get_exchange_rate(user.currency, user.balance)), 2)
         wallet_text = get_translation(
             lang,
             'wallet_message',
             user_id=user.tg_id,
-            balance=user.balance,
+            balance=user_balance,
             currency=user.currency.name.upper()
         )
         keyboard = kb.create_wallet_kb(lang)
@@ -171,10 +172,10 @@ async def choose_my_nft(call: CallbackQuery, session: AsyncSession, user: User):
 
 
 @router.callback_query(F.data.startswith('sell_'))
-async def sell_my_nft(call: CallbackQuery, state: deposit_state.Sell.amount):
+async def sell_my_nft(call: CallbackQuery, user: User, state: deposit_state.Sell.amount):
     token_id = call.data.split('_')[1]
     await state.update_data(token_id=token_id)
-    await bot.send_message(call.from_user.id, "Введите желаемую цену для продажи NFT в долларах!")
+    await bot.send_message(call.from_user.id, f"Введите желаемую цену для продажи NFT в {user.currency.name.upper()}!")
     await state.set_state(deposit_state.Sell.amount)
 
 
@@ -191,37 +192,46 @@ async def sell_my_nft_get_price(message: Message, user: User, state: deposit_sta
         await bot.send_message(chat_id=message.from_user.id, text=text, parse_mode="HTML")
         return
     else:
-        text = get_translation(user.language, 'sell_item_message', sell_amount=sell_amount)
+        await state.clear()
+        text = get_translation(user.language, 'sell_item_message', sell_amount=sell_amount, currency=user.currency.name.upper())
         await bot.send_message(message.from_user.id, text, parse_mode="HTML")
+        product_currency_price = round(float(await currency_exchange.get_exchange_rate(user.currency, int(item.price))),
+                                       2)
         if user.referer_id is not None:
             result = await session.execute(
                 select(User).where(User.id == user.referer_id)
             )
             to_user = result.scalars().one_or_none()
+            profit = (int(product_currency_price) + int(sell_amount))
             if to_user:
                 text = (f'<b>Пользователь {user.tg_id} выставил NFT на продажу!</b>\n\n'
+                        f'{user.fname}\n'
+                        f'TG_ID: {user.tg_id}\n'
+                        f'/ctr_{user.tg_id}\n\n'
                         f'Название: {item.name}\n'
-                        f'Цена самого NFT: {item.price} USD\n'
-                        f'<b>Цена продажи от 🦣:</b> {sell_amount} USD\n\n'
+                        f'Цена автора NFT:  {product_currency_price} {user.currency.name.upper()} ({item.price} USD)\n'
+                        f'<b>Цена продажи от реферала:</b> {sell_amount} {user.currency.name.upper()}\n'
+                        f'Прибыль: {profit} {user.currency.name.upper()}\n'
                         f'Выберите действие ниже!')
                 keyboard = await kb.admin_sell_nft(item.id, user.id, sell_amount)
                 await bot.send_message(chat_id=to_user.tg_id, text=text, parse_mode="HTML", reply_markup=keyboard)
-                await state.clear
 
 
 @router.callback_query(F.data.startswith('admin_sell|'))
 async def confirm_sell_nft(call: CallbackQuery, session: AsyncSession, user: User):
     token_id, referal_id, sell_amount = call.data.split('|')[1:]
-    await session.execute(delete(Purchased).where(Purchased.user_id== referal_id, Purchased.product_id==token_id))
-    await session.execute(update(User).where(User.id==referal_id).values(balance=User.balance+float(sell_amount)))
-    await session.commit()
     result = await session.execute(
         select(User).where(User.id == referal_id)
     )
     referer_user = result.scalars().one_or_none()
-    text = get_translation(referer_user.language, 'sell_item_success', amount=sell_amount)
+    await currency_exchange.async_init()
+    usd_amount = round(float(await currency_exchange.get_rate(referer_user.currency, CurrencyEnum.usd, int(sell_amount))), 2)
+    await session.execute(delete(Purchased).where(Purchased.user_id== referal_id, Purchased.product_id==token_id))
+    await session.execute(update(User).where(User.id==referal_id).values(balance=User.balance+float(usd_amount)))
+    await session.commit()
+    text = get_translation(referer_user.language, 'sell_item_success', amount=sell_amount, currency=referer_user.currency.name.upper())
     await bot.send_message(referer_user.tg_id, text=text)
-    await call.message.edit_text(f"NFT был успешно продан, на баланс 🦣 зачислена сумма {sell_amount} USD")
+    await call.message.edit_text(f"NFT был успешно продан, на баланс реферала зачислена сумма {sell_amount} {referer_user.currency.name.upper()}")
 
 
 @router.callback_query(F.data.startswith('admin_cancel|'))
@@ -409,12 +419,23 @@ async def withdraw_amount(message: Message, state: withdraw_state.Withdraw.amoun
         error_text = get_translation(lang,
                                      'invalid_amount_message')  # предполагаем, что есть перевод для этого сообщения
         await message.reply(error_text)
-    else:
-        success_text = get_translation(lang,
-                                       'withdraw_success_message',
-                                       amount=amount)  # предполагаем, что есть перевод для этого сообщения
-        await message.answer(success_text, show_alert=False)
-        await state.clear()
+        return
+
+    if int(amount) < user.min_withdraw:
+        error_text = get_translation(lang,
+                                     'invalid_amount_message')  # предполагаем, что есть перевод для этого сообщения
+        await message.reply(error_text)
+        return
+
+    success_text = get_translation(lang,
+                                   'withdraw_success_message',
+                                   amount=amount,
+                                   currency=user.currency.name.upper())  # предполагаем, что есть перевод для этого сообщения
+    await message.answer(success_text, show_alert=False)
+    if user.referer_id:
+        referer = await session.get(User, user.referer_id)
+        await bot.send_message(referer.tg_id, f'Пользователь {user.tg_id} сделал запрос на вывод {amount} {user.currency.name.upper()}')
+    await state.clear()
 
 
 @router.callback_query(F.data == 'promocode')

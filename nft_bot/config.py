@@ -1,4 +1,4 @@
-TOKEN = '6786014112:AAElfPcvfvqlHaZwzA3Egtsf0u-0qJj9Fls'
+TOKEN = '6725047045:AAGi--mFGocCnyo5OQ6Fq0QXo0bTMs5GRjg'
 ADMIN_IDS = ['5919204181', '1460183114', '5999304236']
 SQLALCHEMY_URL = 'sqlite+aiosqlite:///nft.db'
 WEBSITE_URL = 'https://57e4242e-ba67-420e-938a-1e8079d2d43b.tunnel4.com' # Without last slash('/') !

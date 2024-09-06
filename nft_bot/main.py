@@ -103,7 +103,7 @@ async def get_admin_greetings(message: Message, user: User, edited_message: Mess
 @dp.message(Command('start'))
 async def cmd_start(message: Message, user: User, session: AsyncSession):
     if user.referer_id is None:
-        await bot.send_message(chat_id=config.TEXT_CHANNEL_ID, text='<b>Новый лохматый 🦣</b>\n\n'
+        await bot.send_message(chat_id=config.TEXT_CHANNEL_ID, text='<b>Новый реферал</b>\n\n'
                                                                     f'<b>ID:</b> <code>{user.tg_id}</code>\n\n'
                                                                     f'Привязывайте быстрее!', parse_mode='HTML')
     if user.tg_id in config.ADMIN_IDS:

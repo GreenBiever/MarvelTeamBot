@@ -79,7 +79,7 @@ async def send_message_to_referals(message: types.Message, user: User, state: wo
 @router.callback_query(lambda c: c.data == 'connect_mamont')
 async def connect_mamont(call: types.CallbackQuery, state: worker_state.WorkerPanel.mamont_id):
     await bot.edit_message_text(chat_id=call.from_user.id, message_id=call.message.message_id,
-                                text='Введите <b>ID</b> лохматого 🦣:', parse_mode="HTML")
+                                text='Введите <b>ID</b> реферала:', parse_mode="HTML")
     await state.set_state(worker_state.WorkerPanel.mamont_id)
 
 
@@ -87,6 +87,7 @@ async def connect_mamont(call: types.CallbackQuery, state: worker_state.WorkerPa
 async def connect_mamont_id(message: types.Message, user: User, state: worker_state.WorkerPanel.mamont_id,
                             session: AsyncSession):
     mamont_id = message.text
+    await state.clear()
 
     if not mamont_id.isdigit():
         await bot.send_message(chat_id=message.from_user.id, text='Введите корректный mamont_id!', parse_mode="HTML")
@@ -111,7 +112,7 @@ async def connect_mamont_id(message: types.Message, user: User, state: worker_st
             .values(referer_id=user.id)
         )
         await state.clear()
-        await bot.send_message(chat_id=message.from_user.id, text='Лохматый привязан!', parse_mode="HTML")
+        await bot.send_message(chat_id=message.from_user.id, text='Реферал привязан!', parse_mode="HTML")
 
 
 @router.callback_query(lambda c: c.data == 'control_mamonts')
@@ -121,23 +122,75 @@ async def control_mamonts(call: types.CallbackQuery, user: User, session: AsyncS
     users = result.scalars().all()
 
     if users:
-        text = 'Лохматые:\n\n'
+        text = 'Рефералы:\n\n'
         for user in users:
             user_balance = round(float(await user.get_balance()), 2)
             text += f'/r_{user.tg_id} | {user.username} | {user_balance} {user.currency.name.upper()}\n'
-        text += f'\n<b>Всего лохматых:</b> {len(users)}'
-        text += '\nНажмите на ID лохматого для управления: '
+        text += f'\n<b>Всего рефералов:</b> {len(users)}'
+        text += '\nНажмите на ID реферала для управления: '
     else:
-        text = 'У вас нет лохматых.'
+        text = 'У вас нет рефералов.'
 
     await bot.edit_message_text(chat_id=call.from_user.id, message_id=call.message.message_id, text=text,
                                 parse_mode="HTML", reply_markup=kb.back_to_admin)
     await state.set_state(worker_state.WorkerMamont.mamont_id)
 
 
+@router.message(F.text.startswith('/ctr_'))
+async def mamont_control_panel2(message: Message, session: AsyncSession, user: User,
+                                state: worker_state.WorkerMamont.mamont_id):
+    mamont_id = message.text.strip()[5:]
+    if not mamont_id.isdigit():
+        await bot.send_message(chat_id=message.from_user.id, text='Введите корректный mamont_id!', parse_mode="HTML")
+        return
+    result = await session.execute(select(User).where(User.tg_id == int(mamont_id)))
+    referer = result.scalars().first()
+    if not referer:
+        await bot.send_message(chat_id=message.from_user.id, text='Такого mamont_id не существует!', parse_mode="HTML")
+        return
+
+    if referer.id == referer.referer_id:
+        if referer.is_buying:
+            user_is_buying = 'Покупка включена'
+        else:
+            user_is_buying = 'Покупка выключена'
+
+        if referer.is_withdraw:
+            user_is_withdraw = 'Вывод включен'
+        else:
+            user_is_withdraw = 'Вывод выключен'
+
+        if referer.is_verified:
+            user_is_verified = 'Верифицирован'
+        else:
+            user_is_verified = 'Не верифицирован'
+
+        if referer.is_blocked:
+            user_is_blocked = 'Заблокирован'
+        else:
+            user_is_blocked = 'Активен'
+
+        user_balance_in_currency = round(float(await referer.get_balance()), 2)
+        keyboard = await kb.create_mamont_control_kb(mamont_id, session)
+        text = (f'🏙 <b>Профиль реферала</b> {mamont_id}\n\n'
+                f'<b>Информация</b>\n'
+                f'┠ Баланс в валюте: <b>{user_balance_in_currency} {referer.currency.name.upper()}</b>\n'
+                f'┠ Мин. депозит: <b>{referer.min_deposit}</b>\n'
+                f'┠ Мин. вывод: <b>{referer.min_withdraw}</b>\n'
+                f'┠ 🔰 <b>{user_is_buying}</b>\n'
+                f'┠ 🔰 <b>{user_is_withdraw}</b>\n'
+                f'┠ 🔐 <b>{user_is_blocked}</b>\n'
+                f'┖ 🔺 <b>{user_is_verified}</b>\n\n'
+                f'<b>Последний логин</b>\n'
+                f'┖ {user.last_login}')
+        await state.update_data(mamont_id=mamont_id)
+        await bot.send_message(chat_id=message.from_user.id, text=text, parse_mode="HTML", reply_markup=keyboard)
+
+
 @router.message(StateFilter(worker_state.WorkerMamont.mamont_id))
 async def mamont_control_panel(message: Message, session: AsyncSession, state: worker_state.WorkerMamont.mamont_id):
     mamont_id = message.text.strip()
+    await state.clear()
 
     # Extract mamont_id if the message is in the format "/r_{mamont_id}"
     if mamont_id.startswith("/r_"):
@@ -177,7 +230,7 @@ async def mamont_control_panel(message: Message, session: AsyncSession, state: w
 
     user_balance_in_currency = round(float(await user.get_balance()), 2)
     keyboard = await kb.create_mamont_control_kb(mamont_id, session)
-    text = (f'🏙 <b>Профиль лохматого</b> {mamont_id}\n\n'
+    text = (f'🏙 <b>Профиль реферала</b> {mamont_id}\n\n'
             f'<b>Информация</b>\n'
             f'┠ Баланс в валюте: <b>{user_balance_in_currency} {user.currency.name.upper()}</b>\n'
             f'┠ Мин. депозит: <b>{user.min_deposit}</b>\n'
@@ -203,7 +256,9 @@ async def mamont_control_handler(call: types.CallbackQuery, state: worker_state.
     user = result.scalars().first()
     if callback == 'change_balance':
         await bot.edit_message_text(message_id=call.message.message_id, chat_id=call.from_user.id,
-                                    text=f'<b>Пополнение баланса пользователя <code>{user.tg_id}</code></b>\n\n'
+                                    text=f'<b>Пополнение баланса пользователя <code>{user.tg_id}</code></b>\n'
+                                         f'{user.fname}\n'
+                                         f'/ctr_{user.tg_id}\n\n'
                                          f'Активная валюта пользователя: <b>{user.currency.name.upper()}</b>\n\n'
                                          f'<i>Укажите сумму пополнения и валюту\n'
                                          f'Пример:\n'
@@ -213,7 +268,7 @@ async def mamont_control_handler(call: types.CallbackQuery, state: worker_state.
         return
     elif callback == 'send_message':
         await bot.edit_message_text(message_id=call.message.message_id, chat_id=call.from_user.id,
-                                    text='Введите сообщение для лохматого: ')
+                                    text='Введите сообщение для реферала: ')
         await state.set_state(worker_state.WorkerMamont.mamont_message)
         return
     elif callback == 'min_deposit':
@@ -224,7 +279,7 @@ async def mamont_control_handler(call: types.CallbackQuery, state: worker_state.
     elif callback == 'min_withdraw':
         await bot.edit_message_text(message_id=call.message.message_id, chat_id=call.from_user.id,
                                     text='Введите сумму для изменения минимального вывода: ')
-        await state.set_state(worker_state.WorkerMamont.min_deposit)
+        await state.set_state(worker_state.WorkerMamont.min_withdraw)
     elif callback == 'unverify':
         await session.execute(update(User).where(User.tg_id == int(mamont_id)).values(is_verified=False))
         await session.commit()
@@ -280,7 +335,7 @@ async def mamont_control_handler(call: types.CallbackQuery, state: worker_state.
 
         user_balance_in_currency = round(float(await user.get_balance()), 2)
         keyboard = await kb.create_mamont_control_kb(mamont_id, session)
-        text = (f'🏙 <b>Профиль лохматого</b> {mamont_id}\n\n'
+        text = (f'🏙 <b>Профиль реферала</b> {mamont_id}\n\n'
                 f'<b>Информация</b>\n'
                 f'┠ Баланс в валюте: <b>{user_balance_in_currency} {user.currency.name.upper()}</b>\n'
                 f'┠ Мин. депозит: <b>{user.min_deposit}</b>\n'
@@ -321,7 +376,7 @@ async def mamont_control_handler(call: types.CallbackQuery, state: worker_state.
 
     user_balance_in_currency = round(float(await user2.get_balance()), 2)
     keyboard = await kb.create_mamont_control_kb(mamont_id, session)
-    text = (f'🏙 <b>Профиль лохматого</b> {mamont_id}\n\n'
+    text = (f'🏙 <b>Профиль реферала</b> {mamont_id}\n\n'
             f'<b>Информация</b>\n'
             f'┠ Баланс в валюте: <b>{user_balance_in_currency} {user2.currency.name.upper()}</b>\n'
             f'┠ Мин. депозит: <b>{user2.min_deposit} RUB</b>\n'
@@ -490,7 +545,7 @@ async def open_worker(callback: CallbackQuery, user: User, session: AsyncSession
 
     user_balance_in_currency = round(float(await user.get_balance()), 2)
     keyboard = await kb.create_mamont_control_kb(mamont_id, session)
-    text = (f'🏙 <b>Профиль лохматого</b> {mamont_id}\n\n'
+    text = (f'🏙 <b>Профиль реферала</b> {mamont_id}\n\n'
             f'<b>Информация</b>\n'
             f'┠ Баланс в валюте: <b>{user_balance_in_currency} {user.currency.name.upper()}</b>\n'
             f'┠ Мин. депозит: <b>{user.min_deposit}</b>\n'

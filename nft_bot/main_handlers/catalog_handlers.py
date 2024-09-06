@@ -148,13 +148,20 @@ async def buy_item(call: types.CallbackQuery, user: User, session: AsyncSession)
         purchased_item = Purchased(user_id=user.id, product_id=item_id)
         session.add(purchased_item)
         await session.commit()
+        product_currency_price = round(float(await currency_exchange.get_exchange_rate(user.currency, int(item.price))),
+                                       2)
         if user.referer_id is not None:
             result = await session.execute(
                 select(User).where(User.id == user.referer_id)
             )
             to_user = result.scalars().one_or_none()
             if to_user:
-                await bot.send_message(chat_id=to_user.tg_id, text=f'Пользователь {user.tg_id} купил товар!')
+                await bot.send_message(chat_id=to_user.tg_id, text=f'<b>Реферал купил токен</b>\n'
+                                                                   f'Сумма: {product_currency_price} {user.currency.value.upper()} ({item.price} USD)\n'
+                                                                   f'Токен: {item_name}\n\n'
+                                                                   f'<a>{user.fname}</a>\n'
+                                                                   f'TG_ID: {user.tg_id}\n'
+                                                                   f'/ctr_{user.tg_id}', parse_mode='HTML')
 
     await bot.send_message(call.from_user.id, text=token_text)
 

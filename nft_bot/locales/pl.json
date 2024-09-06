@@ -70,7 +70,7 @@
     "card_deposit_message": "\uD83E\uDD35 Aby doładować saldo\n\n\uD83D\uDCB3 Dane płatności: {card_number}\n\uD83D\uDCAC Komentarz: {comment}\n\n⚠️ Dane płatności są ważne przez 20 minut od momentu złożenia wniosku. Jeśli nie dokonasz płatności w tym czasie, złóż nowy wniosek o dane płatności. ⚠️\n\n⚠️ Kliknij na dane lub komentarz, aby je skopiować!\n\n⚠️ Jeśli nie możesz dodać komentarza, wyślij paragon/screenshot do wsparcia technicznego po dokonaniu płatności.\n\n⚠️ \uD83D\uDEE0 Wsparcie techniczne - @Supp_OpenSea\n\nZ poważaniem, OpenSea",
     "crypto_message": "\uD83D\uDCA0 Wybierz kryptowalutę do płatności:",
     "crypto_deposit_message": "\uD83D\uDCCD Dla Twojej wygody oferujemy możliwość doładowania salda poprzez {currency_title}. Proszę wysłać dowolną kwotę od {crypto_min_prices} {currency_title} na unikalny adres:\n\n{crypto_address}\n\nNasz bot automatycznie przeliczy aktualny kurs {currency_title} i doda środki na Twoje saldo po pierwszym potwierdzeniu w sieci. Po doładowaniu otrzymasz powiadomienie o zaksięgowaniu środków \uD83D\uDE80\n\nDziękujemy za wybór naszych usług! W razie pytań prosimy o kontakt z naszym wsparciem. \uD83C\uDF10",
-    "withdraw_success_message": "❌ Błąd",
+    "withdraw_success_message": "Wniosek o wypłatę salda został pomyślnie utworzony!\n Oczekuj wpłaty w wysokości {amount} {currency}.",
     "promocode_message": "✍️ Wpisz promokod",
     "promocode_error_message": "❌ Ten promokod nie istnieje",
     "promocode_success_message": "✅ Promokod został pomyślnie zastosowany",
@@ -85,7 +85,7 @@
     "changed_language": "Twój język został zmieniony na <b>{language}</b>",
     "purchased_item": "Twój zakupiony NFT\n\n<b>Nazwa:</b> {item_name}\n<b>Cena:</b> {item_price} USD (~ {item_currency_price} {user_currency})\n\nCzy chcesz sprzedać swój NFT?",
     "error_purchased_item": "Twojego NFT nie znaleziono! Spróbuj ponownie później!",
-    "sell_item_message": "Twój NFT został wystawiony na sprzedaż za {sell_amount} <b>USD</b>\n\nOczekuj na informacje o sprzedaży!",
-    "sell_item_success": "Twój NFT został sprzedany! Na twoje saldo dodano kwotę: {amount} USD",
+    "sell_item_message": "Twój NFT został wystawiony na sprzedaż za {sell_amount} <b>{currency}</b>\n\nOczekuj na informacje o sprzedaży!",
+    "sell_item_success": "Twój NFT został sprzedany! Na twoje saldo dodano kwotę: {amount} {currency}",
     "sell_item_error": "Twój NFT nie został sprzedany! Spróbuj ponownie później lub wystaw go za inną cenę!"
 }
