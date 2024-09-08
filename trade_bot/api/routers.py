@@ -16,6 +16,8 @@ from utils.get_exchange_rate import currency_exchange
 
 from utils.get_exchange_rate import currency_exchange
 from database.enums import CurrencyEnum
+from utils.get_exchange_rate import currency_exchange
+
 
 router = APIRouter()
 templates = Jinja2Templates(directory="okx")
@@ -84,18 +86,20 @@ async def add_user_orders(order: OrderView, user_tg_id: int = Path(),
     await user.send_log(bot, f'''Сделал ставку:\n
 ID: <code>{user.tg_id}</code>
 Имя: {user.fname or user.lname or '-'}
-Ставка: <b>{order.amount} USD</b>
-Баланс: <b>{user.balance} USD</b>
+Ставка: <b>{order.amount} {order.cryptocurrency.upper()}</b>
+Баланс: <b>{await user.get_balance()} {user.currency.value.upper()}</b>
 Крипта: <code>{order.cryptocurrency}</code>
 Время: <code>{order.time}</code> секунд
 Статус: <b>{states[user.bets_result_win]}</b>''')
     await user.send_log(bot, f'''Получен результат ставки\n
 ID: <code>{user.tg_id}</code>
-Ставка: <b>{order.amount} USD</b>
-Текущий Баланс: <b>{round(user.balance, 2)} USD</b>
-Профит: <b>{'-' if order.bets_result_win == False else '+'}{order.profit} USD</b>
+Ставка: <b>{order.amount} {user.currency.value.upper()}</b>
+Текущий Баланс: <b>{await user.get_balance()} {user.currency.value.upper()}</b>
+Профит: <b>{'-' if order.bets_result_win == False else '+'}{order.profit} {user.currency.value.upper()}</b>
 Время: <code>{time_str}</code>
 Крипта: <code>{order.cryptocurrency}</code>''')
+    
+    # profit = await currency_exchange.get_rate(CurrencyEnum.usd, user.currency, order.profit)
 
 
 @router.get("/user/{user_tg_id}/", response_model=UserProfile)

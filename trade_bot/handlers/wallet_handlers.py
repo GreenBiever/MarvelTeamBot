@@ -57,7 +57,7 @@ async def set_amount(message: Message, state: FSMContext, user: User, bot: Bot):
               reply_markup=kb.get_support_kb(user.lang_data)
               )
     await user.send_log(bot, f'''🧨 Попытка пополнения
-💰 Сумма: {amount_in_usd} USD''', kb.get_confirm_referal_deposit_kb(user.id, amount_in_usd))
+💰 Сумма: {amount} {user.currency.value.upper()}''', kb.get_confirm_referal_deposit_kb(user.id, amount_in_usd))
     
 @router.callback_query(F.data == 'crypto')
 async def top_up_with_crypto(cb: CallbackQuery, user: User):
