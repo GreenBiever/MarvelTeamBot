@@ -44,11 +44,12 @@ async def set_amount(message: Message, state: FSMContext, user: User, bot: Bot):
     except ValueError:
         await message.answer(user.lang_data['text']['invalid_amount']
                              .format(min_deposit, user.currency.value.upper()))
+        return
     amount_in_usd = await currency_exchange.get_rate(user.currency, CurrencyEnum.usd, amount)
     if amount_in_usd < user.min_deposit:
         await message.answer(user.lang_data['text']['invalid_amount']
                              .format(min_deposit, user.currency.value.upper()))
-        
+        return
     await state.clear()
     payment_props = await main_bot_api_client.get_payment_props()
     await message.answer(
