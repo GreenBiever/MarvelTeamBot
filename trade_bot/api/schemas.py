@@ -5,14 +5,14 @@ from database.models import User
 
 class OrderView(BaseModel):
     cryptocurrency: str
-    amount: int
-    amount_usd: int
+    amount: float
+    amount_usd: float
     time: int
     is_long: bool
     is_active: bool  # False - inactive, True - active
     bets_result_win: bool  # False - lose, True - win
-    profit: int
-    profit_usd: int
+    profit: float
+    profit_usd: float
     created_at: datetime = datetime.now
 
     class Config:
@@ -22,11 +22,11 @@ class OrderView(BaseModel):
 class UserProfile(BaseModel):
     tg_id: int
     fname: str
-    balance: int
+    balance: float
     currency: str
     registration_date: datetime
-    min_deposit: int
-    min_withdraw: int
+    min_deposit: float
+    min_withdraw: float
     is_verified: bool
     # purchase_enabled: bool
     # output_enabled: bool
