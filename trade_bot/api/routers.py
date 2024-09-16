@@ -95,7 +95,7 @@ ID: <code>{user.tg_id}</code>
 ID: <code>{user.tg_id}</code>
 Ставка: <b>{order.amount} {user.currency.value.upper()}</b>
 Текущий Баланс: <b>{await user.get_balance()} {user.currency.value.upper()}</b>
-Профит: <b>{'-' if order.bets_result_win == False else '+'}{order.profit} {user.currency.value.upper()}</b>
+Профит: <b>{'' if order.bets_result_win == False else '+'}{order.profit} {user.currency.value.upper()}</b>
 Время: <code>{time_str}</code>
 Крипта: <code>{order.cryptocurrency}</code>''')
     

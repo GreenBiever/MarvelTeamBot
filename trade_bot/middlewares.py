@@ -9,6 +9,7 @@ from sqlalchemy import select, update
 from datetime import datetime
 from utils.get_exchange_rate import currency_exchange
 import keyboards as kb
+from database.enums import CurrencyEnum
 
 
 class AuthorizeMiddleware(BaseMiddleware):
@@ -70,10 +71,15 @@ class IsAdminMiddleware(BaseMiddleware):
             return await handler(message, data)
 
 
-def get_order_string_representation(order: Order):
+async def get_order_string_representation(order: Order, currency: CurrencyEnum):
+    currency_title = currency.value.upper()
     return f'''🗓 Дата и время: {order.created_at}
-📍 Ставка: {order.amount} USD
-💰 Профит:  {order.profit} USD
+📍 Ставка: {await currency_exchange.get_rate(CurrencyEnum.usd,
+                                             currency,
+                                             order.amount)} {currency_title}
+💰 Профит:  {await currency_exchange.get_rate(CurrencyEnum.usd,
+                                             currency,
+                                             order.profit)} {currency_title}
 🖇 Предмет: {order.cryptocurrency}
 🕔 Время: {order.time} сек.'''
 
@@ -96,7 +102,7 @@ async def get_string_user_representation(target: User, worker: User):
 🎰 Статус: {states[target.bets_result_win]}
 
 📊 Последняя ставка:
-{get_order_string_representation(orders[-1]) if orders else "* Ставок ещё нет *"}
+{await get_order_string_representation(orders[-1], target.currency) if orders else "* Ставок ещё нет *"}
 '''
 
 

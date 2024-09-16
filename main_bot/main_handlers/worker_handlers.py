@@ -25,8 +25,8 @@ async def trade_bot(message: Message, user: User):
     text = ('💼 <b>Трейд бот</b>\n\n'
             f'{link}\n'
             f'Чтобы войти в ворк-панель, перейдите по ссылке и напишите <code>Воркер</code>\n'
-            f'<b>Ваша реферальная ссылка</b>\n'
-            f"<code href='{link}?start=w{user.tg_id}'>Нажми и скопируй</code>")
+            f'<b>Ваша реферальная ссылка</b>(Нажми и скопируй)\n'
+            f"<code>{link}?start=w{user.tg_id}</code>")
     await message.answer(text, parse_mode='HTML')
 
 
@@ -36,8 +36,8 @@ async def nft_bot(message: Message, user: User):
     text = ('🎆 <b>NFT бот</b>\n\n'
             f'{link}\n'
             f'Чтобы войти в ворк-панель, перейдите по ссылке и напишите <code>Воркер</code>\n'
-            f'<b>Ваша реферальная ссылка</b>\n'
-            f"<code href='{link}?start={user.tg_id}'>Нажми и скопируй</code>")
+            f'<b>Ваша реферальная ссылка(Нажми и скопируй)</b>\n'
+            f"<code>{link}?start={user.tg_id}</code>")
     await message.answer(text, parse_mode='HTML')
 
 
