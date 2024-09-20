@@ -88,7 +88,8 @@ async def choose_item(call: types.CallbackQuery, user: User, session: AsyncSessi
 
     user_currency = await requests.get_user_currency(session, call.from_user.id)
     type(user_currency)
-    item_price_usd = round(float(item.price), 2)  # Assuming item.price is a string representing price in USD
+    random_price = random.randint(1, 100)
+    item_price_usd = round(float(item.price), 2) + random_price  # Assuming item.price is a string representing price in USD
     await currency_exchange.async_init()
     product_currency_price = round(float(await currency_exchange.get_exchange_rate(user_currency, item_price_usd)), 2)
 
@@ -101,7 +102,7 @@ async def choose_item(call: types.CallbackQuery, user: User, session: AsyncSessi
         item_description=item_description,
         category_name=category_name,
         item_author=item_author,
-        item_price=item.price,
+        item_price=item_price_usd,
         item_currency_price=product_currency_price,
         user_currency=user_currency.value
     )

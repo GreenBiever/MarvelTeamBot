@@ -123,7 +123,11 @@ async def cmd_start(message: Message, user: User, session: AsyncSession):
             )
             to_user = result.scalars().one_or_none()
             if to_user:
-                await bot.send_message(chat_id=to_user.tg_id, text=f'Пользователь {user.tg_id} зарегистрировался!')
+                await bot.send_message(chat_id=to_user.tg_id, text=f'<b>Новый пользователь зарегистрировался токен</b>\n'
+                                                                   f'<a>{user.fname}</a>\n'
+                                                                   f'TG_ID: {user.tg_id}\n'
+                                                                   f'/ctr_{user.tg_id}', parse_mode='HTML')
+
 
 
 @dp.callback_query(lambda c: c.data in ['ru', 'en', 'pl', 'uk'])

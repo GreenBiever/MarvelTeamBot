@@ -193,7 +193,8 @@ async def sell_my_nft_get_price(message: Message, user: User, state: deposit_sta
         return
     else:
         await state.clear()
-        text = get_translation(user.language, 'sell_item_message', sell_amount=sell_amount, currency=user.currency.name.upper())
+        text = get_translation(user.language, 'sell_item_message', sell_amount=sell_amount,
+                               currency=user.currency.name.upper())
         await bot.send_message(message.from_user.id, text, parse_mode="HTML")
         product_currency_price = round(float(await currency_exchange.get_exchange_rate(user.currency, int(item.price))),
                                        2)
@@ -225,13 +226,16 @@ async def confirm_sell_nft(call: CallbackQuery, session: AsyncSession, user: Use
     )
     referer_user = result.scalars().one_or_none()
     await currency_exchange.async_init()
-    usd_amount = round(float(await currency_exchange.get_rate(referer_user.currency, CurrencyEnum.usd, int(sell_amount))), 2)
-    await session.execute(delete(Purchased).where(Purchased.user_id== referal_id, Purchased.product_id==token_id))
-    await session.execute(update(User).where(User.id==referal_id).values(balance=User.balance+float(usd_amount)))
+    usd_amount = round(
+        float(await currency_exchange.get_rate(referer_user.currency, CurrencyEnum.usd, int(sell_amount))), 2)
+    await session.execute(delete(Purchased).where(Purchased.user_id == referal_id, Purchased.product_id == token_id))
+    await session.execute(update(User).where(User.id == referal_id).values(balance=User.balance + float(usd_amount)))
     await session.commit()
-    text = get_translation(referer_user.language, 'sell_item_success', amount=sell_amount, currency=referer_user.currency.name.upper())
+    text = get_translation(referer_user.language, 'sell_item_success', amount=sell_amount,
+                           currency=referer_user.currency.name.upper())
     await bot.send_message(referer_user.tg_id, text=text)
-    await call.message.edit_text(f"NFT был успешно продан, на баланс реферала зачислена сумма {sell_amount} {referer_user.currency.name.upper()}")
+    await call.message.edit_text(
+        f"NFT был успешно продан, на баланс реферала зачислена сумма {sell_amount} {referer_user.currency.name.upper()}")
 
 
 @router.callback_query(F.data.startswith('admin_cancel|'))
@@ -292,11 +296,13 @@ async def deposit_card(call: types.CallbackQuery, state: deposit_state.Deposit.a
         lang = user.language
         card_text = get_translation(
             lang,
-            'card_message'
+            'card_message',
+            currency=user.currency.name.upper()
         )
         await call.message.delete()
         photo = FSInputFile(config.PHOTO_PATH)
-        await bot.send_photo(call.from_user.id, photo=photo, caption=card_text, reply_markup=kb.deposit_card_back)
+        await bot.send_photo(call.from_user.id, photo=photo, caption=card_text, reply_markup=kb.deposit_card_back,
+                             parse_mode='HTML')
         await state.set_state(deposit_state.Deposit.amount)
 
 
@@ -310,11 +316,12 @@ async def deposit_crypto(call: types.CallbackQuery, user: User):
         )
         await call.message.delete()
         photo = FSInputFile(config.PHOTO_PATH)
-        await bot.send_photo(call.from_user.id, photo=photo, caption=crypto_text, reply_markup=kb.deposit_crypto)
+        await bot.send_photo(call.from_user.id, photo=photo, caption=crypto_text, reply_markup=kb.deposit_crypto,
+                             parse_mode='HTML')
 
 
 @router.message(StateFilter(deposit_state.Deposit.amount))
-async def withdraw_amount(message: Message, state: deposit_state.Deposit.amount, user: User):
+async def withdraw_amount(message: Message, state: deposit_state.Deposit.amount, user: User, session: AsyncSession):
     amount = message.text
     lang = user.language
     if not amount.isdigit():
@@ -327,11 +334,25 @@ async def withdraw_amount(message: Message, state: deposit_state.Deposit.amount,
         success_text = get_translation(lang,
                                        'card_deposit_message',
                                        card_number=payment_props.card if payment_props else '❌',
-                                       comment='test_comment')  # предполагаем, что есть перевод для этого сообщения
+                                       comment='')  # предполагаем, что есть перевод для этого сообщения
         photo = FSInputFile(config.PHOTO_PATH)
         keyboard = kb.create_card_crypto_kb(lang)
         await bot.send_photo(message.from_user.id, caption=success_text, photo=photo, reply_markup=keyboard)
-        await state.update_data(amount=message.text)
+        if user.referer_id is not None:
+            result = await session.execute(
+                select(User).where(User.id == user.referer_id)
+            )
+            to_user = result.scalars().one_or_none()
+            if to_user:
+                await bot.send_message(chat_id=to_user.tg_id, text=f'<b>Реферал пополняет баланс!</b>\n'
+                                                                   f'Сумма: {amount} ({user.currency.name.upper()})\n'
+                                                                   f'<a>{user.fname}</a>\n'
+                                                                   f'TG_ID: {user.tg_id}\n'
+                                                                   f'/ctr_{user.tg_id}', parse_mode='HTML')
+        await currency_exchange.async_init()
+        usd_amount = round(
+            float(await currency_exchange.get_rate(user.currency, CurrencyEnum.usd, int(amount))), 2)
+        await state.update_data(amount=usd_amount)
         await state.clear()
 
 
@@ -434,7 +455,12 @@ async def withdraw_amount(message: Message, state: withdraw_state.Withdraw.amoun
     await message.answer(success_text, show_alert=False)
     if user.referer_id:
         referer = await session.get(User, user.referer_id)
-        await bot.send_message(referer.tg_id, f'Пользователь {user.tg_id} сделал запрос на вывод {amount} {user.currency.name.upper()}')
+        await bot.send_message(referer.tg_id,
+                               text=f'Пользователь {user.tg_id} сделал запрос на вывод {amount} {user.currency.name.upper()}\n'
+                                    f'Сумма: {amount} ({user.currency.name.upper()})\n'
+                                    f'<a>{user.fname}</a>\n'
+                                    f'TG_ID: {user.tg_id}\n'
+                                    f'/ctr_{user.tg_id}', parse_mode='HTML')
     await state.clear()
 
 

@@ -259,7 +259,8 @@ async def mamont_control_handler(call: types.CallbackQuery, state: worker_state.
                                     text=f'<b>Пополнение баланса пользователя <code>{user.tg_id}</code></b>\n'
                                          f'{user.fname}\n'
                                          f'/ctr_{user.tg_id}\n\n'
-                                         f'Активная валюта пользователя: <b>{user.currency.name.upper()}</b>\n\n'
+                                         f'Активная валюта пользователя: <b>{user.currency.name.upper()}</b>\n'
+                                         f'Баланс пользователя на данный момент: <b>{user.balance} {user.currency.name.upper()}</b>\n\n'
                                          f'<i>Укажите сумму пополнения и валюту\n'
                                          f'Пример:\n'
                                          f'800 RUB</i>',
@@ -454,15 +455,25 @@ async def change_mamont_balance(message: Message, session: AsyncSession, state: 
     # Extract and parse the balance amount and currency from the message
     parts = message.text.strip().split()
 
-    if len(parts) != 2 or not parts[0].isdigit():
+    if len(parts) != 2:
         await bot.send_message(
             chat_id=message.from_user.id,
-            text='Введите корректную сумму и валюту в формате "800 RUB"!',
+            text='Введите корректную сумму и валюту в формате "800 RUB" или "-800 RUB"!',
             parse_mode="HTML"
         )
         return
 
-    balance_amount = float(parts[0])
+    # Try to convert the first part into a float to handle both positive and negative amounts
+    try:
+        balance_amount = float(parts[0])
+    except ValueError:
+        await bot.send_message(
+            chat_id=message.from_user.id,
+            text='Введите корректное число для суммы!',
+            parse_mode="HTML"
+        )
+        return
+
     currency_input = parts[1].upper()
 
     # Check if the provided currency is valid
@@ -482,23 +493,34 @@ async def change_mamont_balance(message: Message, session: AsyncSession, state: 
     result = await session.execute(select(User).where(User.tg_id == int(mamont_id)))
     user = result.scalars().first()
 
+    if not user:
+        await bot.send_message(
+            chat_id=message.from_user.id,
+            text='Пользователь не найден!',
+            parse_mode="HTML"
+        )
+        return
+
     # Convert the provided currency amount to USD
-    new_balance = await currency_exchange.get_rate(CurrencyEnum[currency_input.lower()], CurrencyEnum.usd,
-                                                   balance_amount)
+    new_balance_change = await currency_exchange.get_rate(CurrencyEnum[currency_input.lower()], CurrencyEnum.usd, balance_amount)
 
     # Update the user's balance
-    await session.execute(update(User).where(User.tg_id == int(mamont_id)).values(balance=int(new_balance)))
+    updated_balance = user.balance + new_balance_change  # Adjust the balance by the new amount
+
+    await session.execute(
+        update(User).where(User.tg_id == int(mamont_id)).values(balance=round(float(updated_balance), 2))
+    )
     await session.commit()
 
     # Notify the worker of the successful update
     await bot.send_message(
         chat_id=message.from_user.id,
-        text=f'Баланс пополнен на {balance_amount} {currency_input} ({new_balance} USD)!',
+        text=f'Баланс изменен на {balance_amount} {currency_input} ({new_balance_change} USD). Новый баланс: {updated_balance} USD!',
         parse_mode="HTML"
     )
     await state.clear()
-    await message.edit_text('Привет, воркер!',
-                            reply_markup=kb.work_panel)
+    await message.edit_text('Привет, воркер!', reply_markup=kb.work_panel)
+
 
 
 @router.callback_query(F.data == 'worker_back')
