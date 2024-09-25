@@ -1,6 +1,6 @@
 from typing import List, Sequence
 
-from sqlalchemy import select, update
+from sqlalchemy import select, update, func
 from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 from database.models import User, Order, Promocode, UserPromocodeAssotiation
@@ -104,3 +104,8 @@ async def activate_promocode(session: AsyncSession, user: User, promocode: Promo
 async def get_promocode_by_code(session: AsyncSession, code: str) -> Promocode | None:
     return await session.scalar(select(Promocode).where(Promocode.code == code))
     
+async def get_last_order(session: AsyncSession, user: User) -> Order | None:
+    return await session.scalar(
+        select(Order)
+        .where(Order.created_at == select(func.max(Order.created_at)),
+               Order.user_id == user.id))

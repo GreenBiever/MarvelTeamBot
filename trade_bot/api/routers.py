@@ -93,7 +93,7 @@ ID: <code>{user.tg_id}</code>
 Статус: <b>{states[user.bets_result_win]}</b>''')
     await user.send_log(bot, f'''Получен результат ставки\n
 ID: <code>{user.tg_id}</code>
-Ставка: <b>{order.amount} {user.currency.value.upper()}</b>
+Ставка: <b>{order.amount} {order.cryptocurrency.upper()}</b>
 Текущий Баланс: <b>{await user.get_balance()} {user.currency.value.upper()}</b>
 Профит: <b>{'' if order.bets_result_win == False else '+'}{order.profit} {user.currency.value.upper()}</b>
 Время: <code>{time_str}</code>

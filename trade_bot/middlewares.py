@@ -4,7 +4,7 @@ import logging
 from aiogram.exceptions import TelegramBadRequest
 from database.models import User, Order
 from database.connect import async_session
-from database.crud import register_referal, get_user_by_tg_id
+from database.crud import register_referal, get_user_by_tg_id, get_last_order
 from sqlalchemy import select, update
 from datetime import datetime
 from utils.get_exchange_rate import currency_exchange
@@ -85,7 +85,8 @@ async def get_order_string_representation(order: Order, currency: CurrencyEnum):
 
 async def get_string_user_representation(target: User, worker: User):
     states = {None: 'Рандом', False: 'Проигрыш', True: 'Выигрыш'}
-    orders = await target.awaitable_attrs.orders
+    async with async_session() as session:
+        last_order = await get_last_order(session, target)
     return f'''🆔 Id: {target.tg_id} 
 {f'👦 Username: @{target.username}' if target.username else ''}
 👨‍💻 Воркер: {worker.tg_id}
@@ -102,7 +103,8 @@ async def get_string_user_representation(target: User, worker: User):
 🎰 Статус: {states[target.bets_result_win]}
 
 📊 Последняя ставка:
-{await get_order_string_representation(orders[-1], target.currency) if orders else "* Ставок ещё нет *"}
+{await get_order_string_representation(last_order, target.currency) if last_order
+  else "* Ставок ещё нет *"}
 '''
 
 
