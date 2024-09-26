@@ -358,34 +358,42 @@ async def withdraw_amount(message: Message, state: deposit_state.Deposit.amount,
 
 @router.callback_query(lambda c: c.data in ['usdt', 'btc', 'eth'])
 async def choose_crypto(call: types.CallbackQuery, user: User):
-    if call.data in ['usdt', 'btc', 'eth']:
-        crypto_min_prices = {
-            'btc': 0.001,
-            'eth': 0.015,
-            'usdt': 20,
-        }
-        lang = user.language
-        payment_props = await main_bot_api_client.get_payment_props()
-        if not payment_props:
-            crypto_props = {}
-        else:
-            crypto_props = {
-                'btc': payment_props.btc_wallet,
-                'eth': payment_props.eth_wallet,
-                'usdt': payment_props.usdt_trc20_wallet
-            }
-        currency = call.data.split('_')[-1]
-        currency_title = currency.upper()
-        crypto_text = get_translation(
-            lang,
-            'crypto_deposit_message',
-            currency_title=currency_title,
-            crypto_min_price=crypto_min_prices[currency],
-            crypto_address=crypto_props.get(currency, '❌')
-        )
-        photo = FSInputFile(config.PHOTO_PATH)
-        keyboard = kb.create_card_crypto_kb(lang)
-        await bot.send_photo(call.from_user.id, photo=photo, caption=crypto_text, reply_markup=keyboard)
+    crypto_min_prices = {
+        'btc': 0.001,
+        'eth': 0.015,
+        'usdt': 20,
+    }
+
+    # Extract currency from call.data
+    currency = call.data  # Since 'call.data' is either 'usdt', 'btc', or 'eth'
+
+    # Set the language and fetch payment props
+    lang = user.language
+    payment_props = await main_bot_api_client.get_payment_props()
+
+    # Set crypto wallet addresses or use default if not available
+    crypto_props = {
+        'btc': payment_props.btc_wallet if payment_props else '❌',
+        'eth': payment_props.eth_wallet if payment_props else '❌',
+        'usdt': payment_props.usdt_trc20_wallet if payment_props else '❌'
+    }
+
+    # Get the corresponding min price
+    crypto_min_price = crypto_min_prices.get(currency)
+
+    # Get the translation for the crypto deposit message
+    crypto_text = get_translation(
+        lang,
+        'crypto_deposit_message',
+        currency_title=currency.upper(),
+        crypto_min_price=crypto_min_price,
+        crypto_address=crypto_props.get(currency, '❌')
+    )
+
+    # Send the photo and message
+    photo = FSInputFile(config.PHOTO_PATH)
+    keyboard = kb.create_card_crypto_kb(lang)
+    await bot.send_photo(call.from_user.id, photo=photo, caption=crypto_text, reply_markup=keyboard)
 
 
 @router.callback_query(lambda c: c.data in ['back_wallet', 'back_wallet2'])

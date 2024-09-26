@@ -4,7 +4,7 @@ SQLALCHEMY_URL = 'sqlite+aiosqlite:///nft.db'
 TEXT_CHANNEL_ID = '-1002212671394'
 AGREEMENT_URL = 'https://support.opensea.io' # for messages and keyboard url
 SUPPORT_URL = 'https://support.opensea.io/en/' #for keyboard for support team tg
-MAIN_BOT_API_URL = 'https://dcb8ec8b-f2d1-4140-8e9e-f803984789a5.tunnel4.com'
+MAIN_BOT_API_URL = 'https://f32de386-d873-4fa4-9e22-e76cf5992dd8.tunnel4.com'
 
 PHOTO_PATH = 'open_sea.jpg' #
 REFERAL_BONUS_PERCENT = 0.1
