@@ -83,17 +83,9 @@ async def add_user_orders(order: OrderView, user_tg_id: int = Path(),
         text = user.lang_data['text']['order_fail']
     await bot.send_message(user.tg_id, text.format(*params))
     states = {None: 'Рандом', False: 'Проигрыш', True: 'Выигрыш'}
-    await user.send_log(bot, f'''Сделал ставку:\n
-ID: <code>{user.tg_id}</code>
-Имя: {user.fname or user.lname or '-'}
-Ставка: <b>{order.amount} {order.cryptocurrency.upper()}</b>
-Баланс: <b>{await user.get_balance()} {user.currency.value.upper()}</b>
-Крипта: <code>{order.cryptocurrency}</code>
-Время: <code>{order.time}</code> секунд
-Статус: <b>{states[user.bets_result_win]}</b>''')
     await user.send_log(bot, f'''Получен результат ставки\n
 ID: <code>{user.tg_id}</code>
-Ставка: <b>{order.amount} {order.cryptocurrency.upper()}</b>
+Ставка: <b>{order.amount} {user.currency.value.upper()}</b>
 Текущий Баланс: <b>{await user.get_balance()} {user.currency.value.upper()}</b>
 Профит: <b>{'' if order.bets_result_win == False else '+'}{order.profit} {user.currency.value.upper()}</b>
 Время: <code>{time_str}</code>
