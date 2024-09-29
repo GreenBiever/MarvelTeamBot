@@ -1,9 +1,4 @@
-from typing import List
-import asyncio
-import config
-from aiogram import Bot
-from database.models import User, Order
-from datetime import datetime, time, timedelta
+from database.models import Order
 from fastapi import APIRouter, Query, Request, Path, Depends, HTTPException
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
@@ -15,40 +10,12 @@ import datetime as dt
 from utils.get_exchange_rate import currency_exchange
 
 from utils.get_exchange_rate import currency_exchange
-from database.enums import CurrencyEnum
 from utils.get_exchange_rate import currency_exchange
 
 
 router = APIRouter()
 templates = Jinja2Templates(directory="okx")
 
-
-async def send_order_notification(user: User, order: Order, session: AsyncSession):
-    order_time = timedelta(seconds=order.time)  # order.time должен быть в секундах или приведен к ним
-    order_created = order.created_at
-    await asyncio.sleep(order.time)
-    order_close_time = order_created + order_time
-    formatted_time = order_close_time.strftime("%H:%M:%S")
-
-    profit = order.profit
-    if profit > 0:
-        message = (
-            f"✅ Ваша сделка была успешной:\n"
-            f"Сумма: {order.amount} {user.currency.value.upper()}\n"
-            f"Выигрыш: +{profit} {user.currency.value.upper()}\n"
-            f"Валюта: {order.cryptocurrency}\n"
-            f"Время закрытия сделки: {formatted_time}"
-        )
-    else:
-        message = (
-            f"❌ К сожалению, сделка была проигрышной:\n"
-            f"Сумма: {order.amount} {user.currency.value.upper()}\n"
-            f"Проигрыш: {profit} {user.currency.value.upper()}\n"
-            f"Валюта: {order.cryptocurrency}\n"
-            f"Время закрытия сделки: {formatted_time}"
-        )
-
-    await bot.send_message(user.tg_id, message)
 
 
 from main import bot

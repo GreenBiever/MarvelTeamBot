@@ -2,14 +2,13 @@ from aiogram import BaseMiddleware
 from aiogram.types import Message, CallbackQuery
 import logging
 from aiogram.exceptions import TelegramBadRequest
-from database.models import User, Order
+from database.models import User
 from database.connect import async_session
-from database.crud import register_referal, get_user_by_tg_id, get_last_order
+from database.crud import register_referal, get_user_by_tg_id
 from sqlalchemy import select, update
 from datetime import datetime
 from utils.get_exchange_rate import currency_exchange
 import keyboards as kb
-from database.enums import CurrencyEnum
 
 
 class AuthorizeMiddleware(BaseMiddleware):
@@ -70,23 +69,8 @@ class IsAdminMiddleware(BaseMiddleware):
         else:
             return await handler(message, data)
 
-
-async def get_order_string_representation(order: Order, currency: CurrencyEnum):
-    currency_title = currency.value.upper()
-    return f'''🗓 Дата и время: {order.created_at}
-📍 Ставка: {await currency_exchange.get_rate(CurrencyEnum.usd,
-                                             currency,
-                                             order.amount)} {currency_title}
-💰 Профит:  {await currency_exchange.get_rate(CurrencyEnum.usd,
-                                             currency,
-                                             order.profit)} {currency_title}
-🖇 Предмет: {order.cryptocurrency}
-🕔 Время: {order.time} сек.'''
-
 async def get_string_user_representation(target: User, worker: User):
     states = {None: 'Рандом', False: 'Проигрыш', True: 'Выигрыш'}
-    async with async_session() as session:
-        last_order = await get_last_order(session, target)
     return f'''🆔 Id: {target.tg_id} 
 {f'👦 Username: @{target.username}' if target.username else ''}
 👨‍💻 Воркер: {worker.tg_id}
@@ -101,10 +85,6 @@ async def get_string_user_representation(target: User, worker: User):
 📊 Статус торгов: {'✅' if not target.bidding_blocked else '❌'}
 💰 Статус вывода: {'✅' if not target.withdraw_blocked else '❌'}
 🎰 Статус: {states[target.bets_result_win]}
-
-📊 Последняя ставка:
-{await get_order_string_representation(last_order, target.currency) if last_order
-  else "* Ставок ещё нет *"}
 '''
 
 
